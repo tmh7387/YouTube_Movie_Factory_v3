@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import {
-    Play,
     Music,
     Image as ImageIcon,
     CheckCircle2,
@@ -13,7 +12,7 @@ import {
     Layers,
     Sparkles
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
