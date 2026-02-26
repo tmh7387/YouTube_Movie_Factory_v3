@@ -32,8 +32,8 @@ function Navigation() {
                             key={item.path}
                             to={item.path}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                    ? 'bg-blue-600 text-white shadow-sm'
-                                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                ? 'bg-blue-600 text-white shadow-sm'
+                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                                 }`}
                         >
                             <Icon className="w-5 h-5" />
@@ -55,21 +55,23 @@ const Placeholder = ({ title }: { title: string }) => (
 
 function App() {
     return (
-        <BrowserRouter>
-            <div className="flex min-h-screen bg-gray-50 font-sans">
-                <Navigation />
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+                <div className="flex min-h-screen bg-gray-50 font-sans">
+                    <Navigation />
 
-                <main className="flex-1 overflow-auto">
-                    <Routes>
-                        <Route path="/" element={<Placeholder title="Dashboard Overview" />} />
-                        <Route path="/research/*" element={<Placeholder title="Stage 1: Research Hub" />} />
-                        <Route path="/curation/*" element={<Placeholder title="Stage 2: Curation Board" />} />
-                        <Route path="/production/*" element={<Placeholder title="Stage 3: Production Studio" />} />
-                        <Route path="/settings" element={<Settings />} />
-                    </Routes>
-                </main>
-            </div>
-        </BrowserRouter>
+                    <main className="flex-1 overflow-auto">
+                        <Routes>
+                            <Route path="/" element={<Placeholder title="Dashboard Overview" />} />
+                            <Route path="/research/*" element={<Research />} />
+                            <Route path="/curation/*" element={<Placeholder title="Stage 2: Curation Board" />} />
+                            <Route path="/production/*" element={<Placeholder title="Stage 3: Production Studio" />} />
+                            <Route path="/settings" element={<Settings />} />
+                        </Routes>
+                    </main>
+                </div>
+            </BrowserRouter>
+        </QueryClientProvider>
     );
 }
 

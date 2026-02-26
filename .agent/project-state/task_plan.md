@@ -17,16 +17,16 @@ This document outlines the phased implementation plan for the YouTube Movie Fact
 - [ ] Verify End-to-End: Health endpoint green, Celery worker starts, CometAPI test succeeds.
 
 ## Phase 2: Research Pipeline
-- [ ] Backend Services:
-  - [ ] `services/youtube.py` (search_videos, get_video_details)
-  - [ ] `services/research_filter.py` (duration, relevance, quality filters)
-  - [ ] `services/cometapi.py` (Gemini scoring)
-  - [ ] `tasks/research.py` (Celery chain tasks)
-- [ ] API Endpoints: `POST /api/research/jobs`, `GET` endpoints
-- [ ] Frontend React Research Hub:
-  - [ ] Genre input form
-  - [ ] Ranked video card grid (thumbnail, title, channel, score, reasoning, select)
-- [ ] Verify End-to-End: Genre input yields ranked videos with Gemini scores.
+- [x] Backend Services:
+  - [x] `services/youtube_service.py` (search, transcript, metadata)
+  - [x] `services/ai_service.py` (CometAPI + Claude analysis)
+  - [x] `tasks/research.py` (Celery orchestration)
+- [x] API Endpoints: `POST /api/research/start`, `GET` endpoints
+- [x] Frontend React Research Hub:
+  - [x] Topic input form
+  - [x] Job list and status tracking
+  - [x] Analysis viewer and source video grid
+- [ ] Verify End-to-End: Topic input yields analysis and transcripts correctly.
 
 ## Phase 3: Curation & Creative Brief
 - [ ] Backend Services:

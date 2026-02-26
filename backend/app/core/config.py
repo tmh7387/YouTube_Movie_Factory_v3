@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str
     
     # --- YouTube API ---
+    YOUTUBE_API_KEY: str
     YOUTUBE_CLIENT_ID: str
     YOUTUBE_CLIENT_SECRET: str
     YOUTUBE_REDIRECT_URI: str
