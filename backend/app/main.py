@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import health
+from app.api import health, research, curation
 from app.core.config import settings
 import logging
 
@@ -29,6 +29,7 @@ app.add_middleware(
 # Include routers
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(research.router, prefix="/api/research", tags=["Research"])
+app.include_router(curation.router, prefix="/api/curation", tags=["Curation"])
 
 @app.on_event("startup")
 async def startup_event():

@@ -1,7 +1,11 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, Layers } from 'lucide-react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, ClipboardCheck } from 'lucide-react';
+import Research from './pages/Research';
+import Curation from './pages/Curation';
 import Settings from './pages/Settings';
+
+const queryClient = new QueryClient();
 
 function Navigation() {
     const location = useLocation();
@@ -9,16 +13,16 @@ function Navigation() {
     const navItems = [
         { path: '/', label: 'Overview', icon: LayoutDashboard },
         { path: '/research', label: 'Research', icon: Search },
-        { path: '/curation', label: 'Curation', icon: Layers },
+        { path: '/curation', label: 'Curation', icon: ClipboardCheck },
         { path: '/production', label: 'Production', icon: Clapperboard },
         { path: '/settings', label: 'Settings', icon: SettingsIcon },
     ];
 
     return (
-        <nav className="bg-gray-900 text-white w-64 min-h-screen flex flex-col pt-8">
+        <nav className="bg-gray-900 text-white w-64 min-h-screen flex flex-col pt-8 shadow-xl">
             <div className="px-6 mb-10">
-                <h1 className="text-xl font-bold tracking-tight">YM Factory v3</h1>
-                <p className="text-xs text-gray-400 mt-1">Autonomous Video Engine</p>
+                <h1 className="text-xl font-bold tracking-tight text-blue-400">YM Factory v3</h1>
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 mt-1 font-bold">Autonomous Video Engine</p>
             </div>
 
             <div className="flex-1 flex flex-col gap-2 px-4">
@@ -31,13 +35,13 @@ function Navigation() {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                ? 'bg-blue-600 text-white shadow-sm'
-                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                                }`}
+                            className={`flex items - center gap - 3 px - 4 py - 3 rounded - xl transition - all duration - 200 ${isActive
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+                                } `}
                         >
-                            <Icon className="w-5 h-5" />
-                            <span className="font-medium">{item.label}</span>
+                            <Icon className={`w - 5 h - 5 ${isActive ? 'text-white' : 'text-gray-500'} `} />
+                            <span className="font-semibold text-sm">{item.label}</span>
                         </Link>
                     );
                 })}
@@ -57,14 +61,14 @@ function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-                <div className="flex min-h-screen bg-gray-50 font-sans">
+                <div className="flex min-h-screen bg-[#0f1117] text-gray-100 font-sans">
                     <Navigation />
 
                     <main className="flex-1 overflow-auto">
                         <Routes>
                             <Route path="/" element={<Placeholder title="Dashboard Overview" />} />
                             <Route path="/research/*" element={<Research />} />
-                            <Route path="/curation/*" element={<Placeholder title="Stage 2: Curation Board" />} />
+                            <Route path="/curation/*" element={<Curation />} />
                             <Route path="/production/*" element={<Placeholder title="Stage 3: Production Studio" />} />
                             <Route path="/settings" element={<Settings />} />
                         </Routes>
