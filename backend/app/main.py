@@ -1,3 +1,9 @@
+import asyncio
+import sys
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
@@ -11,9 +17,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Fix Windows SelectorEventLoop for psycopg async
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+# Fix moved to top
 
 from app.api import health, research, curation
 from app.core.config import settings
