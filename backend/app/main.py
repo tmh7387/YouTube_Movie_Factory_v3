@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Fix moved to top
 
-from app.api import health, research, curation
+from app.api import health, research, curation, production
 from app.core.config import settings
 
 app = FastAPI(
@@ -41,6 +41,7 @@ app.add_middleware(
 app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(research.router, prefix="/api/research", tags=["Research"])
 app.include_router(curation.router, prefix="/api/curation", tags=["Curation"])
+app.include_router(production.router, prefix="/api/production", tags=["Production"])
 
 @app.on_event("startup")
 async def startup_event():
