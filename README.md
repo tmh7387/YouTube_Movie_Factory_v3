@@ -10,7 +10,7 @@ See `docs/YouTube_Movie_Factory_v3.docx` for the full technical specifications.
 1. Set up `.env` from `.env.example`
 2. `cd backend`
 3. `python -m venv venv`
-4. `source venv/Scripts/activate` (Windows)
+4. `.\venv\Scripts\Activate.ps1` (Windows PowerShell) or `.\venv\Scripts\activate.bat` (Command Prompt)
 5. `pip install -r requirements.txt`
 6. Run server: `uvicorn app.main:app --reload`
 7. Run worker: `celery -A tasks.celery_app worker --loglevel=info`

@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import health, research, curation
-from app.core.config import settings
 import logging
+import sys
+import asyncio
 
 # Configure logging
 logging.basicConfig(
@@ -10,6 +10,13 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# Fix Windows SelectorEventLoop for psycopg async
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+from app.api import health, research, curation
+from app.core.config import settings
 
 app = FastAPI(
     title="YouTube Movie Factory v3 API",

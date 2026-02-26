@@ -4,6 +4,20 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-[#0f1117] text-gray-100;
   }
+}
+
+/* Custom scrollbar for premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-700 rounded-full hover:bg-gray-600 transition-colors;
 }
