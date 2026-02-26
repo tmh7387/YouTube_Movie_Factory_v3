@@ -106,7 +106,21 @@ const Curation: React.FC = () => {
                                 className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden"
                             >
                                 {selectedJob.status === 'completed' && selectedJob.creative_brief ? (
-                                    <BriefDetail brief={selectedJob.creative_brief} />
+                                    <>
+                                        <BriefDetail brief={selectedJob.creative_brief} />
+                                        <div className="p-8 border-t border-white/10 bg-blue-600/10 flex justify-end">
+                                            <button
+                                                onClick={() => {
+                                                    // Handle production start
+                                                    window.location.href = '/production';
+                                                }}
+                                                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95"
+                                            >
+                                                <Sparkles className="w-5 h-5" />
+                                                Start Production Pipeline
+                                            </button>
+                                        </div>
+                                    </>
                                 ) : (
                                     <div className="p-20 flex flex-col items-center justify-center text-center">
                                         {selectedJob.status === 'error' ? (

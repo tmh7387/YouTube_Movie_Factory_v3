@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, ClipboardCheck } from 'lucide-react';
 import Research from './pages/Research';
 import Curation from './pages/Curation';
+import Production from './pages/Production';
 import Settings from './pages/Settings';
 
 const queryClient = new QueryClient();
@@ -69,7 +70,7 @@ function App() {
                             <Route path="/" element={<Placeholder title="Dashboard Overview" />} />
                             <Route path="/research/*" element={<Research />} />
                             <Route path="/curation/*" element={<Curation />} />
-                            <Route path="/production/*" element={<Placeholder title="Stage 3: Production Studio" />} />
+                            <Route path="/production/*" element={<Production />} />
                             <Route path="/settings" element={<Settings />} />
                         </Routes>
                     </main>
