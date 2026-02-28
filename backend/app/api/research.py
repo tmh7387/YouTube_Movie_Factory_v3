@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, delete
 from typing import List
 from app.db.session import get_db
 from app.models import ResearchJob, ResearchVideo
@@ -19,9 +19,14 @@ class ResearchCreate(BaseModel):
 class ResearchVideoSchema(BaseModel):
     video_id: str
     title: str
+    channel: str | None = None
     view_count: int | None = None
+    likes: int | None = None
+    duration_seconds: int | None = None
     published_at: datetime | None = None
     thumbnail_url: str | None = None
+    relevance_score: int | None = None
+    gemini_reasoning: str | None = None
 
     class Config:
         from_attributes = True
@@ -80,11 +85,38 @@ async def get_research_job(job_id: UUID, db: AsyncSession = Depends(get_db)):
         ResearchVideoSchema(
             video_id=v.video_id,
             title=v.title,
+            channel=v.channel,
             view_count=v.views,
+            likes=v.likes,
+            duration_seconds=v.duration_seconds,
             published_at=v.published_at,
-            thumbnail_url=v.thumbnail_url
+            thumbnail_url=v.thumbnail_url,
+            relevance_score=v.relevance_score,
+            gemini_reasoning=v.gemini_reasoning
         )
         for v in videos
     ]
     
     return job_detail
+
+@router.delete("/{job_id}")
+async def delete_research_job(job_id: UUID, db: AsyncSession = Depends(get_db)):
+    """Delete a specific research job and its associated videos."""
+    job_result = await db.execute(select(ResearchJob).where(ResearchJob.id == job_id))
+    job = job_result.scalar_one_or_none()
+    
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+        
+    from app.models import CurationJob
+    curation_result = await db.execute(select(CurationJob).where(CurationJob.research_job_id == job_id))
+    if curation_result.first():
+        raise HTTPException(status_code=400, detail="Cannot delete this research project because it is being used in a curation job.")
+        
+    # Delete associated videos first to satisfy foreign key constraint
+    await db.execute(delete(ResearchVideo).where(ResearchVideo.job_id == job_id))
+    
+    await db.delete(job)
+    await db.commit()
+    
+    return {"message": "Job deleted successfully"}

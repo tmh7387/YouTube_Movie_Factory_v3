@@ -1,0 +1,422 @@
+YouTube Movie Factory v3
+Research Hub — UI Redesign Specification
+This document describes every visual and behavioural change required for the redesigned Research Hub page (
+frontend/src/pages/Research.tsx
+).  It is intentionally code-free: it describes what the developer should build, not how to build it.
+Audience: 
+Frontend developer implementing the React/Tailwind changes.
+Scope: 
+Research page only.  Navigation, Settings, Curation, and Production pages are unchanged.
+Change Priority Legend
+🔴  REQUIRED
+Must be implemented — core functionality or layout skeleton
+🟡  ENHANCED
+Strong improvement; implement if time allows
+🟢  NICE-TO-HAVE
+Polish / delight — lowest priority
+1  
+Layout Architecture
+Replace the existing 2-column layout with a fixed 3-column horizontal design
+Current state: 
+1 narrow sidebar (job list) + 1 wide detail panel requiring heavy vertical scrolling.
+Target state: 
+3 fixed columns — no horizontal scrolling, minimal vertical scrolling within each column.
+1.1  Three-Column Grid
+Column A
+~22% width
+Column B
+~40% width
+Column C
+~38% width
+• New project form
+• Analysis log (collapsible)
+• Log filter controls
+• Selected job title + status
+• Tab bar (Analysis / Ranking / Sources)
+• Active tab content pane
+• Discovered source video cards
+• Selection checkboxes
+• Start Curation CTA
+Important: 
+All three columns must be independently scrollable within the viewport height.  The page header ("Research Hub" h1) and the column headers stay fixed; only the content inside each column scrolls.
+1.2  Column A — Left Panel
+Column A is always visible but the Analysis Log section inside it is collapsible (see §2.2).  The column itself never disappears.
+Max width
+~280 px (approx 22% on a 1280 px viewport)
+Background
+bg-gray-900 / bg-white/5 (matches existing sidebar style)
+Top section
+New Video Project form — identical to today's form, no changes
+Bottom section
+Collapsible Analysis Log (see §2.2)
+1.3  Column B — Centre Panel
+Centre panel shows the AI narrative and ranking data for the currently selected analysis.
+Empty state
+Illustration + "Select an analysis" prompt when nothing is selected
+Loaded state
+Job title, status badge, creation date at the top, then a tab bar
+Tab bar
+Three tabs: Analysis | Ranking Report | Sources (Sources tab is secondary — primary source view is Column C)
+Tab: Analysis
+AI Narratives & Synthesis text block (existing purple callout style)
+Tab: Ranking
+Sortable scoring table (see §3)
+Tab: Sources
+Mirror of Column C for narrow-viewport fallback only
+1.4  Column C — Right Panel
+Right panel shows the discovered source videos with selection checkboxes and the Start Curation CTA.
+Empty state
+Faded placeholder grid of 4 ghost cards
+Loaded state
+Responsive grid of source video cards (see §4)
+Footer
+Sticky "Start Curation" bar at the bottom of the column (see §5)
+2  
+Column A — Analysis Log
+Redesign the job list into a collapsible, filterable log
+2.1  Log Header Row
+Replace the static "Previous Analyses" label with an interactive header:
+Left side
+Label: "Analysis Log" (10px uppercase, gray-500)
+Right side
+Two icon buttons side-by-side:
+  ↳ Filter icon
+Opens the filter popover (§2.3)
+  ↳ Chevron icon
+Toggles the log collapsed / expanded.  Chevron rotates 180° when collapsed.
+2.2  Collapsible Behaviour  🔴  REQUIRED
+Expanded (default): 
+Log shows the full scrollable list of job entries, max-height 60 vh with internal scroll.
+Collapsed: 
+Log collapses to show only its header row (about 36 px tall). Column A shrinks accordingly but the New Project form above stays visible.
+Persist state: 
+Store collapsed/expanded state in localStorage so it survives page refresh.
+Animation: 
+Smooth height transition (200 ms ease-out) when expanding/collapsing.
+2.3  Log Filter Controls  🟡  ENHANCED
+A compact filter bar slides in below the log header when the filter icon is clicked:
+Status filter
+Multi-select pill buttons: All | Completed | Searching | Analyzing | Failed | Pending
+Clear button
+"Clear all" text link — resets filter to All and removes all pinned failure entries
+Behaviour
+Filter applies client-side to the already-fetched jobs list; no API call needed
+2.4  Failed Job Entry Treatment  🔴  REQUIRED
+Failed entries need more information and a recovery action.  Each failed job card must show:
+Red left-border accent (border-l-2 border-red-500)
+Job name (truncated) + red FAILED badge
+Error reason in small text — one line, e.g. "YouTube quota exceeded" or "No transcripts found"
+A Retry button (small, ghost style) that re-fires the same topic through the API
+A Dismiss (×) icon button that removes the entry from the visible list (client-side hide, not API delete)
+Data source for error reason: 
+The backend already returns an error_message field on failed jobs.  Surface it in the card.  Truncate to 60 chars with a tooltip showing the full message on hover.
+2.5  Pending / In-Progress Job Entry Treatment
+Show a subtle animated pulse border (border-blue-500/50, opacity keyframe animation) instead of a static badge
+Show a compact progress label: "Searching…" or "Analyzing…" with a spinning Loader2 icon (12 px)
+No dismiss button on in-progress jobs; only a Cancel button that calls the cancel API endpoint if one exists, otherwise disabled
+2.6  Selected Job Highlight
+Active entry: blue-600/10 background + solid blue-500 right-border (border-r-2) — identical to current behaviour
+Clicking a completed job loads its data into Column B and Column C simultaneously
+3  
+Ranking Report Tab
+Sortable table surfacing Gemini scoring data per video
+3.1  Tab Placement
+The Ranking Report tab sits in the tab bar inside Column B, between "Analysis" and "Sources":
+Analysis
+Ranking Report
+Sources
+3.2  Table Columns  🔴  REQUIRED
+The table must include the following columns in left-to-right order:
+Column
+Width
+Sortable?
+Default Sort
+Data field
+Format
+Notes
+Thumbnail + Title
+~30%
+Title only
+Score ↓
+title
+40×40 thumb + 2-line title
+Thumbnail links to YouTube
+Gemini Score
+~10%
+Yes
+Primary
+relevance_score
+87/100 with colour bar
+Green ≥70, amber 40–69, red <40
+Views
+~10%
+Yes
+—
+view_count
+1.2M / 340K / 8.5K
+Compact SI suffix format
+Likes
+~10%
+Yes
+—
+likes
+45.2K
+Same SI format
+Duration
+~8%
+Yes
+—
+duration_seconds
+0:47 / 3:22
+MM:SS format
+AI Reasoning
+~20%
+No
+—
+gemini_reasoning
+Truncated + expand on click
+Max 2 lines visible; full text in expandable drawer
+Select
+~6%
+No
+—
+UI state only
+Checkbox
+Synced with Column C card checkboxes
+3.3  Sort Behaviour
+Click column header to sort ascending; click again to sort descending; third click resets to default (Score desc)
+Show a small ▲ or ▼ arrow inside the header of the active sort column
+All sorting is client-side; do not re-fetch from API
+3.4  Score Visualisation  🟡  ENHANCED
+Each Gemini Score cell contains two elements:
+The numeric score: e.g. "87" in large bold text
+A thin horizontal progress bar below it, 100% width of the cell, filled to the score percentage
+Colour logic: ≥70 = green-500, 40–69 = amber-500, <40 = red-500
+4  
+Video Source Cards (Column C)
+Rich video cards with stats, checkboxes, and clear YouTube links
+4.1  Card Layout  🔴  REQUIRED
+Each source video card is a vertical card with three zones:
+Zone 1: Thumbnail
+Full-width 16:9 image. On hover, a semi-transparent overlay appears with a play-button YouTube link icon centred. The entire thumbnail is an anchor tag opening YouTube in a new tab.
+Zone 2: Stats bar
+Single row below the thumbnail: Views | Likes | Duration | Gemini Score.  Each stat is an icon + value pair.  Colour the score with the same green/amber/red logic as the table.
+Zone 3: Metadata
+Video title (2 lines max, gray-200).  Channel name (gray-500, 10px).  Published year (gray-600, 10px, right-aligned).
+4.2  Selection Checkbox  🔴  REQUIRED
+A checkbox appears in the top-left corner of each card (overlaid on the thumbnail):
+Default state: small semi-transparent circle (white/20 background)
+Hover state: circle becomes white/40
+Checked state: filled blue-600 circle with a white checkmark icon
+Selecting a card here also checks its row in the Ranking Report table, and vice versa (shared state)
+Max 5 cards can be selected simultaneously; attempting to select a 6th shows a brief inline toast: "Maximum 5 sources — deselect one first"
+4.3  Card Grid Layout
+Default
+2 columns × N rows inside Column C
+When collapsed log
+Still 2 columns; Column C width does not change when Column A log collapses
+Card border
+border border-white/10, rounded-xl — identical to existing card style
+Selected card
+border-blue-500 border-2 + subtle blue-600/10 background tint
+4.4  YouTube Link Clarity  🟡  ENHANCED
+Thumbnail overlay shows the YouTube icon (red) + "Watch on YouTube" label, not just an external link arrow
+Video ID badge at the bottom of the card is also a hyperlink (monospace text, underlined on hover)
+5  
+Start Curation — CTA Redesign
+Replace the top-right button with a sticky footer bar inside Column C
+5.1  Sticky Footer Bar  🔴  REQUIRED
+Remove the existing top-right "Start Curation" button.  Instead, add a sticky footer bar pinned to the bottom of Column C:
+Visibility
+Always visible once a job is selected; greyed out / disabled when 0 videos are selected
+Selection count
+Left side: "X of 5 sources selected" (X updates reactively as user checks/unchecks cards)
+CTA button
+Right side: "Curate Selected →" — green-600, disabled-opacity-50 when count = 0
+Disabled tooltip
+On hover when disabled: "Select at least one source video to continue"
+Enabled action
+Clicking fires curationService.startCuration(jobId, selectedVideoIds) and navigates to /curation
+API Note: 
+The selectedVideoIds array should contain the video_id strings from the checked cards, not the internal UUID of research_videos.  Confirm the backend curation endpoint accepts these IDs in the selected_video_ids body field.
+5.2  Removed Element
+The top-right 
+Start Curation
+ button that currently appears in the Column B header when a job is completed must be 
+removed entirely
+.  The sticky Column C footer bar replaces it completely.
+6  
+Column B — Tab Bar & Analysis Tab
+Tabbed detail panel replaces the current flat scroll layout
+6.1  Tab Bar
+Tabs
+Analysis  |  Ranking Report  |  Sources
+Active tab style
+Blue-600 background, white text, bottom border removed (merges with content)
+Inactive tab style
+Transparent background, gray-400 text, hover: white/5 background
+Tab bar position
+Directly below the job title / status header, full width of Column B
+Default active tab
+"Analysis" when a job is first selected
+6.2  Analysis Tab Content
+Identical to the current AI Narratives & Synthesis section, with minor improvements:
+Retain: 
+Purple-900/10 background, purple-500/20 border, italic text, whitespace-pre-wrap
+Add: 
+Word count indicator in top-right corner of the text block (e.g. "~340 words") in gray-500
+Add: 
+"Copy" icon button in top-right that copies the full narrative to clipboard with a brief "Copied!" confirmation
+6.3  Sources Tab
+The Sources tab inside Column B is a simplified list view (not a grid) intended as a fallback for narrow viewports or when the user wants a compact reference alongside the analysis text:
+Show a simple numbered list of video titles with their YouTube links
+This tab is secondary — the primary source interaction happens in Column C
+6.4  Job Header (top of Column B)
+Job title
+Large (text-2xl bold) — truncated at 1 line with tooltip for overflow
+Row 2
+Status badge + creation date ("Created Jan 14, 2025") + video count ("9 sources found")
+Background
+bg-gradient-to-r from-blue-900/10 to-transparent, subtle top accent line (border-t-2 border-blue-500/30)
+7  
+Empty & Loading States
+Ensure every state is handled gracefully
+7.1  No Job Selected (All three columns)
+Column A
+No change from current — form is always visible
+Column B
+Centred illustration + "Select an analysis from the log →" text + subtle arrow pointing left
+Column C
+2×2 ghost card grid (skeleton loaders, animated pulse) + faded label "Discovered Sources will appear here"
+7.2  Job Loading (After selection, before data arrives)
+Column B
+Full-height skeleton: title bar skeleton + 3 tab skeletons + content area skeleton (3 text lines)
+Column C
+Same ghost card grid as empty state, but with a "Loading sources…" label
+7.3  In-Progress Jobs (searching / analyzing)
+Column B Analysis tab
+Show partial narrative if available, else progress message with animated spinner
+Column C
+Show whatever videos have been discovered so far; add a "Finding more sources…" banner at the top of the grid
+Auto-refresh
+Column B and C both re-poll every 3 s while the job status is not completed/failed — existing behaviour retained
+7.4  Failed Job (Column B)
+When a failed job is selected:
+Column B shows a red error state with the error_message prominently displayed
+A "Retry this topic" button (same style as the current Start Curation button) fires a new research job with the same genre_topic
+Column C shows an empty ghost grid
+8  
+Interaction Summary
+Complete list of user actions and expected system responses
+User Action
+Immediate UI Change
+API / Side Effect
+Submit new topic form
+New entry appears at top of log with pulse animation; job auto-selected
+POST /api/research/start
+Click log entry (completed)
+Column B + C load that job's data; any previously checked cards are deselected
+GET /api/research/{id}
+Click log entry (failed)
+Column B shows error state; Column C empty
+GET /api/research/{id}
+Collapse log (chevron)
+Log collapses to header; chevron rotates; state saved to localStorage
+None
+Open log filter
+Filter bar slides down below log header
+None — client-side filter
+Click status filter pill
+Log list filters to matching statuses
+None
+Click Retry on failed entry
+New in-progress entry appears; failed entry stays until dismissed
+POST /api/research/start
+Dismiss failed entry (×)
+Entry fades out and is removed from list
+None (client-side hide)
+Click video card checkbox
+Card gets blue border; count in footer bar updates; Ranking table row checks
+None
+Click ranking table checkbox
+Column C card gets blue border; count updates
+None
+Click column sort header
+Table rows re-sort; active column shows ▲/▼ arrow
+None — client-side
+Click "Curate Selected →"
+Button shows spinner; navigate to /curation on success
+POST /api/curation/start
+9  
+Styling & Token Reference
+Use existing Tailwind classes — no new design tokens required
+9.1  Colour Token Mapping
+All new elements must use only these existing colour tokens from the app:
+Intent
+Tailwind Class(es)
+Usage Context
+Page background
+bg-[#0f1117]
+Entire page
+Panel background
+bg-white/5
+All column panels
+Panel border
+border border-white/10
+All column panels
+Primary accent
+bg-blue-600 / text-blue-400
+Active states, CTAs, active tabs
+Success
+bg-green-600 / text-green-400
+Curation CTA, score ≥70
+Warning
+bg-amber-500 / text-amber-400
+Score 40–69, in-progress states
+Error
+bg-red-600/20 text-red-400 border-red-500
+Failed jobs, score <40
+AI Narrative
+bg-purple-900/10 border-purple-500/20
+Analysis tab content block
+Tab active
+bg-blue-600 text-white
+Active tab button
+Tab inactive
+text-gray-400 hover:bg-white/5
+Inactive tab buttons
+Selected card
+border-blue-500 border-2 bg-blue-600/10
+Checked video cards
+9.2  Animation Tokens
+Log collapse
+transition-all duration-200 ease-out on the log container height
+In-progress pulse
+animate-pulse on the border of in-progress job entries
+Card hover
+hover:border-white/20 transition-all (existing)
+Spinner
+animate-spin on Loader2 icon (existing)
+Toast
+Appear with opacity-0 → opacity-100 in 150 ms; auto-dismiss after 3 s
+Tab switch
+opacity fade: opacity-0 → opacity-100 in 100 ms when tab content changes
+9.3  Responsive Breakpoints
+≥ 1280 px (xl)
+Full 3-column layout (22% / 40% / 38%)
+1024–1279 px (lg)
+Column A collapses to log-only mode (icon bar); Columns B + C split 45%/55%
+< 1024 px (md/sm)
+Single column: Columns A, B, C stack vertically.  Sources tab in Column B is the primary source view.
+10  
+Out of Scope
+Changes explicitly excluded from this specification
+The following items are intentionally excluded from this specification:
+Backend API changes — all data already exists in the API responses
+Curation page changes — out of scope
+Production page changes — out of scope
+Navigation / App.tsx changes — out of scope
+New Tailwind config or custom CSS — use only existing utility classes
+Dark/light mode toggle — app is dark-mode only
+Video download or transcript viewing from the Research page
+End of Specification  —  YouTube Movie Factory v3  —  Research Hub UI Redesign

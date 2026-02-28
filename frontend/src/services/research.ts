@@ -5,9 +5,14 @@ const API_BASE_URL = 'http://localhost:8000/api/research';
 export interface ResearchVideo {
     video_id: string;
     title: string;
+    channel: string | null;
     view_count: number | null;
+    likes: number | null;
+    duration_seconds: number | null;
     published_at: string | null;
     thumbnail_url?: string;
+    relevance_score: number | null;
+    gemini_reasoning: string | null;
 }
 
 export interface ResearchJob {
@@ -36,5 +41,9 @@ export const researchApi = {
     getJob: async (jobId: string): Promise<ResearchJobDetail> => {
         const response = await axios.get(`${API_BASE_URL}/${jobId}`);
         return response.data;
+    },
+
+    deleteJob: async (jobId: string): Promise<void> => {
+        await axios.delete(`${API_BASE_URL}/${jobId}`);
     }
 };
