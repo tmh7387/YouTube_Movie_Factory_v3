@@ -19,8 +19,9 @@ class ResearchCreate(BaseModel):
 class ResearchVideoSchema(BaseModel):
     video_id: str
     title: str
-    view_count: int | None
-    published_at: datetime | None
+    view_count: int | None = None
+    published_at: datetime | None = None
+    thumbnail_url: str | None = None
 
     class Config:
         from_attributes = True
@@ -74,7 +75,16 @@ async def get_research_job(job_id: UUID, db: AsyncSession = Depends(get_db)):
     videos = video_result.scalars().all()
     
     # Manually attach videos for the response model
-    job_detail = ResearchJobDetail.from_orm(job)
-    job_detail.videos = [ResearchVideoSchema.from_orm(v) for v in videos]
+    job_detail = ResearchJobDetail.model_validate(job)
+    job_detail.videos = [
+        ResearchVideoSchema(
+            video_id=v.video_id,
+            title=v.title,
+            view_count=v.views,
+            published_at=v.published_at,
+            thumbnail_url=v.thumbnail_url
+        )
+        for v in videos
+    ]
     
     return job_detail
