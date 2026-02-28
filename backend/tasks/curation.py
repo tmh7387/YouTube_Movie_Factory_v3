@@ -1,7 +1,7 @@
 import asyncio
 from celery.utils.log import get_task_logger
 from tasks.celery_app import celery_app
-from app.services.ai_service import ai_service
+from app.services.claude_service import claude_service
 from app.db.session import AsyncSessionLocal
 from app.models import ResearchJob, ResearchVideo, CurationJob
 from sqlalchemy import select, update
@@ -44,7 +44,7 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
             
             # 4. Generate Creative Brief
             logger.info(f"Generating brief for topic: {topic}")
-            brief_result = await ai_service.generate_creative_brief(combined_context)
+            brief_result = await claude_service.generate_creative_brief(combined_context)
             
             # 5. Final update
             if "error" in brief_result:

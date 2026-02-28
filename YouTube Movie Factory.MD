@@ -147,7 +147,7 @@ img2video — Fallback 1	SeeDance 1.5 Pro	bytedance-seedance-1-0-pro	POST /volc/
 img2video — Fallback 2	Wan 2.6	wan-2-6-pro	POST /v1/videos/generations
 Music Generation	Suno V5	suno-v5	POST /v1/audio/generations
 LLM Research Scoring	Gemini	gemini-1.5-flash	POST /v1/chat/completions
-LLM Creative/SEO	Claude (direct)	claude-opus-4-5	Anthropic SDK (direct)
+LLM Creative/SEO	Claude (direct)	claude-opus-4-6	Anthropic SDK (direct)
 
 3.2 CometAPI Service Class Structure
 # services/cometapi.py
@@ -582,7 +582,7 @@ Paste this complete prompt at the start of your Antigravity IDE build session.
 ▶ CLAUDE API PATTERNS
   # Creative Brief generation:
   response = client.messages.create(
-    model='claude-opus-4-5', max_tokens=4000,
+    model='claude-opus-4-6', max_tokens=4000,
     system='Return ONLY valid JSON matching CreativeBrief schema. No markdown.',
     messages=[{'role':'user','content': [
       {'type':'text','text': brief_prompt},
@@ -591,7 +591,7 @@ Paste this complete prompt at the start of your Antigravity IDE build session.
 
   # Animation decision (per scene):
   response = client.messages.create(
-    model='claude-opus-4-5', max_tokens=500,
+    model='claude-opus-4-6', max_tokens=500,
     system='Return ONLY valid JSON: {method, model, motion_prompt, duration_sec}',
     messages=[{'role':'user','content':[
       {'type':'image','source':{'type':'base64','media_type':'image/png','data':b64}},

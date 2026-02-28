@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     YOUTUBE_REDIRECT_URI: str
     
     # --- Application Settings ---
+    CLAUDE_CREATIVE_MODEL: str = "claude-opus-4-6"
+    CLAUDE_FAST_MODEL: str = "claude-sonnet-4-6"
     DEFAULT_IMAGE_MODEL: str = "nanobananapro"
     DEFAULT_VIDEO_MODEL: str = "kling3"
     
