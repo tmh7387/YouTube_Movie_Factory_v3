@@ -463,7 +463,12 @@ const VideoSourceCard = ({ video, selected, onToggle }: { video: ResearchVideo, 
             `}
         >
             {/* Selection Checkbox indicator (custom) */}
-            <div className={`absolute top-2 left-2 z-10 w-5 h-5 rounded border shadow-sm flex items-center justify-center transition-colors
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onToggle(e);
+                }}
+                className={`absolute top-2 left-2 z-30 w-5 h-5 rounded border shadow-sm flex items-center justify-center transition-colors hover:scale-110 cursor-pointer
                 ${selected ? 'bg-blue-500 border-blue-400 text-white' : 'bg-black/50 border-white/30 text-transparent group-hover:border-white/60'}
             `}>
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -471,20 +476,45 @@ const VideoSourceCard = ({ video, selected, onToggle }: { video: ResearchVideo, 
                 </svg>
             </div>
 
-            <div className="w-44 shrink-0 bg-black relative overflow-hidden">
+            {/* Thumbnail - Now a clickable link */}
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(`https://youtube.com/watch?v=${video.video_id}`, '_blank', 'noopener,noreferrer');
+                }}
+                className="w-44 shrink-0 bg-black relative overflow-hidden group/thumb cursor-pointer z-20"
+                title="Watch on YouTube"
+            >
                 <img
                     src={`https://img.youtube.com/vi/${video.video_id}/mqdefault.jpg`}
                     alt={video.title}
-                    className={`w-full h-full object-cover transition-all duration-500 ${selected ? 'opacity-40 scale-105' : 'opacity-70 group-hover:opacity-100 group-hover:scale-105'} `}
+                    className={`w-full h-full object-cover transition-all duration-500 ${selected ? 'opacity-40 scale-105' : 'opacity-70 group-hover:opacity-100 group-hover:scale-105 group-hover/thumb:scale-110 group-hover/thumb:opacity-100'} `}
                 />
-                <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-mono text-white tracking-wider flex items-center gap-1">
+
+                {/* Play overlay on hover */}
+                <div className="absolute inset-0 bg-black/20 flexitems-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity flex">
+                    <div className="w-10 h-10 m-auto bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-red-500/30">
+                        <Play className="w-4 h-4 ml-1" />
+                    </div>
+                </div>
+
+                <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-mono text-white tracking-wider flex items-center gap-1 z-10">
                     <Play className="w-2.5 h-2.5" />
                     {formatDuration(video.duration_seconds)}
                 </div>
             </div>
-            <div className="p-3 flex-1 min-w-0 flex flex-col justify-between relative pl-4">
+            <div className="p-3 flex-1 min-w-0 flex flex-col justify-between relative pl-4 z-10">
                 <div>
-                    <h4 className={`font-semibold text-sm leading-snug line-clamp-2 transition-colors ${selected ? 'text-blue-100' : 'text-gray-200 group-hover:text-white'}`}>{video.title}</h4>
+                    <h4
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(`https://youtube.com/watch?v=${video.video_id}`, '_blank', 'noopener,noreferrer');
+                        }}
+                        className={`font-semibold text-sm leading-snug line-clamp-2 transition-colors cursor-pointer hover:underline ${selected ? 'text-blue-100' : 'text-gray-200 group-hover:text-white'}`}
+                        title="Watch on YouTube"
+                    >
+                        {video.title}
+                    </h4>
                     <p className="text-[11px] text-gray-400 mt-1 truncate">{video.channel || 'YouTube Source'}</p>
                 </div>
 
@@ -495,16 +525,16 @@ const VideoSourceCard = ({ video, selected, onToggle }: { video: ResearchVideo, 
                     </div>
                 </div>
 
-                <a
-                    href={`https://youtube.com/watch?v=${video.video_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute top-3 right-3 p-1.5 rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(`https://youtube.com/watch?v=${video.video_id}`, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="absolute top-3 right-3 z-30 p-1.5 rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                     title="Watch on YouTube"
                 >
                     <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+                </button>
             </div>
         </div>
     );
