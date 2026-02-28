@@ -29,7 +29,7 @@ class ResearchJobSchema(BaseModel):
     id: UUID
     status: str
     genre_topic: str
-    research_summary: str | None
+    research_summary: str | None = None
     created_at: datetime
     
     class Config:

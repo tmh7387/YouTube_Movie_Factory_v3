@@ -14,6 +14,7 @@ class ResearchJob(Base):
     top_n = Column(Integer, default=10)
     gemini_model = Column(String(100))
     error_message = Column(Text)
+    research_summary = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True))
 
