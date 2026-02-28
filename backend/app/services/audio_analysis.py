@@ -2,8 +2,6 @@ import librosa
 import numpy as np
 import logging
 from typing import Dict, Any, List
-import htrace # Placeholder for tracing if needed
-
 logger = logging.getLogger(__name__)
 
 class AudioAnalysisService:

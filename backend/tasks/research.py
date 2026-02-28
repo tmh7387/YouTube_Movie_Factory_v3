@@ -45,9 +45,9 @@ async def _orchestrate_research(job_id: str, topic: str):
                     job_id=job_id,
                     video_id=video_data['video_id'],
                     title=video_data['title'],
-                    description=video_data['description'],
-                    transcript=transcript,
-                    metadata=video_data
+                    description=video_data.get('description', ''),
+                    thumbnail_url=video_data.get('thumbnail_url', ''),
+                    url=f"https://www.youtube.com/watch?v={video_data['video_id']}"
                 )
                 session.add(rv)
                 if transcript:
@@ -69,7 +69,7 @@ async def _orchestrate_research(job_id: str, topic: str):
                 if "error" in analysis_result:
                      await session.execute(
                         update(ResearchJob).where(ResearchJob.id == job_id).values(
-                            status="error",
+                            status="failed",
                             research_summary=f"AI Analysis error: {analysis_result['error']}"
                         )
                     )
@@ -92,7 +92,7 @@ async def _orchestrate_research(job_id: str, topic: str):
         except Exception as e:
             logger.error(f"Research task failed: {e}", exc_info=True)
             await session.execute(
-                update(ResearchJob).where(ResearchJob.id == job_id).values(status="error", research_summary=str(e))
+                update(ResearchJob).where(ResearchJob.id == job_id).values(status="failed", research_summary=str(e))
             )
             await session.commit()
 

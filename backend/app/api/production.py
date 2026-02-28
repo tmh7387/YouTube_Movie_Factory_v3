@@ -7,7 +7,7 @@ from app.db.session import get_db
 from app.models import ProductionJob, CurationJob, ProductionTrack, ProductionScene
 from pydantic import BaseModel
 from datetime import datetime
-from tasks.production import start_production_job # I'll implement this next
+# from tasks.production import start_production_job # Add this only when Stage 3 is ready
 
 router = APIRouter()
 
@@ -54,8 +54,8 @@ async def start_production(request: ProductionStartRequest, db: AsyncSession = D
     await db.refresh(new_job)
 
     # Trigger Celery task
-    task = start_production_job.delay(str(new_job.id))
-    new_job.celery_task_id = task.id
+    # task = start_production_job.delay(str(new_job.id))
+    # new_job.celery_task_id = task.id
     new_job.status = "queued"
     await db.commit()
 

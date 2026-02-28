@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class AIService:
     def __init__(self):
-        self.comet_api_url = "https://api.cometapi.xyz/v1/chat/completions" # Based on standard gateway patterns
+        self.comet_api_url = "https://api.cometapi.com/v1/chat/completions" # Based on standard gateway patterns
         self.comet_api_key = settings.COMETAPI_API_KEY
         self.anthropic_api_key = settings.ANTHROPIC_API_KEY
 

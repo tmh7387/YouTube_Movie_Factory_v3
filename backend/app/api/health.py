@@ -33,16 +33,8 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         health_status["database"] = f"error: {str(e)}"
         health_status["status"] = "error"
 
-    # 2. Check Redis
-    try:
-        redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
-        await redis_client.ping()
-        health_status["redis"] = "ok"
-        await redis_client.aclose()
-    except Exception as e:
-        health_status["redis"] = f"error: {str(e)}"
-        health_status["status"] = "error"
-        
+    # 2. Check Redis (Disabled since Celery removed for now)
+    health_status["redis"] = "disabled"
     # 3. Check CometAPI
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:

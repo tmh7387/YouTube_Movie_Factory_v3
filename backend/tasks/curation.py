@@ -28,7 +28,7 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
             result = await session.execute(query)
             videos = result.scalars().all()
             
-            transcripts = [v.transcript for v in videos if v.transcript]
+            descriptions = [v.description for v in videos if v.description]
             
             # 3. Fetch ResearchJob summary for extra context
             res_job_result = await session.execute(select(ResearchJob).where(ResearchJob.id == research_job_id))
@@ -39,8 +39,8 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
             
             # Combine context
             combined_context = f"Topic: {topic}\n\nResearch Summary:\n{research_summary}\n\n"
-            if transcripts:
-                combined_context += "Selected Transcripts:\n" + "\n\n---\n\n".join(transcripts[:2]) # Top 2 for detail
+            if descriptions:
+                combined_context += "Selected Video Descriptions:\n" + "\n\n---\n\n".join(descriptions[:2]) # Top 2 for detail
             
             # 4. Generate Creative Brief
             logger.info(f"Generating brief for topic: {topic}")
@@ -50,7 +50,7 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
             if "error" in brief_result:
                 await session.execute(
                     update(CurationJob).where(CurationJob.id == curation_job_id).values(
-                        status="error",
+                        status="failed",
                         creative_brief={"error": brief_result["error"]}
                     )
                 )
@@ -69,7 +69,7 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
         except Exception as e:
             logger.error(f"Curation task failed: {e}", exc_info=True)
             await session.execute(
-                update(CurationJob).where(CurationJob.id == curation_job_id).values(status="error")
+                update(CurationJob).where(CurationJob.id == curation_job_id).values(status="failed")
             )
             await session.commit()
 

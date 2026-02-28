@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import yt_dlp
 import logging
 from googleapiclient.discovery import build
@@ -79,8 +80,12 @@ class YouTubeService:
         """
         url = f"https://www.youtube.com/watch?v={video_id}"
         
+        jobs_dir = Path(__file__).parent.parent.parent / "jobs"
+        if not jobs_dir.exists():
+            jobs_dir.mkdir(parents=True, exist_ok=True)
+            
         # Temporary file for transcript
-        transcript_path = os.path.join(settings.JOB_FILES_DIR, f"transcript_{video_id}")
+        transcript_path = os.path.join(str(jobs_dir), f"transcript_{video_id}")
         
         ydl_opts = {
             'skip_download': True,
@@ -93,8 +98,6 @@ class YouTubeService:
         }
         
         try:
-            if not os.path.exists(settings.JOB_FILES_DIR):
-                os.makedirs(settings.JOB_FILES_DIR)
                 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([url])
