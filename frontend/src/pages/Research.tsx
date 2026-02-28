@@ -128,7 +128,7 @@ const Research = () => {
                                     className={`w - full text - left p - 4 hover: bg - white / 5 transition - colors flex items - center justify - between group ${selectedJobId === job.id ? 'bg-blue-600/10 border-r-4 border-blue-500' : ''} `}
                                 >
                                     <div className="truncate pr-4">
-                                        <p className="font-semibold text-gray-200 truncate group-hover:text-white">{job.video_topic}</p>
+                                        <p className="font-semibold text-gray-200 truncate group-hover:text-white">{job.genre_topic}</p>
                                         <p className="text-[10px] text-gray-500 mt-1 flex items-center gap-1 font-medium">
                                             <Clock className="w-3 h-3" />
                                             {new Date(job.created_at).toLocaleDateString()}
@@ -154,7 +154,7 @@ const Research = () => {
                                 <div className="p-8">
                                     <div className="flex items-start justify-between mb-8 pb-6 border-b border-white/10">
                                         <div>
-                                            <h2 className="text-2xl font-bold text-white">{selectedJob.video_topic}</h2>
+                                            <h2 className="text-2xl font-bold text-white">{selectedJob.genre_topic}</h2>
                                             <div className="flex items-center gap-4 mt-2">
                                                 <JobStatusBadge status={selectedJob.status} />
                                                 <span className="text-gray-500 text-[10px] font-mono uppercase tracking-widest">{selectedJob.id}</span>

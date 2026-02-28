@@ -13,8 +13,7 @@ export interface ResearchVideo {
 export interface ResearchJob {
     id: string;
     status: 'pending' | 'searching' | 'analyzing' | 'completed' | 'failed' | 'error';
-    video_topic: string;
-    research_depth: string;
+    genre_topic: string;
     research_summary: string | null;
     created_at: string;
 }

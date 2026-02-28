@@ -7,7 +7,7 @@ from uuid import UUID
 
 from app.db.session import get_db
 from app.models import ResearchJob, CurationJob, ResearchVideo
-from tasks.curation import start_curation_job
+from tasks.curation import _orchestrate_curation
 
 router = APIRouter()
 
@@ -26,7 +26,7 @@ class CurationJobResponse(BaseModel):
         from_attributes = True
 
 @router.post("/start", response_model=CurationJobResponse)
-async def create_curation_job(req: CurationStartRequest, db: AsyncSession = Depends(get_db)):
+async def create_curation_job(req: CurationStartRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     # 1. Verify research job exists and is completed
     res_job_result = await db.execute(select(ResearchJob).where(ResearchJob.id == req.research_job_id))
     res_job = res_job_result.scalar_one_or_none()
@@ -44,8 +44,8 @@ async def create_curation_job(req: CurationStartRequest, db: AsyncSession = Depe
     await db.commit()
     await db.refresh(curation_job)
     
-    # 3. Trigger Celery Task
-    start_curation_job.delay(str(curation_job.id), str(req.research_job_id), req.selected_video_ids)
+    # 3. Trigger Background Task
+    background_tasks.add_task(_orchestrate_curation, str(curation_job.id), str(req.research_job_id), req.selected_video_ids)
     
     return curation_job
 

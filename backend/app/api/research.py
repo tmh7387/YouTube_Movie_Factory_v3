@@ -5,7 +5,7 @@ from typing import List
 from app.db.session import get_db
 from app.models import ResearchJob, ResearchVideo
 from app.core.config import settings
-from tasks.research import start_research_job
+from tasks.research import _orchestrate_research
 from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime
@@ -28,8 +28,7 @@ class ResearchVideoSchema(BaseModel):
 class ResearchJobSchema(BaseModel):
     id: UUID
     status: str
-    video_topic: str
-    research_depth: str
+    genre_topic: str
     research_summary: str | None
     created_at: datetime
     
@@ -40,20 +39,19 @@ class ResearchJobDetail(ResearchJobSchema):
     videos: List[ResearchVideoSchema] = []
 
 @router.post("/start", response_model=ResearchJobSchema)
-async def start_research(data: ResearchCreate, db: AsyncSession = Depends(get_db)):
-    """Create a new research job and trigger Celery worker."""
+async def start_research(data: ResearchCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+    """Create a new research job and trigger async background task."""
     job = ResearchJob(
-        video_topic=data.topic,
-        research_depth=data.research_depth,
+        genre_topic=data.topic,
         status="pending"
     )
     db.add(job)
     await db.commit()
     await db.refresh(job)
     
-    # Trigger Celery task
-    # Note: job.id is UUID, cast to str for Celery
-    start_research_job.delay(str(job.id), data.topic)
+    # Trigger Background task
+    # Note: job.id is UUID, cast to str
+    background_tasks.add_task(_orchestrate_research, str(job.id), data.topic)
     
     return job
 

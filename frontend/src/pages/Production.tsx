@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import {
     Music,
@@ -44,22 +44,20 @@ interface Track {
 }
 
 const Production = () => {
-    const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-    const queryClient = useQueryClient();
+    const [selectedJobId] = useState<string | null>(null);
 
     // Fetch production jobs
-    const { data: jobs, isLoading: isLoadingJobs } = useQuery({
+    useQuery({
         queryKey: ['production_jobs'],
         queryFn: async () => {
-            // We might need a generic list endpoint, but for now we poll a specific one if we have it
-            // Let's assume we have a list logic or we just show the one we started
-            return [];
+            const response = await axios.get(`${API_BASE_URL}/production/`);
+            return response.data;
         },
         refetchInterval: 5000,
     });
 
     // Fetch specific job details
-    const { data: jobDetails, isLoading: isLoadingDetails } = useQuery({
+    const { data: jobDetails } = useQuery({
         queryKey: ['production_job', selectedJobId],
         queryFn: async () => {
             if (!selectedJobId) return null;
@@ -67,7 +65,10 @@ const Production = () => {
             return response.data;
         },
         enabled: !!selectedJobId,
-        refetchInterval: (data) => (data?.job?.status === 'processing' ? 3000 : false),
+        refetchInterval: (query) => {
+            const data: any = query.state.data;
+            return data?.job?.status === 'processing' ? 3000 : false;
+        },
     });
 
     const getStatusIcon = (status: string) => {

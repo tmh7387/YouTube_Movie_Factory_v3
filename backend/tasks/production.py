@@ -5,7 +5,7 @@ import uuid
 from typing import List, Dict, Any
 from sqlalchemy import select, update
 from tasks.celery_app import celery_app
-from app.db.session import async_session_factory
+from app.db.session import AsyncSessionLocal as async_session_factory
 from app.models import ProductionJob, CurationJob, ProductionScene, ProductionTrack
 from app.services.media_gen_service import media_gen_service
 from app.services.suno_service import suno_service

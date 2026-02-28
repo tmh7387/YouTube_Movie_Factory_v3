@@ -61,6 +61,20 @@ async def start_production(request: ProductionStartRequest, db: AsyncSession = D
 
     return new_job
 
+@router.get("/")
+async def list_production_jobs(skip: int = 0, limit: int = 20, db: AsyncSession = Depends(get_db)):
+    """
+    List all production jobs, ordered by creation date descending.
+    """
+    result = await db.execute(
+        select(ProductionJob)
+        .order_by(ProductionJob.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    jobs = result.scalars().all()
+    return jobs
+
 @router.get("/{job_id}", response_model=Dict[str, Any])
 async def get_production_job(job_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     """
