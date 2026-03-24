@@ -20,10 +20,16 @@ build/
 *.sqlite3
 *.db
 
-# Environment variables
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
+env/.env
+env/credentials.json
+env/token.json
+env/tmp/
+env/logs/
+env/assets/
 
 # ======================
 # Node / Frontend

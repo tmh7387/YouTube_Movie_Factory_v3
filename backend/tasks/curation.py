@@ -8,6 +8,31 @@ from sqlalchemy import select, update
 
 logger = get_task_logger(__name__)
 
+
+def _build_brief_context(res_job) -> str:
+    """Build the creative context block for Claude.
+    Uses Research Brief if present, falls back to topic string."""
+    if not res_job.research_brief:
+        return f"Topic: {res_job.genre_topic}"
+
+    rb = res_job.research_brief
+    parts = [
+        f"Creative Intent: {rb['intent_summary']}",
+        f"Mood: {rb['mood']}",
+        f"Visual Style: {rb['visual_style']}",
+        f"Audio Character: {rb['audio_character']}",
+    ]
+    if rb.get("negative_constraints"):
+        parts.append("Avoid: " + ", ".join(rb["negative_constraints"]))
+    if rb.get("reference_image_descriptions"):
+        parts.append(
+            "Visual References: " + "; ".join(rb["reference_image_descriptions"])
+        )
+    if rb.get("audio_metadata", {}).get("estimated_bpm"):
+        parts.append(f"Target BPM: ~{rb['audio_metadata']['estimated_bpm']}")
+
+    return "\n".join(parts)
+
 async def _orchestrate_curation(curation_job_id: str, research_job_id: str, selected_video_ids: list):
     async with AsyncSessionLocal() as session:
         try:
@@ -37,8 +62,11 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
             topic = res_job.genre_topic if res_job else "Unknown Topic"
             research_summary = res_job.research_summary if res_job else ""
             
+            # Build enhanced context from Research Brief if available
+            brief_context = _build_brief_context(res_job) if res_job else f"Topic: {topic}"
+            
             # Combine context
-            combined_context = f"Topic: {topic}\n\nResearch Summary:\n{research_summary}\n\n"
+            combined_context = f"{brief_context}\n\nResearch Summary:\n{research_summary}\n\n"
             if descriptions:
                 combined_context += "Selected Video Descriptions:\n" + "\n\n---\n\n".join(descriptions[:2]) # Top 2 for detail
             

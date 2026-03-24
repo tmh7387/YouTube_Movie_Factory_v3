@@ -27,9 +27,59 @@ export interface ResearchJobDetail extends ResearchJob {
     videos: ResearchVideo[];
 }
 
+// ── Research Brief types ──────────────────────────────────────────
+
+export interface FilterOverrides {
+    min_duration_sec: number | null;
+    max_duration_sec: number | null;
+    date_after: string | null;
+    min_views: number | null;
+}
+
+export interface AudioMetadata {
+    estimated_bpm: number | null;
+    duration_sec: number | null;
+}
+
+export interface ResearchBriefSchema {
+    intent_summary: string;
+    mood: string;
+    visual_style: string;
+    audio_character: string;
+    youtube_search_queries: string[];
+    filter_overrides: FilterOverrides;
+    negative_constraints: string[];
+    reference_image_descriptions: string[];
+    audio_metadata: AudioMetadata | null;
+}
+
+export interface ResearchBriefResponse {
+    research_brief: ResearchBriefSchema;
+    clarifying_question: string | null;
+    is_complete: boolean;
+}
+
+// ── API methods ───────────────────────────────────────────────────
+
 export const researchApi = {
-    startJob: async (topic: string, depth: string = 'standard'): Promise<ResearchJob> => {
-        const response = await axios.post(`${API_BASE_URL}/start`, { topic, research_depth: depth });
+    startJob: async (
+        topic: string,
+        depth: string = 'standard',
+        researchBrief?: ResearchBriefSchema,
+    ): Promise<ResearchJob> => {
+        const body: Record<string, unknown> = { topic, research_depth: depth };
+        if (researchBrief) {
+            body.research_brief = researchBrief;
+        }
+        const response = await axios.post(`${API_BASE_URL}/start`, body);
+        return response.data;
+    },
+
+    generateBrief: async (formData: FormData): Promise<ResearchBriefResponse> => {
+        const response = await axios.post(`${API_BASE_URL}/brief`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 35000, // 35 sec (30 sec server + buffer)
+        });
         return response.data;
     },
 
@@ -45,5 +95,5 @@ export const researchApi = {
 
     deleteJob: async (jobId: string): Promise<void> => {
         await axios.delete(`${API_BASE_URL}/${jobId}`);
-    }
+    },
 };

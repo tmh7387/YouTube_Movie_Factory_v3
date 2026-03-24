@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     CELERY_CONCURRENCY: int = 8
 
     model_config = SettingsConfigDict(
-        env_file=os.path.join(os.path.dirname(__file__), "..", "..", "..", ".env"),
+        env_file=os.path.join(os.path.dirname(__file__), "..", "..", "..", "env", ".env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )

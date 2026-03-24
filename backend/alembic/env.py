@@ -10,7 +10,7 @@ from alembic import context
 from dotenv import load_dotenv
 
 # Load .env from project root
-load_dotenv(os.path.join(os.getcwd(), "..", ".env"))
+load_dotenv(os.path.join(os.getcwd(), "..", "env", ".env"))
 
 # this is the Alembic Config object
 config = context.config

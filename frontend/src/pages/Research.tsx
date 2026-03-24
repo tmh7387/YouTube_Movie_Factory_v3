@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
     Search,
-    Plus,
     Loader2,
     Clock,
     Youtube,
@@ -24,6 +23,7 @@ import {
 import { researchApi } from '../services/research';
 import type { ResearchVideo } from '../services/research';
 import { curationService } from '../services/curation';
+import { IntakeForm } from '../components/IntakeForm';
 
 const JobStatusBadge = ({ status }: { status: string }) => {
     const styles: Record<string, string> = {
@@ -57,7 +57,6 @@ const formatNumber = (num?: number | null) => {
 };
 
 const Research = () => {
-    const [topic, setTopic] = useState('');
     const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
     const [isLogExpanded, setIsLogExpanded] = useState(() => {
         const saved = localStorage.getItem('researchLogExpanded');
@@ -93,14 +92,6 @@ const Research = () => {
         setExpandedReasoning(null);
     }, [selectedJobId]);
 
-    const startMutation = useMutation({
-        mutationFn: (newTopic: string) => researchApi.startJob(newTopic),
-        onSuccess: () => {
-            setTopic('');
-            queryClient.invalidateQueries({ queryKey: ['research-jobs'] });
-        },
-    });
-
     const curateMutation = useMutation({
         mutationFn: (researchJobId: string) => curationService.startCuration(researchJobId),
         onSuccess: () => {
@@ -118,11 +109,8 @@ const Research = () => {
         }
     });
 
-    const handleStart = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (topic.trim()) {
-            startMutation.mutate(topic);
-        }
+    const handleJobCreated = () => {
+        queryClient.invalidateQueries({ queryKey: ['research-jobs'] });
     };
 
     const toggleVideoSelection = (videoId: string, e: React.MouseEvent) => {
@@ -163,33 +151,8 @@ const Research = () => {
             <div className="flex-1 flex overflow-hidden">
                 {/* Column A: Left Sidebar */}
                 <div className="w-[320px] shrink-0 border-r border-white/10 flex flex-col bg-gray-900/30 overflow-hidden relative">
-                    {/* Top Section: New Job Form */}
-                    <div className="p-5 shrink-0 bg-gray-900/50 shadow-sm z-10 relative">
-                        <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                            <Plus className="w-4 h-4 text-blue-400" />
-                            New Video Project
-                        </h2>
-                        <form onSubmit={handleStart} className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Video Topic</label>
-                                <input
-                                    type="text"
-                                    value={topic}
-                                    onChange={(e) => setTopic(e.target.value)}
-                                    placeholder="e.g. AI Revolution 2025"
-                                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg text-sm text-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-gray-600"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                disabled={startMutation.isPending || !topic.trim()}
-                                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg text-sm shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 group"
-                            >
-                                {startMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4 group-hover:scale-110 transition-transform" />}
-                                Initialize Research
-                            </button>
-                        </form>
-                    </div>
+                    {/* Top Section: IntakeForm */}
+                    <IntakeForm onJobCreated={handleJobCreated} />
 
                     {/* Bottom Section: Analysis Log */}
                     <div className="flex-1 flex flex-col min-h-0 border-t border-white/5 relative bg-black/20">
