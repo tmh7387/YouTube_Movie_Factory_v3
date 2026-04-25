@@ -119,3 +119,40 @@ class SystemConfig(Base):
     description = Column(Text)
     is_secret = Column(Boolean, default=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class TutorialKnowledgeEntry(Base):
+    """
+    One row per ingested tutorial video or external resource (Notion page, etc).
+    Stores the full Gemini analysis plus mined resources from comments/descriptions.
+    """
+    __tablename__ = 'tutorial_knowledge'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    youtube_url = Column(Text, nullable=False)
+    video_id = Column(String(50))
+    # music_video | product_brand | asmr | general
+    category = Column(String(30), default='general')
+    status = Column(String(20), default='pending')  # pending | analyzing | completed | failed
+
+    # Gemini video analysis output
+    gemini_analysis = Column(JSONB)           # full structured JSON from Gemini
+    standout_tip = Column(Text)
+    exact_prompts = Column(JSONB)             # list of verbatim prompts extracted
+    tool_names = Column(JSONB)               # list of AI tools mentioned
+    workflow_steps = Column(JSONB)           # ordered workflow sequence
+    key_settings = Column(JSONB)             # model params / settings found
+    category_specific = Column(JSONB)        # category-focused extraction fields
+    full_technique_summary = Column(Text)    # 2-3 para narrative summary
+
+    # Comment + description resource mining
+    description_resources = Column(JSONB)    # extracted from video description
+    comment_resources = Column(JSONB)        # top resource-bearing comments
+    aggregated_resources = Column(JSONB)     # de-duped URL list across both
+
+    # External resource content fetched and parsed (Notion pages, etc.)
+    external_resources = Column(JSONB)       # {url: {page_title, prompt_library, ...}}
+
+    error_message = Column(Text)
+    gemini_model_used = Column(String(100))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True))
