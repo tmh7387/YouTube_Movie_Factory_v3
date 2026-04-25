@@ -22,6 +22,7 @@ async def _orchestrate_knowledge_ingest(
     category: str,
     extra_context: str = "",
     external_resource_url: Optional[str] = None,
+    pasted_resource_content: Optional[str] = None,
 ):
     async with AsyncSessionLocal() as session:
         try:
@@ -75,9 +76,11 @@ async def _orchestrate_knowledge_ingest(
             if external_resource_url:
                 notion_urls_to_fetch.insert(0, external_resource_url)
 
-            for notion_url in notion_urls_to_fetch[:3]:  # cap at 3 to stay reasonable
-                logger.info(f"[{entry_id}] Extracting Notion page: {notion_url}")
-                extracted = await gemini_service.extract_notion_page_content(notion_url)
+            for i, notion_url in enumerate(notion_urls_to_fetch[:3]):  # cap at 3
+                logger.info(f"[{entry_id}] Extracting resource: {notion_url}")
+                # Pass pasted content only for the first URL (the explicit external_resource_url)
+                content = pasted_resource_content if (i == 0 and external_resource_url) else None
+                extracted = await gemini_service.extract_notion_page_content(notion_url, pasted_content=content)
                 external_resources[notion_url] = extracted
 
             # — Phase 5: save everything —
@@ -119,6 +122,7 @@ def run_knowledge_ingest(
     category: str = "general",
     extra_context: str = "",
     external_resource_url: Optional[str] = None,
+    pasted_resource_content: Optional[str] = None,
 ):
     """Celery entry point — runs the full async knowledge ingestion pipeline."""
     try:
@@ -135,6 +139,7 @@ def run_knowledge_ingest(
                 category=category,
                 extra_context=extra_context,
                 external_resource_url=external_resource_url,
+                pasted_resource_content=pasted_resource_content,
             )
         )
     except Exception as e:

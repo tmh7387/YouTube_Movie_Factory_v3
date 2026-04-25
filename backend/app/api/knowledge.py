@@ -16,8 +16,11 @@ class IngestRequest(BaseModel):
     youtube_url: str
     category: str = "general"
     extra_context: str = ""
-    # Optionally also ingest a Notion/external page alongside the video
+    # To also ingest an external resource (Notion page, Google Doc, etc.)
     external_resource_url: Optional[str] = None
+    # For Notion/SPA pages that block server-side fetches: paste the page text here.
+    # Copy all visible text from the page in your browser and supply it in this field.
+    pasted_resource_content: Optional[str] = None
 
     @field_validator("category")
     @classmethod
@@ -91,6 +94,7 @@ async def ingest_tutorial(request: IngestRequest):
         category=request.category,
         extra_context=request.extra_context,
         external_resource_url=request.external_resource_url,
+        pasted_resource_content=request.pasted_resource_content,
     )
 
     return IngestResponse(

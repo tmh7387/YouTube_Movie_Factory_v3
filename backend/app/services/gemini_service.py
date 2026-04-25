@@ -181,29 +181,45 @@ Respond ONLY with valid JSON — no markdown fences, no commentary outside the J
             logger.error(f"Gemini video analysis failed: {e}", exc_info=True)
             return {"video_url": youtube_url, "category": category, "error": str(e)}
 
-    async def extract_notion_page_content(self, notion_url: str) -> dict:
+    async def extract_notion_page_content(
+        self, notion_url: str, pasted_content: Optional[str] = None
+    ) -> dict:
         """
-        Fetch a public Notion page and use Gemini to extract structured prompt
-        libraries and techniques from it (e.g. the Higgs AI brand prompts page).
-        """
-        # Fetch the raw page HTML
-        try:
-            async with httpx.AsyncClient(timeout=20.0) as client:
-                page_resp = await client.get(
-                    notion_url,
-                    headers={"User-Agent": "Mozilla/5.0 (compatible; VideoFactoryBot/1.0)"},
-                    follow_redirects=True,
-                )
-            if page_resp.status_code != 200:
-                return {"url": notion_url, "error": f"Fetch failed: HTTP {page_resp.status_code}"}
+        Extract structured prompt libraries from a resource page (Notion, Google Doc, etc.).
 
-            # Strip HTML tags for a cleaner text feed to Gemini
-            raw_html = page_resp.text
-            clean_text = re.sub(r"<[^>]+>", " ", raw_html)
+        Two modes:
+        - pasted_content provided: use that text directly (required for Notion/SPA pages
+          which block server-side fetches). User copies page text from browser and pastes it.
+        - pasted_content is None: attempt a direct HTTP fetch (works for plain HTML pages).
+        """
+        clean_text: str
+
+        if pasted_content:
+            # User-pasted text — strip any residual HTML just in case
+            clean_text = re.sub(r"<[^>]+>", " ", pasted_content)
             clean_text = re.sub(r"\s+", " ", clean_text).strip()[:40000]
-
-        except Exception as e:
-            return {"url": notion_url, "error": f"Fetch error: {e}"}
+        else:
+            # Attempt HTTP fetch — works for plain pages; Notion/SPAs will fail
+            try:
+                async with httpx.AsyncClient(timeout=20.0) as client:
+                    page_resp = await client.get(
+                        notion_url,
+                        headers={"User-Agent": "Mozilla/5.0 (compatible; VideoFactoryBot/1.0)"},
+                        follow_redirects=True,
+                    )
+                if page_resp.status_code != 200:
+                    return {
+                        "url": notion_url,
+                        "error": (
+                            f"Fetch failed: HTTP {page_resp.status_code}. "
+                            "For Notion pages, pass pasted_content with the text copied from your browser."
+                        ),
+                    }
+                raw_html = page_resp.text
+                clean_text = re.sub(r"<[^>]+>", " ", raw_html)
+                clean_text = re.sub(r"\s+", " ", clean_text).strip()[:40000]
+            except Exception as e:
+                return {"url": notion_url, "error": f"Fetch error: {e}"}
 
         prompt = f"""You are analysing a Notion page that contains AI video generation resources and prompts.
 
