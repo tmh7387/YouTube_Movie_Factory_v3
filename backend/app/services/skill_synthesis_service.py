@@ -154,10 +154,11 @@ Return ONLY the JSON array, no other text."""
             )
 
             raw = response.content[0].text.strip()
-            # Strip any accidental markdown fences
-            m = re.search(r"```(?:json)?\s*([\s\S]*?)```", raw)
-            if m:
-                raw = m.group(1).strip()
+            # Only strip fences when the whole response is wrapped in them
+            if raw.startswith("```"):
+                m = re.search(r"```(?:json)?\s*([\s\S]*?)```", raw)
+                if m:
+                    raw = m.group(1).strip()
 
             skills_raw = json.loads(raw)
             logger.info(
