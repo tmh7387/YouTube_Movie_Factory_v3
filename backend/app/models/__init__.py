@@ -121,7 +121,50 @@ class SystemConfig(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
-class TutorialKnowledgeEntry(Base):
+class VideoProductionSkill(Base):
+    """
+    A tool-agnostic, reusable production skill synthesized from tutorial analysis.
+    Stored both here (for querying) and as a SKILL.md file on disk (for Git tracking).
+    """
+    __tablename__ = 'video_production_skills'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Slug is the unique filesystem-safe identifier, e.g. "multi-shot-camera-coverage"
+    slug = Column(String(200), unique=True, nullable=False)
+    name = Column(String(200), nullable=False)
+
+    # SKILL.md frontmatter fields
+    description = Column(Text)           # triggering description — what + when to use
+    skill_body = Column(Text)            # full SKILL.md markdown body
+
+    # Categorisation
+    category = Column(String(30))        # music_video | product_brand | asmr | general
+    applicable_video_types = Column(JSONB)  # e.g. ["music_video", "product_brand"]
+    tags = Column(JSONB)                 # e.g. ["consistency", "camera-angles", "storyboard"]
+
+    # Core reusable content
+    prompt_template = Column(Text)       # template with {placeholder} syntax
+    example_prompts = Column(JSONB)      # list of verbatim example prompts
+    workflow_steps = Column(JSONB)       # ordered step-by-step instructions
+
+    # Tool info kept separate so skill body stays tool-agnostic
+    tools_tested_with = Column(JSONB)    # tools where this has been verified
+
+    difficulty = Column(String(20))      # beginner | intermediate | advanced
+
+    # Provenance
+    source_video_url = Column(Text)
+    source_knowledge_entry_id = Column(UUID(as_uuid=True), ForeignKey('tutorial_knowledge.id'))
+
+    # Quality and usage
+    confidence_score = Column(Numeric)   # 0.0–1.0
+    usage_count = Column(Integer, default=0)
+
+    # Path to the SKILL.md file written to skills/ on disk
+    skill_file_path = Column(Text)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     """
     One row per ingested tutorial video or external resource (Notion page, etc).
     Stores the full Gemini analysis plus mined resources from comments/descriptions.
