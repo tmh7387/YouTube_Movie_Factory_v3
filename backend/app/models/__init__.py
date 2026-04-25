@@ -151,3 +151,83 @@ class SystemConfig(Base):
     description = Column(Text)
     is_secret = Column(Boolean, default=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class VideoProductionSkill(Base):
+    """
+    A tool-agnostic, reusable production skill synthesized from tutorial analysis.
+    Stored both here (for querying) and as a SKILL.md file on disk (for Git tracking).
+    """
+    __tablename__ = 'video_production_skills'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Slug is the unique filesystem-safe identifier, e.g. "multi-shot-camera-coverage"
+    slug = Column(String(200), unique=True, nullable=False)
+    name = Column(String(200), nullable=False)
+
+    # SKILL.md frontmatter fields
+    description = Column(Text)           # triggering description — what + when to use
+    skill_body = Column(Text)            # full SKILL.md markdown body
+
+    # Categorisation
+    category = Column(String(30))        # music_video | product_brand | asmr | general
+    applicable_video_types = Column(JSONB)  # e.g. ["music_video", "product_brand"]
+    tags = Column(JSONB)                 # e.g. ["consistency", "camera-angles", "storyboard"]
+
+    # Core reusable content
+    prompt_template = Column(Text)       # template with {placeholder} syntax
+    example_prompts = Column(JSONB)      # list of verbatim example prompts
+    workflow_steps = Column(JSONB)       # ordered step-by-step instructions
+
+    # Tool info kept separate so skill body stays tool-agnostic
+    tools_tested_with = Column(JSONB)    # tools where this has been verified
+
+    difficulty = Column(String(20))      # beginner | intermediate | advanced
+
+    # Provenance
+    source_video_url = Column(Text)
+    source_knowledge_entry_id = Column(UUID(as_uuid=True), ForeignKey('tutorial_knowledge.id'))
+
+    # Quality and usage
+    confidence_score = Column(Numeric)   # 0.0–1.0
+    usage_count = Column(Integer, default=0)
+
+    # Path to the SKILL.md file written to skills/ on disk
+    skill_file_path = Column(Text)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    """
+    One row per ingested tutorial video or external resource (Notion page, etc).
+    Stores the full Gemini analysis plus mined resources from comments/descriptions.
+    """
+    __tablename__ = 'tutorial_knowledge'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    youtube_url = Column(Text, nullable=False)
+    video_id = Column(String(50))
+    # music_video | product_brand | asmr | general
+    category = Column(String(30), default='general')
+    status = Column(String(20), default='pending')  # pending | analyzing | completed | failed
+
+    # Gemini video analysis output
+    gemini_analysis = Column(JSONB)           # full structured JSON from Gemini
+    standout_tip = Column(Text)
+    exact_prompts = Column(JSONB)             # list of verbatim prompts extracted
+    tool_names = Column(JSONB)               # list of AI tools mentioned
+    workflow_steps = Column(JSONB)           # ordered workflow sequence
+    key_settings = Column(JSONB)             # model params / settings found
+    category_specific = Column(JSONB)        # category-focused extraction fields
+    full_technique_summary = Column(Text)    # 2-3 para narrative summary
+
+    # Comment + description resource mining
+    description_resources = Column(JSONB)    # extracted from video description
+    comment_resources = Column(JSONB)        # top resource-bearing comments
+    aggregated_resources = Column(JSONB)     # de-duped URL list across both
+
+    # External resource content fetched and parsed (Notion pages, etc.)
+    external_resources = Column(JSONB)       # {url: {page_title, prompt_library, ...}}
+
+    error_message = Column(Text)
+    gemini_model_used = Column(String(100))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True))

@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     # --- Core API Keys ---
     COMETAPI_API_KEY: str
     ANTHROPIC_API_KEY: str
+    GEMINI_API_KEY: str
+    GEMINI_MODEL: str = "gemini-3.1-pro-preview"
     
     # --- YouTube API ---
     YOUTUBE_API_KEY: str
