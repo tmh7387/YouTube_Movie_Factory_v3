@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, HttpUrl, field_validator
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from sqlalchemy import select, desc
 import uuid
@@ -16,11 +16,6 @@ class IngestRequest(BaseModel):
     youtube_url: str
     category: str = "general"
     extra_context: str = ""
-    # To also ingest an external resource (Notion page, Google Doc, etc.)
-    external_resource_url: Optional[str] = None
-    # For Notion/SPA pages that block server-side fetches: paste the page text here.
-    # Copy all visible text from the page in your browser and supply it in this field.
-    pasted_resource_content: Optional[str] = None
 
     @field_validator("category")
     @classmethod
@@ -44,6 +39,7 @@ class IngestResponse(BaseModel):
 
 
 def _entry_to_dict(e: TutorialKnowledgeEntry) -> dict:
+    notion_links = (e.external_resources or {}).get("notion_links", [])
     return {
         "id": str(e.id),
         "youtube_url": e.youtube_url,
@@ -58,7 +54,12 @@ def _entry_to_dict(e: TutorialKnowledgeEntry) -> dict:
         "category_specific": e.category_specific,
         "full_technique_summary": e.full_technique_summary,
         "aggregated_resources": e.aggregated_resources,
-        "external_resources": e.external_resources,
+        # Notion links found in the video — visit these manually
+        "notion_links_found": notion_links,
+        "notion_links_alert": (
+            f"⚠ {len(notion_links)} Notion resource(s) found — visit manually: {', '.join(notion_links)}"
+            if notion_links else None
+        ),
         "gemini_model_used": e.gemini_model_used,
         "error_message": e.error_message,
         "created_at": e.created_at.isoformat() if e.created_at else None,
@@ -72,7 +73,7 @@ async def ingest_tutorial(request: IngestRequest):
     Submit a YouTube tutorial URL for full analysis:
     - Gemini 3.1 video understanding (techniques, prompts, tools, workflow)
     - Comment and description resource mining
-    - Optional: fetch and parse an external Notion/Google Doc resource
+    - Any Notion links found are surfaced in the response as alerts for manual review.
     Processing runs as a background Celery task.
     """
     from tasks.knowledge import run_knowledge_ingest
@@ -93,8 +94,6 @@ async def ingest_tutorial(request: IngestRequest):
         youtube_url=request.youtube_url,
         category=request.category,
         extra_context=request.extra_context,
-        external_resource_url=request.external_resource_url,
-        pasted_resource_content=request.pasted_resource_content,
     )
 
     return IngestResponse(

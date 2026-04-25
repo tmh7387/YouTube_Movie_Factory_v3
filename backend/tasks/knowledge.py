@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from typing import Optional
 from datetime import datetime, timezone
 
 from celery.utils.log import get_task_logger
@@ -21,8 +20,6 @@ async def _orchestrate_knowledge_ingest(
     youtube_url: str,
     category: str,
     extra_context: str = "",
-    external_resource_url: Optional[str] = None,
-    pasted_resource_content: Optional[str] = None,
 ):
     async with AsyncSessionLocal() as session:
         try:
@@ -34,7 +31,7 @@ async def _orchestrate_knowledge_ingest(
             )
             await session.commit()
 
-            # — Phase 2: extract video_id and mine comments/description —
+            # — Phase 2: mine comments and description for resources —
             video_id = comment_miner_service.extract_video_id(youtube_url)
             logger.info(f"[{entry_id}] Mining resources for video_id={video_id}")
 
@@ -67,21 +64,13 @@ async def _orchestrate_knowledge_ingest(
             if "error" in analysis:
                 raise RuntimeError(f"Gemini analysis error: {analysis['error']}")
 
-            # — Phase 4: fetch and parse external Notion/resource URLs —
-            external_resources = {}
-
-            # Gather Notion pages from both: the explicit external_resource_url param
-            # and any discovered in comments/description
-            notion_urls_to_fetch = list(aggregated.get("notion_pages", []))
-            if external_resource_url:
-                notion_urls_to_fetch.insert(0, external_resource_url)
-
-            for i, notion_url in enumerate(notion_urls_to_fetch[:3]):  # cap at 3
-                logger.info(f"[{entry_id}] Extracting resource: {notion_url}")
-                # Pass pasted content only for the first URL (the explicit external_resource_url)
-                content = pasted_resource_content if (i == 0 and external_resource_url) else None
-                extracted = await gemini_service.extract_notion_page_content(notion_url, pasted_content=content)
-                external_resources[notion_url] = extracted
+            # — Phase 4: collect Notion links — alert user, do not attempt to fetch —
+            notion_links = list({
+                *aggregated.get("notion_pages", []),
+                *[u for u in analysis.get("resource_mentions", []) if "notion." in u],
+            })
+            if notion_links:
+                logger.info(f"[{entry_id}] Notion links found (user action required): {notion_links}")
 
             # — Phase 5: save everything —
             await session.execute(
@@ -97,7 +86,7 @@ async def _orchestrate_knowledge_ingest(
                     key_settings=analysis.get("key_settings", {}),
                     category_specific=analysis.get("category_specific", {}),
                     full_technique_summary=analysis.get("full_technique_summary"),
-                    external_resources=external_resources if external_resources else None,
+                    external_resources={"notion_links": notion_links} if notion_links else None,
                     gemini_model_used=settings.GEMINI_MODEL,
                     completed_at=datetime.now(timezone.utc),
                 )
@@ -121,8 +110,6 @@ def run_knowledge_ingest(
     youtube_url: str,
     category: str = "general",
     extra_context: str = "",
-    external_resource_url: Optional[str] = None,
-    pasted_resource_content: Optional[str] = None,
 ):
     """Celery entry point — runs the full async knowledge ingestion pipeline."""
     try:
@@ -138,8 +125,6 @@ def run_knowledge_ingest(
                 youtube_url=youtube_url,
                 category=category,
                 extra_context=extra_context,
-                external_resource_url=external_resource_url,
-                pasted_resource_content=pasted_resource_content,
             )
         )
     except Exception as e:

@@ -2,7 +2,6 @@ import httpx
 import json
 import logging
 import re
-from typing import Optional
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -181,97 +180,6 @@ Respond ONLY with valid JSON — no markdown fences, no commentary outside the J
             logger.error(f"Gemini video analysis failed: {e}", exc_info=True)
             return {"video_url": youtube_url, "category": category, "error": str(e)}
 
-    async def extract_notion_page_content(
-        self, notion_url: str, pasted_content: Optional[str] = None
-    ) -> dict:
-        """
-        Extract structured prompt libraries from a resource page (Notion, Google Doc, etc.).
-
-        Two modes:
-        - pasted_content provided: use that text directly (required for Notion/SPA pages
-          which block server-side fetches). User copies page text from browser and pastes it.
-        - pasted_content is None: attempt a direct HTTP fetch (works for plain HTML pages).
-        """
-        clean_text: str
-
-        if pasted_content:
-            # User-pasted text — strip any residual HTML just in case
-            clean_text = re.sub(r"<[^>]+>", " ", pasted_content)
-            clean_text = re.sub(r"\s+", " ", clean_text).strip()[:40000]
-        else:
-            # Attempt HTTP fetch — works for plain pages; Notion/SPAs will fail
-            try:
-                async with httpx.AsyncClient(timeout=20.0) as client:
-                    page_resp = await client.get(
-                        notion_url,
-                        headers={"User-Agent": "Mozilla/5.0 (compatible; VideoFactoryBot/1.0)"},
-                        follow_redirects=True,
-                    )
-                if page_resp.status_code != 200:
-                    return {
-                        "url": notion_url,
-                        "error": (
-                            f"Fetch failed: HTTP {page_resp.status_code}. "
-                            "For Notion pages, pass pasted_content with the text copied from your browser."
-                        ),
-                    }
-                raw_html = page_resp.text
-                clean_text = re.sub(r"<[^>]+>", " ", raw_html)
-                clean_text = re.sub(r"\s+", " ", clean_text).strip()[:40000]
-            except Exception as e:
-                return {"url": notion_url, "error": f"Fetch error: {e}"}
-
-        prompt = f"""You are analysing a Notion page that contains AI video generation resources and prompts.
-
-Extract ALL of the following from the page content below:
-1. prompt_library: Every AI prompt listed, exactly as written (verbatim)
-2. tool_references: Any AI tools, models, or platforms mentioned
-3. workflow_guides: Any step-by-step workflows or instructions
-4. tips_and_tricks: Standalone tips, best practices, or notes
-5. page_title: The main title or heading of the page
-6. page_summary: 1-2 sentence description of what this resource is
-
-Respond ONLY with valid JSON:
-{{
-  "url": "{notion_url}",
-  "page_title": "...",
-  "page_summary": "...",
-  "prompt_library": ["verbatim prompt 1", "verbatim prompt 2"],
-  "tool_references": ["tool name", "model name"],
-  "workflow_guides": ["step-by-step guide as found"],
-  "tips_and_tricks": ["tip 1", "tip 2"]
-}}
-
-PAGE CONTENT:
-{clean_text}"""
-
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"maxOutputTokens": 8192, "temperature": 0.1},
-        }
-
-        endpoint = f"{GEMINI_API_BASE}/{self.model}:generateContent"
-        params = {"key": self.api_key}
-
-        try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                resp = await client.post(endpoint, params=params, json=payload)
-
-            if resp.status_code != 200:
-                error_body = resp.json() if resp.content else {}
-                return {"url": notion_url, "error": f"Gemini HTTP {resp.status_code}: {error_body.get('error', {}).get('message', '')}"}
-
-            data = resp.json()
-            raw_text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-            json_match = re.search(r"```(?:json)?\s*([\s\S]*?)```", raw_text)
-            if json_match:
-                raw_text = json_match.group(1).strip()
-
-            return json.loads(raw_text)
-
-        except Exception as e:
-            logger.error(f"Notion extraction failed for {notion_url}: {e}", exc_info=True)
-            return {"url": notion_url, "error": str(e)}
 
 
 gemini_service = GeminiVideoAnalyzerService()
