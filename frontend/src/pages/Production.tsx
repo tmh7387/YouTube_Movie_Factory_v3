@@ -10,13 +10,16 @@ import {
     RefreshCcw,
     Film,
     Layers,
-    Sparkles
+    Sparkles,
+    Download,
+    Package,
+    Cpu,
+    User,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
-// @ts-expect-error -- Will be used in Stage 3 production refactor
 interface ProductionJob {
     id: string;
     curation_job_id: string;
@@ -24,6 +27,7 @@ interface ProductionJob {
     num_scenes: number;
     num_tracks: number;
     created_at: string;
+    upscale_enabled: boolean;
 }
 
 interface Scene {
@@ -32,7 +36,13 @@ interface Scene {
     description: string;
     image_prompt: string;
     image_url: string;
-    status: string;
+    local_video_path?: string;
+    upscaled_video_path?: string;
+    video_engine?: string;
+    stem_energy_hint?: string;
+    character_name?: string;
+    kling_status?: string;
+    seedance_status?: string;
     error_message?: string;
 }
 
@@ -44,8 +54,26 @@ interface Track {
     song_prompt: string;
 }
 
+// Derive a unified video status across engines
+function videoStatus(scene: Scene): string {
+    if (scene.upscaled_video_path) return 'upscaled';
+    if (scene.local_video_path) return 'completed';
+    const st = scene.video_engine === 'seedance' ? scene.seedance_status : scene.kling_status;
+    return st || 'pending';
+}
+
+// Badge colour per stem hint
+const stemColour: Record<string, string> = {
+    drums: 'bg-red-500/20 text-red-300 border-red-500/30',
+    bass: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
+    vocals: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
+    other: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+};
+
 const Production = () => {
     const [selectedJobId] = useState<string | null>(null);
+    const [downloadingScene, setDownloadingScene] = useState<string | null>(null);
+    const [downloadingZip, setDownloadingZip] = useState(false);
 
     // Fetch production jobs
     useQuery({
@@ -57,8 +85,11 @@ const Production = () => {
         refetchInterval: 5000,
     });
 
-    // Fetch specific job details
-    const { data: jobDetails } = useQuery({
+    const { data: jobDetails } = useQuery<{
+        job: ProductionJob;
+        tracks: Track[];
+        scenes: Scene[];
+    }>({
         queryKey: ['production_job', selectedJobId],
         queryFn: async () => {
             if (!selectedJobId) return null;
@@ -67,20 +98,70 @@ const Production = () => {
         },
         enabled: !!selectedJobId,
         refetchInterval: (query) => {
-            const data: any = query.state.data;
+            const data = query.state.data as any;
             return data?.job?.status === 'processing' ? 3000 : false;
         },
     });
 
     const getStatusIcon = (status: string) => {
         switch (status) {
-            case 'completed': return <CheckCircle2 className="w-5 h-5 text-green-400" />;
+            case 'completed':
+            case 'upscaled':
+            case 'succeed': return <CheckCircle2 className="w-5 h-5 text-green-400" />;
             case 'failed': return <AlertCircle className="w-5 h-5 text-red-400" />;
             case 'generating':
-            case 'processing': return <RefreshCcw className="w-5 h-5 text-blue-400 animate-spin" />;
+            case 'processing':
+            case 'submitted': return <RefreshCcw className="w-5 h-5 text-blue-400 animate-spin" />;
             default: return <Clock className="w-5 h-5 text-gray-500" />;
         }
     };
+
+    const handleSceneDownload = async (scene: Scene) => {
+        if (!selectedJobId) return;
+        setDownloadingScene(scene.id);
+        try {
+            const resp = await axios.get(
+                `${API_BASE_URL}/production/${selectedJobId}/scenes/${scene.id}/download`,
+                { responseType: 'blob' },
+            );
+            const url = URL.createObjectURL(resp.data);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scene_${String(scene.scene_number).padStart(3, '0')}.mp4`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Scene download failed', err);
+        } finally {
+            setDownloadingScene(null);
+        }
+    };
+
+    const handleZipExport = async () => {
+        if (!selectedJobId) return;
+        setDownloadingZip(true);
+        try {
+            const resp = await axios.get(
+                `${API_BASE_URL}/production/${selectedJobId}/export.zip`,
+                { responseType: 'blob' },
+            );
+            const url = URL.createObjectURL(resp.data);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `job_${selectedJobId.slice(0, 8)}_export.zip`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('ZIP export failed', err);
+        } finally {
+            setDownloadingZip(false);
+        }
+    };
+
+    const completedScenes = jobDetails?.scenes.filter(
+        (s) => videoStatus(s) === 'completed' || videoStatus(s) === 'upscaled'
+    ).length ?? 0;
+    const totalScenes = jobDetails?.job?.num_scenes ?? 1;
 
     return (
         <div className="p-8 max-w-7xl mx-auto">
@@ -92,6 +173,19 @@ const Production = () => {
                     </h1>
                     <p className="text-gray-400 mt-2">Generate cinematic assets and soundtracks for your video.</p>
                 </div>
+
+                {selectedJobId && (
+                    <button
+                        onClick={handleZipExport}
+                        disabled={downloadingZip}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-colors"
+                    >
+                        {downloadingZip
+                            ? <RefreshCcw className="w-4 h-4 animate-spin" />
+                            : <Package className="w-4 h-4" />}
+                        {downloadingZip ? 'Preparing...' : 'Export All (ZIP)'}
+                    </button>
+                )}
             </header>
 
             {!selectedJobId ? (
@@ -104,7 +198,7 @@ const Production = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Job Info & Music */}
+                    {/* Left Column */}
                     <div className="lg:col-span-1 space-y-8">
                         <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-xl">
                             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
@@ -146,13 +240,26 @@ const Production = () => {
                                     <span className="text-blue-400 font-bold uppercase">{jobDetails?.job?.status}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-400">Total Scenes</span>
-                                    <span className="text-white">{jobDetails?.job?.num_scenes}</span>
+                                    <span className="text-gray-400">Video Engine</span>
+                                    <span className="text-white flex items-center gap-1">
+                                        <Cpu className="w-3 h-3" />
+                                        {jobDetails?.scenes?.[0]?.video_engine || 'kling'}
+                                    </span>
                                 </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400">Scenes Complete</span>
+                                    <span className="text-white">{completedScenes} / {totalScenes}</span>
+                                </div>
+                                {jobDetails?.job?.upscale_enabled && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-400">Upscaling</span>
+                                        <span className="text-green-400 text-xs font-semibold">4K Enabled</span>
+                                    </div>
+                                )}
                                 <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
                                     <div
                                         className="bg-blue-500 h-full transition-all duration-1000"
-                                        style={{ width: `${(jobDetails?.scenes.filter((s: any) => s.status === 'completed').length / jobDetails?.job?.num_scenes) * 100}%` }}
+                                        style={{ width: `${(completedScenes / totalScenes) * 100}%` }}
                                     />
                                 </div>
                             </div>
@@ -167,45 +274,101 @@ const Production = () => {
                         </h2>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {jobDetails?.scenes.map((scene: Scene) => (
-                                <motion.div
-                                    layout
-                                    key={scene.id}
-                                    className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden group shadow-lg"
-                                >
-                                    <div className="aspect-video bg-gray-800 relative overflow-hidden">
-                                        {scene.image_url ? (
-                                            <img
-                                                src={scene.image_url}
-                                                alt={`Scene ${scene.scene_number}`}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                        ) : (
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                                                {scene.status === 'generating' ? (
-                                                    <>
-                                                        <RefreshCcw className="w-8 h-8 text-blue-500 animate-spin mb-3" />
-                                                        <p className="text-xs text-blue-400 font-medium">Generating Visuals...</p>
-                                                    </>
-                                                ) : scene.status === 'failed' ? (
-                                                    <>
-                                                        <AlertCircle className="w-8 h-8 text-red-500 mb-3" />
-                                                        <p className="text-xs text-red-400 font-medium">{scene.error_message || 'Generation Failed'}</p>
-                                                    </>
-                                                ) : (
-                                                    <Clock className="w-8 h-8 text-gray-700" />
-                                                )}
+                            {jobDetails?.scenes.map((scene: Scene) => {
+                                const vStatus = videoStatus(scene);
+                                const hasVideo = vStatus === 'completed' || vStatus === 'upscaled';
+                                const isDownloading = downloadingScene === scene.id;
+
+                                return (
+                                    <motion.div
+                                        layout
+                                        key={scene.id}
+                                        className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden group shadow-lg"
+                                    >
+                                        <div className="aspect-video bg-gray-800 relative overflow-hidden">
+                                            {scene.image_url ? (
+                                                <img
+                                                    src={scene.image_url}
+                                                    alt={`Scene ${scene.scene_number}`}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                                                    {scene.kling_status === 'generating' || scene.seedance_status === 'processing' ? (
+                                                        <>
+                                                            <RefreshCcw className="w-8 h-8 text-blue-500 animate-spin mb-3" />
+                                                            <p className="text-xs text-blue-400 font-medium">Generating Visuals...</p>
+                                                        </>
+                                                    ) : scene.kling_status === 'failed' || scene.seedance_status === 'failed' ? (
+                                                        <>
+                                                            <AlertCircle className="w-8 h-8 text-red-500 mb-3" />
+                                                            <p className="text-xs text-red-400 font-medium">{scene.error_message || 'Generation Failed'}</p>
+                                                        </>
+                                                    ) : (
+                                                        <Clock className="w-8 h-8 text-gray-700" />
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Scene number badge */}
+                                            <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white">
+                                                SCENE {scene.scene_number}
                                             </div>
-                                        )}
-                                        <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white">
-                                            SCENE {scene.scene_number}
+
+                                            {/* Engine badge */}
+                                            {scene.video_engine && (
+                                                <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-semibold text-cyan-300 flex items-center gap-1">
+                                                    <Cpu className="w-2.5 h-2.5" />
+                                                    {scene.video_engine.toUpperCase()}
+                                                </div>
+                                            )}
+
+                                            {/* 4K badge */}
+                                            {vStatus === 'upscaled' && (
+                                                <div className="absolute bottom-3 right-3 bg-green-600/80 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white">
+                                                    4K
+                                                </div>
+                                            )}
                                         </div>
-                                    </div>
-                                    <div className="p-4">
-                                        <p className="text-sm text-gray-400 line-clamp-2 italic">"{scene.description}"</p>
-                                    </div>
-                                </motion.div>
-                            ))}
+
+                                        <div className="p-4 space-y-3">
+                                            <p className="text-sm text-gray-400 line-clamp-2 italic">"{scene.description}"</p>
+
+                                            <div className="flex items-center justify-between">
+                                                {/* Stem + character badges */}
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    {scene.stem_energy_hint && (
+                                                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${stemColour[scene.stem_energy_hint] || stemColour.other}`}>
+                                                            {scene.stem_energy_hint}
+                                                        </span>
+                                                    )}
+                                                    {scene.character_name && (
+                                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-500/20 text-blue-300 border-blue-500/30 flex items-center gap-1">
+                                                            <User className="w-2.5 h-2.5" />
+                                                            {scene.character_name}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Download button */}
+                                                <button
+                                                    onClick={() => handleSceneDownload(scene)}
+                                                    disabled={!hasVideo || isDownloading}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors
+                                                        disabled:opacity-30 disabled:cursor-not-allowed
+                                                        bg-gray-700 hover:bg-gray-600 text-white"
+                                                    title={hasVideo ? 'Download scene MP4' : 'Video not ready'}
+                                                >
+                                                    {isDownloading
+                                                        ? <RefreshCcw className="w-3 h-3 animate-spin" />
+                                                        : <Download className="w-3 h-3" />}
+                                                    {isDownloading ? 'Saving...' : 'MP4'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

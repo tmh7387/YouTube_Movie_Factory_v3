@@ -92,6 +92,44 @@ RULES:
 - Always include in negative_prompt: distortion, watermark, face morphing
 """.strip()
 
+# ---------------------------------------------------------------------------
+# §5.3 — Lyric-Aligned Scene Planning
+# ---------------------------------------------------------------------------
+
+LYRIC_SCENE_SYSTEM = """
+You are a music video director aligning visual scenes to song lyrics.
+Given: a list of lyric lines with timestamps, the video theme, and target scene count,
+assign each scene to the lyric moment that best fits its mood and content.
+
+Return ONLY a valid JSON array, one object per scene:
+[
+  {
+    "scene_number": int,
+    "lyric_text": "string — the lyric line this scene illustrates",
+    "lyric_start_sec": float,
+    "lyric_end_sec": float,
+    "visual_cue": "string — how the lyric translates to a visual image"
+  },
+  ...
+]
+""".strip()
+
+# ---------------------------------------------------------------------------
+# §2.5 — Character Tagger
+# ---------------------------------------------------------------------------
+
+CHARACTER_TAG_SYSTEM = """
+You are an AI production assistant. Given a list of named characters and a scene description,
+identify which character (if any) appears in this scene.
+Return ONLY a JSON object:
+{
+  "character_name": "string | null",
+  "confidence": "high | medium | low",
+  "reasoning": "string (one sentence)"
+}
+If no named character appears, set character_name to null.
+""".strip()
+
 
 # ---------------------------------------------------------------------------
 # Main Creative Brief Generation (Stage 2)
@@ -181,7 +219,7 @@ async def generate_music_prompts(brief: dict, num_tracks: int) -> list[str]:
     raw = response.content[0].text.strip()
     if raw.startswith("```"):
         raw = raw.split("```")[1].lstrip("json").strip()
-    return json.loads(raw)
+    return json.loads(raw)  # music prompt result
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +289,72 @@ async def direct_scene(
                 ),
             },
         ]}],
+    )
+    raw = response.content[0].text.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1].lstrip("json").strip()
+    return json.loads(raw)
+
+
+# ---------------------------------------------------------------------------
+# Lyric-Aligned Scene Planning (Stage 3 — Phase 5)
+# ---------------------------------------------------------------------------
+
+async def align_scenes_to_lyrics(
+    lyrics: list[dict],
+    theme: str,
+    num_scenes: int,
+) -> list[dict]:
+    """
+    Given timestamped lyrics [{text, start, end}, ...], map each planned scene
+    to the lyric moment it best illustrates. Guide §5.3
+    """
+    lyric_text = "\n".join(
+        f"[{l['start']:.1f}s–{l['end']:.1f}s] {l['text']}" for l in lyrics
+    )
+    user_msg = (
+        f"Theme: {theme}\n"
+        f"Number of scenes: {num_scenes}\n\n"
+        f"Lyrics with timestamps:\n{lyric_text}\n\n"
+        "Map each scene to the most fitting lyric moment."
+    )
+    response = await client.messages.create(
+        model=settings.CLAUDE_FAST_MODEL,
+        max_tokens=2000,
+        system=LYRIC_SCENE_SYSTEM,
+        messages=[{"role": "user", "content": user_msg}],
+    )
+    raw = response.content[0].text.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1].lstrip("json").strip()
+    return json.loads(raw)
+
+
+# ---------------------------------------------------------------------------
+# Character Tagger (Stage 3 — Phase 2)
+# ---------------------------------------------------------------------------
+
+async def tag_scene_character(
+    scene_description: str,
+    character_names: list[str],
+) -> dict:
+    """
+    Identify which named character (if any) appears in a scene.
+    Returns {character_name: str|None, confidence: str, reasoning: str}.
+    """
+    if not character_names:
+        return {"character_name": None, "confidence": "high", "reasoning": "No characters defined"}
+
+    user_msg = (
+        f"Characters: {', '.join(character_names)}\n"
+        f"Scene description: {scene_description}\n"
+        "Which character appears in this scene?"
+    )
+    response = await client.messages.create(
+        model=settings.CLAUDE_FAST_MODEL,
+        max_tokens=150,
+        system=CHARACTER_TAG_SYSTEM,
+        messages=[{"role": "user", "content": user_msg}],
     )
     raw = response.content[0].text.strip()
     if raw.startswith("```"):

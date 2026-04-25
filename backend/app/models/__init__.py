@@ -4,6 +4,8 @@ from sqlalchemy.sql import func
 import uuid
 from app.db.session import Base
 
+
+
 class ResearchJob(Base):
     __tablename__ = 'research_jobs'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -78,6 +80,12 @@ class ProductionJob(Base):
     celery_task_id = Column(String(255))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     published_at = Column(DateTime(timezone=True))
+    # Phase 4: stem separation results
+    stem_analysis = Column(JSONB)
+    # Phase 5: lyrics from Suno (timestamped)
+    lyrics = Column(JSONB)
+    # Phase 6: upscaling flag
+    upscale_enabled = Column(Boolean, default=False)
 
 class ProductionTrack(Base):
     __tablename__ = 'production_tracks'
@@ -133,6 +141,16 @@ class ProductionScene(Base):
     raw_video_url = Column(Text)
     raw_video_path = Column(Text)
     local_video_path = Column(Text)
+    # Phase 1: SeeDance 2.0
+    video_engine = Column(String(20), default='kling')  # kling | seedance
+    seedance_task_id = Column(String(255))
+    seedance_status = Column(String(20))
+    # Phase 2: character reference tag (name, matched from ProductionCharacter)
+    character_name = Column(String(100))
+    # Phase 4: stem that drives this scene's cut timing
+    stem_energy_hint = Column(String(20))  # drums | bass | vocals | other
+    # Phase 6: upscaled output
+    upscaled_video_path = Column(Text)
 
     # Beat-matched timing
     beat_start_sec = Column(Numeric)
@@ -143,6 +161,16 @@ class ProductionScene(Base):
     error_message = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     __table_args__ = (UniqueConstraint('job_id', 'scene_number'),)
+
+class ProductionCharacter(Base):
+    """Phase 2 — character reference images for GPT-Image-2 consistency."""
+    __tablename__ = 'production_characters'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    job_id = Column(UUID(as_uuid=True), ForeignKey('production_jobs.id'))
+    name = Column(String(100), nullable=False)
+    description = Column(Text)
+    reference_image_paths = Column(JSONB)  # list of local file paths
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class SystemConfig(Base):
     __tablename__ = 'system_config'
