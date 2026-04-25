@@ -93,7 +93,8 @@ const Research = () => {
     }, [selectedJobId]);
 
     const curateMutation = useMutation({
-        mutationFn: (researchJobId: string) => curationService.startCuration(researchJobId),
+        mutationFn: ({ researchJobId, videoIds }: { researchJobId: string; videoIds: string[] }) =>
+            curationService.startCuration(researchJobId, videoIds),
         onSuccess: () => {
             navigate('/curation');
         }
@@ -391,7 +392,7 @@ const Research = () => {
                                     <div className="pointer-events-auto">
                                         {selectedJob && selectedJob.status === 'completed' && (
                                             <button
-                                                onClick={() => curateMutation.mutate(selectedJob.id)}
+                                                onClick={() => curateMutation.mutate({ researchJobId: selectedJob.id, videoIds: Array.from(selectedVideos) })}
                                                 disabled={curateMutation.isPending || selectedVideos.size === 0}
                                                 className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-green-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group overflow-hidden relative"
                                             >

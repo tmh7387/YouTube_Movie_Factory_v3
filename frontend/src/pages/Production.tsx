@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
+// @ts-expect-error -- Will be used in Stage 3 production refactor
 interface ProductionJob {
     id: string;
     curation_job_id: string;

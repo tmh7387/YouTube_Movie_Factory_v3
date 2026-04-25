@@ -23,7 +23,11 @@ class Settings(BaseSettings):
     CLAUDE_CREATIVE_MODEL: str = "claude-opus-4-6"
     CLAUDE_FAST_MODEL: str = "claude-sonnet-4-6"
     DEFAULT_IMAGE_MODEL: str = "nanobananapro"
-    DEFAULT_VIDEO_MODEL: str = "kling3"
+    DEFAULT_VIDEO_MODEL: str = "kling-v3"
+    
+    # Kling 3.0 Direct API (JWT auth)
+    KLING_ACCESS_KEY: str = ""
+    KLING_SECRET_KEY: str = ""
     
     # Local storage for intermediate generation files
     JOB_FILES_DIR: str = "./jobs"

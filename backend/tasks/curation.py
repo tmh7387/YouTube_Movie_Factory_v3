@@ -1,117 +1,119 @@
+"""
+Curation pipeline task — Guide §3.5
+Orchestrates: yt-dlp metadata extraction → Claude Creative Brief generation → store.
+Uses BackgroundTasks (Stage 2 doesn't require Celery chord).
+"""
 import asyncio
-from celery.utils.log import get_task_logger
-from tasks.celery_app import celery_app
-from app.services.claude_service import claude_service
+import logging
+
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.db.session import AsyncSessionLocal
 from app.models import ResearchJob, ResearchVideo, CurationJob
-from sqlalchemy import select, update
+from app.services import ytdlp_service, claude_service
 
-logger = get_task_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
-def _build_brief_context(res_job) -> str:
-    """Build the creative context block for Claude.
-    Uses Research Brief if present, falls back to topic string."""
-    if not res_job.research_brief:
-        return f"Topic: {res_job.genre_topic}"
+def _extract_genre_mood(res_job: ResearchJob) -> str:
+    """Build genre/mood string from ResearchBrief if available, else topic."""
+    if res_job.research_brief:
+        rb = res_job.research_brief
+        parts = []
+        if rb.get("mood"):
+            parts.append(rb["mood"])
+        if rb.get("visual_style"):
+            parts.append(rb["visual_style"])
+        if rb.get("audio_character"):
+            parts.append(rb["audio_character"])
+        if parts:
+            return ", ".join(parts)
+    return res_job.genre_topic or "cinematic"
 
-    rb = res_job.research_brief
-    parts = [
-        f"Creative Intent: {rb['intent_summary']}",
-        f"Mood: {rb['mood']}",
-        f"Visual Style: {rb['visual_style']}",
-        f"Audio Character: {rb['audio_character']}",
-    ]
-    if rb.get("negative_constraints"):
-        parts.append("Avoid: " + ", ".join(rb["negative_constraints"]))
-    if rb.get("reference_image_descriptions"):
-        parts.append(
-            "Visual References: " + "; ".join(rb["reference_image_descriptions"])
-        )
-    if rb.get("audio_metadata", {}).get("estimated_bpm"):
-        parts.append(f"Target BPM: ~{rb['audio_metadata']['estimated_bpm']}")
 
-    return "\n".join(parts)
-
-async def _orchestrate_curation(curation_job_id: str, research_job_id: str, selected_video_ids: list):
-    async with AsyncSessionLocal() as session:
+async def run_briefing_pipeline(curation_job_id: str, research_job_id: str, selected_video_ids: list | None = None):
+    """
+    Full briefing pipeline per Guide §3.5:
+    1. Extract metadata via yt-dlp (thumbnails + descriptions)
+    2. Generate Creative Brief via Claude (with vision input)
+    3. Store brief and mark status = 'ready'
+    """
+    async with AsyncSessionLocal() as db:
         try:
-            logger.info(f"Starting curation job {curation_job_id} for research {research_job_id}")
-            
-            # 1. Update status to 'generating_brief'
-            await session.execute(
-                update(CurationJob).where(CurationJob.id == curation_job_id).values(status="generating_brief")
+            logger.info(f"Starting briefing pipeline for curation job {curation_job_id}")
+
+            # Update status to 'briefing'
+            await db.execute(
+                update(CurationJob)
+                .where(CurationJob.id == curation_job_id)
+                .values(status="briefing")
             )
-            await session.commit()
-            
-            # 2. Fetch specific research videos and their transcripts
-            # If no specific video IDs are provided, we use the research summary or all transcripts
-            query = select(ResearchVideo).where(ResearchVideo.job_id == research_job_id)
-            if selected_video_ids:
-                query = query.where(ResearchVideo.video_id.in_(selected_video_ids))
-            
-            result = await session.execute(query)
-            videos = result.scalars().all()
-            
-            descriptions = [v.description for v in videos if v.description]
-            
-            # 3. Fetch ResearchJob summary for extra context
-            res_job_result = await session.execute(select(ResearchJob).where(ResearchJob.id == research_job_id))
-            res_job = res_job_result.scalar_one_or_none()
-            
-            topic = res_job.genre_topic if res_job else "Unknown Topic"
-            research_summary = res_job.research_summary if res_job else ""
-            
-            # Build enhanced context from Research Brief if available
-            brief_context = _build_brief_context(res_job) if res_job else f"Topic: {topic}"
-            
-            # Combine context
-            combined_context = f"{brief_context}\n\nResearch Summary:\n{research_summary}\n\n"
-            if descriptions:
-                combined_context += "Selected Video Descriptions:\n" + "\n\n---\n\n".join(descriptions[:2]) # Top 2 for detail
-            
-            # 4. Generate Creative Brief
-            logger.info(f"Generating brief for topic: {topic}")
-            brief_result = await claude_service.generate_creative_brief(combined_context)
-            
-            # 5. Final update
-            if "error" in brief_result:
-                await session.execute(
-                    update(CurationJob).where(CurationJob.id == curation_job_id).values(
-                        status="failed",
-                        creative_brief={"error": brief_result["error"]}
+            await db.commit()
+
+            # Fetch research context
+            res_result = await db.execute(
+                select(ResearchJob).where(ResearchJob.id == research_job_id)
+            )
+            res_job = res_result.scalar_one_or_none()
+            if not res_job:
+                raise ValueError(f"Research job {research_job_id} not found")
+
+            # Fetch curation job for num_scenes config
+            cur_result = await db.execute(
+                select(CurationJob).where(CurationJob.id == curation_job_id)
+            )
+            cur_job = cur_result.scalar_one_or_none()
+
+            # Resolve selected video IDs
+            if not selected_video_ids:
+                vid_result = await db.execute(
+                    select(ResearchVideo.video_id)
+                    .where(
+                        ResearchVideo.job_id == research_job_id,
+                        ResearchVideo.selected_for_curation == True,
                     )
                 )
-            else:
-                await session.execute(
-                    update(CurationJob).where(CurationJob.id == curation_job_id).values(
-                        status="completed",
-                        creative_brief=brief_result,
-                        num_scenes=len(brief_result.get("storyboard", []))
-                    )
+                selected_video_ids = [row[0] for row in vid_result.all()]
+
+            if not selected_video_ids:
+                raise ValueError("No videos selected for curation")
+
+            # --- Step 1: Extract metadata via yt-dlp ---
+            logger.info(f"Extracting metadata for {len(selected_video_ids)} videos")
+            video_meta = await ytdlp_service.extract_metadata(selected_video_ids)
+
+            # --- Step 2: Generate Creative Brief via Claude ---
+            genre_mood = _extract_genre_mood(res_job)
+            num_scenes = cur_job.num_scenes or 20
+            audio_duration_hint = 95.0  # Default hint; adjusted by beat analysis in Stage 3
+
+            logger.info(f"Generating creative brief: {num_scenes} scenes, genre={genre_mood}")
+            brief = await claude_service.generate_creative_brief(
+                video_metadata=video_meta,
+                genre_mood=genre_mood,
+                num_scenes=num_scenes,
+                audio_duration_hint=audio_duration_hint,
+            )
+
+            # --- Step 3: Store and mark ready ---
+            await db.execute(
+                update(CurationJob)
+                .where(CurationJob.id == curation_job_id)
+                .values(
+                    status="ready",
+                    creative_brief=brief,
+                    num_scenes=len(brief.get("scenes", [])),
                 )
-            
-            await session.commit()
-            logger.info(f"Curation job {curation_job_id} completed successfully.")
-            
+            )
+            await db.commit()
+            logger.info(f"Curation job {curation_job_id} → status=ready, {len(brief.get('scenes', []))} scenes")
+
         except Exception as e:
-            logger.error(f"Curation task failed: {e}", exc_info=True)
-            await session.execute(
-                update(CurationJob).where(CurationJob.id == curation_job_id).values(status="failed")
+            logger.error(f"Briefing pipeline failed: {e}", exc_info=True)
+            await db.execute(
+                update(CurationJob)
+                .where(CurationJob.id == curation_job_id)
+                .values(status="failed", error_message=str(e))
             )
-            await session.commit()
-
-@celery_app.task(name="tasks.curation.start_curation_job")
-def start_curation_job(curation_job_id: str, research_job_id: str, selected_video_ids: list = None):
-    """Celery task to generate a creative brief from research results."""
-    try:
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-        return loop.run_until_complete(_orchestrate_curation(curation_job_id, research_job_id, selected_video_ids))
-    except Exception as e:
-        logger.error(f"Failed to run curation task: {e}")
-        raise
+            await db.commit()
