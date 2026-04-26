@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from pydantic import BaseModel, field_validator
 from typing import Optional, List
 from sqlalchemy import select, desc
@@ -68,15 +68,15 @@ def _entry_to_dict(e: TutorialKnowledgeEntry) -> dict:
 
 
 @router.post("/ingest", response_model=IngestResponse)
-async def ingest_tutorial(request: IngestRequest):
+async def ingest_tutorial(request: IngestRequest, background_tasks: BackgroundTasks):
     """
     Submit a YouTube tutorial URL for full analysis:
     - Gemini 3.1 video understanding (techniques, prompts, tools, workflow)
     - Comment and description resource mining
     - Any Notion links found are surfaced in the response as alerts for manual review.
-    Processing runs as a background Celery task.
+    Processing runs as a FastAPI background task.
     """
-    from tasks.knowledge import run_knowledge_ingest
+    from tasks.knowledge import _orchestrate_knowledge_ingest
 
     async with AsyncSessionLocal() as session:
         entry = TutorialKnowledgeEntry(
@@ -89,7 +89,8 @@ async def ingest_tutorial(request: IngestRequest):
         await session.refresh(entry)
         entry_id = str(entry.id)
 
-    run_knowledge_ingest.delay(
+    background_tasks.add_task(
+        _orchestrate_knowledge_ingest,
         entry_id=entry_id,
         youtube_url=request.youtube_url,
         category=request.category,

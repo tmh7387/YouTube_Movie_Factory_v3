@@ -6,9 +6,6 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     DATABASE_URL_DIRECT: str
     
-    # --- Task Queue & Broker ---
-    REDIS_URL: str
-    
     # --- Core API Keys ---
     COMETAPI_API_KEY: str
     ANTHROPIC_API_KEY: str
@@ -32,9 +29,6 @@ class Settings(BaseSettings):
     
     # FastAPI Secret Key
     SECRET_KEY: str
-    
-    # Celery Performance
-    CELERY_CONCURRENCY: int = 8
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(__file__), "..", "..", "..", "env", ".env"),

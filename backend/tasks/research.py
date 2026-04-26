@@ -1,14 +1,13 @@
 import asyncio
 from typing import List, Optional
-from celery.utils.log import get_task_logger
-from tasks.celery_app import celery_app
+import logging
 from app.services.youtube_service import youtube_service
 from app.services.ai_service import ai_service
 from app.db.session import AsyncSessionLocal
 from app.models import ResearchJob, ResearchVideo
 from sqlalchemy import select, update
 
-logger = get_task_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 async def _orchestrate_research(
@@ -151,21 +150,3 @@ async def _orchestrate_research(
             await session.commit()
 
 
-@celery_app.task(name="tasks.research.start_research_job")
-def start_research_job(
-    job_id: str, topic: str, research_brief: Optional[dict] = None
-):
-    """Entry point for Celery to start the async orchestration."""
-    try:
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        return loop.run_until_complete(
-            _orchestrate_research(job_id, topic, research_brief)
-        )
-    except Exception as e:
-        logger.error(f"Failed to run async task: {e}")
-        raise

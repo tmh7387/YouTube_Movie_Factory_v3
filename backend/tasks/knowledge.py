@@ -3,10 +3,8 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-from celery.utils.log import get_task_logger
 from sqlalchemy import update, select
 
-from tasks.celery_app import celery_app
 from app.db.session import AsyncSessionLocal
 from app.models import TutorialKnowledgeEntry, VideoProductionSkill
 from app.services.gemini_service import gemini_service
@@ -14,7 +12,7 @@ from app.services.comment_miner_service import comment_miner_service
 from app.services.skill_synthesis_service import skill_synthesis_service
 from app.core.config import settings
 
-logger = get_task_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 async def _orchestrate_knowledge_ingest(
@@ -166,30 +164,3 @@ async def _orchestrate_knowledge_ingest(
             )
             await session.commit()
 
-
-@celery_app.task(name="tasks.knowledge.run_knowledge_ingest")
-def run_knowledge_ingest(
-    entry_id: str,
-    youtube_url: str,
-    category: str = "general",
-    extra_context: str = "",
-):
-    """Celery entry point — runs the full async knowledge ingestion pipeline."""
-    try:
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        return loop.run_until_complete(
-            _orchestrate_knowledge_ingest(
-                entry_id=entry_id,
-                youtube_url=youtube_url,
-                category=category,
-                extra_context=extra_context,
-            )
-        )
-    except Exception as e:
-        logger.error(f"Celery knowledge task failed: {e}")
-        raise

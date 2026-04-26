@@ -165,6 +165,9 @@ class VideoProductionSkill(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class TutorialKnowledgeEntry(Base):
     """
     One row per ingested tutorial video or external resource (Notion page, etc).
     Stores the full Gemini analysis plus mined resources from comments/descriptions.

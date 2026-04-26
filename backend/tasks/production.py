@@ -4,12 +4,10 @@ import os
 import uuid
 from typing import List, Dict, Any
 from sqlalchemy import select, update
-from tasks.celery_app import celery_app
 from app.db.session import AsyncSessionLocal as async_session_factory
 from app.models import ProductionJob, CurationJob, ProductionScene, ProductionTrack
 from app.services.media_gen_service import media_gen_service
 from app.services.suno_service import suno_service
-from celery import group, chord
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +20,8 @@ async def _update_job_status(job_id: str, status: str, error: str = None):
         await db.execute(stmt)
         await db.commit()
 
-@celery_app.task(name="tasks.production.start_production_job")
-def start_production_job(job_id: str):
-    """
-    Entry point for production job. Orchestrates parallel asset generation.
-    """
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(run_production_pipeline(job_id))
-
 async def run_production_pipeline(job_id: str):
+    """Run the full production pipeline sequentially."""
     logger.info(f"Starting production pipeline for job {job_id}")
     
     async with async_session_factory() as db:
@@ -77,30 +68,15 @@ async def run_production_pipeline(job_id: str):
         
         await db.commit()
         
-        # 3. Trigger Parallel Generation
-        # For simplicity in this iteration, we trigger them one by one asynchronously
-        # In a full production env, we'd use Celery signatures for better tracking
-        
+        # 3. Sequential Generation
         await _update_job_status(job_id, "processing")
         
-        # Trigger Image Generation tasks
-        image_tasks = [generate_scene_image.s(str(scene.id)) for scene in scenes]
+        # Generate images sequentially
+        for scene in scenes:
+            await _generate_scene_image_async(str(scene.id))
         
-        # Trigger Music Generation task
-        music_task = generate_music_track.s(str(new_track.id), brief.get('music_mood', 'Cinematic'))
-        
-        # We can use chord to detect when all scenes are done to proceed to Phase 5
-        # pipeline = chord(image_tasks)(finalize_production_assets.s(job_id))
-        
-        # For now, just fire and forget them as separate tasks
-        for t in image_tasks:
-            t.delay()
-        music_task.delay()
-
-@celery_app.task(name="tasks.production.generate_scene_image")
-def generate_scene_image(scene_id: str):
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(_generate_scene_image_async(scene_id))
+        # Generate music
+        await _generate_music_track_async(str(new_track.id), brief.get('music_mood', 'Cinematic'))
 
 async def _generate_scene_image_async(scene_id: str):
     async with async_session_factory() as db:
@@ -122,11 +98,6 @@ async def _generate_scene_image_async(scene_id: str):
             scene.status = "completed"
             
         await db.commit()
-
-@celery_app.task(name="tasks.production.generate_music_track")
-def generate_music_track(track_id: str, mood: str):
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(_generate_music_track_async(track_id, mood))
 
 async def _generate_music_track_async(track_id: str, mood: str):
     async with async_session_factory() as db:
@@ -150,8 +121,3 @@ async def _generate_music_track_async(track_id: str, mood: str):
             track.suno_status = "polling"
             
         await db.commit()
-
-@celery_app.task(name="tasks.production.finalize_production_assets")
-def finalize_production_assets(job_id: str):
-    # This task would check if everything is ready and mark the job as "ready_for_animation"
-    pass

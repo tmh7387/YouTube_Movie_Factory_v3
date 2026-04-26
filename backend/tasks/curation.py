@@ -1,12 +1,11 @@
 import asyncio
-from celery.utils.log import get_task_logger
-from tasks.celery_app import celery_app
+import logging
 from app.services.claude_service import claude_service
 from app.db.session import AsyncSessionLocal
 from app.models import ResearchJob, ResearchVideo, CurationJob
 from sqlalchemy import select, update
 
-logger = get_task_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _build_brief_context(res_job) -> str:
@@ -100,18 +99,3 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
                 update(CurationJob).where(CurationJob.id == curation_job_id).values(status="failed")
             )
             await session.commit()
-
-@celery_app.task(name="tasks.curation.start_curation_job")
-def start_curation_job(curation_job_id: str, research_job_id: str, selected_video_ids: list = None):
-    """Celery task to generate a creative brief from research results."""
-    try:
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-        return loop.run_until_complete(_orchestrate_curation(curation_job_id, research_job_id, selected_video_ids))
-    except Exception as e:
-        logger.error(f"Failed to run curation task: {e}")
-        raise

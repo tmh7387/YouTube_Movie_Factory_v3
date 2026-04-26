@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.db.session import get_db
-import redis.asyncio as redis
 from app.core.config import settings
 import httpx
 
