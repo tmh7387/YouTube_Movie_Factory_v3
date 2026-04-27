@@ -16,14 +16,6 @@ import { motion } from 'framer-motion';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
-interface ProductionJob {
-    id: string;
-    curation_job_id: string;
-    status: string;
-    num_scenes: number;
-    num_tracks: number;
-    created_at: string;
-}
 
 interface Scene {
     id: string;

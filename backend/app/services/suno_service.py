@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 
 class SunoService:
     def __init__(self):
-        self.api_url = "https://api.cometapi.xyz/v1/audio/suno"
+        self.base_url = "https://api.cometapi.com/v1"
+        self.api_url = f"{self.base_url}/audio/generations"
         self.api_key = settings.COMETAPI_API_KEY
 
     async def create_track(self, prompt: str, mood: str = "", make_instrumental: bool = True) -> Dict[str, Any]:
@@ -25,9 +26,9 @@ class SunoService:
                         "Content-Type": "application/json"
                     },
                     json={
+                        "model": "suno_music",
                         "prompt": combined_prompt,
                         "make_instrumental": make_instrumental,
-                        "wait_for_model": False # Asynchronous
                     }
                 )
                 response.raise_for_status()
@@ -44,7 +45,7 @@ class SunoService:
             ids_str = ",".join(clip_ids)
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.get(
-                    f"{self.api_url}/feed?ids={ids_str}",
+                    f"{self.base_url}/audio/feed?ids={ids_str}",
                     headers={"Authorization": f"Bearer {self.api_key}"}
                 )
                 response.raise_for_status()

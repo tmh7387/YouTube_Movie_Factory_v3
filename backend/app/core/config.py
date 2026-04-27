@@ -18,11 +18,18 @@ class Settings(BaseSettings):
     YOUTUBE_CLIENT_SECRET: str
     YOUTUBE_REDIRECT_URI: str
     
+    # --- Kling 3.0 Direct API ---
+    KLING_ACCESS_KEY: str = ""
+    KLING_SECRET_KEY: str = ""
+
     # --- Application Settings ---
     CLAUDE_CREATIVE_MODEL: str = "claude-opus-4-6"
     CLAUDE_FAST_MODEL: str = "claude-sonnet-4-6"
-    DEFAULT_IMAGE_MODEL: str = "nanobananapro"
-    DEFAULT_VIDEO_MODEL: str = "kling3"
+    # Image generation (CometAPI SeeDream)
+    DEFAULT_IMAGE_MODEL: str = "doubao-seedream-4-0-250828"
+    # Video animation models
+    DEFAULT_VIDEO_MODEL: str = "kling_video"
+    SEEDANCE_VIDEO_MODEL: str = "doubao-seedance-2-0"
     
     # Local storage for intermediate generation files
     JOB_FILES_DIR: str = "./jobs"

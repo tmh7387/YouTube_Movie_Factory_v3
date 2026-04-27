@@ -213,7 +213,7 @@ const BriefDetail: React.FC<{ brief: CreativeBrief }> = ({ brief }) => {
                     Storyboard
                 </h3>
                 <div className="space-y-6">
-                    {brief.storyboard.map((scene, idx) => (
+                    {(brief.storyboard ?? brief.scenes ?? []).map((scene, idx) => (
                         <motion.div
                             key={idx}
                             initial={{ opacity: 0, x: -20 }}
@@ -222,13 +222,13 @@ const BriefDetail: React.FC<{ brief: CreativeBrief }> = ({ brief }) => {
                             className="flex gap-6 group"
                         >
                             <div className="flex-none w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold border border-blue-500/20">
-                                {scene.scene_index}
+                                {(scene.scene_index ?? scene.scene_number ?? idx + 1)}
                             </div>
                             <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-6 group-hover:border-white/20 transition-colors">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter block mb-2">Narration</span>
-                                        <p className="text-gray-200 italic leading-relaxed">"{scene.narration}"</p>
+                                        <p className="text-gray-200 italic leading-relaxed">"{scene.narration ?? scene.description}"</p>
                                     </div>
                                     <div>
                                         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter block mb-2">Visual Prompt</span>
@@ -238,8 +238,9 @@ const BriefDetail: React.FC<{ brief: CreativeBrief }> = ({ brief }) => {
                                     </div>
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-white/5 flex gap-4 text-xs text-gray-500 font-medium">
-                                    <span>Duration: {scene.duration}s</span>
-                                    <span>Pacing: {scene.pacing}</span>
+                                    <span>Duration: {scene.duration ?? '—'}s</span>
+                                    <span>Pacing: {scene.pacing ?? '—'}</span>
+                                    {scene.kling_mode && <span>Mode: {scene.kling_mode}</span>}
                                 </div>
                             </div>
                         </motion.div>

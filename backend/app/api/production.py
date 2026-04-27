@@ -1,13 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Dict, Any
 import uuid
+import os
 from app.db.session import get_db
 from app.models import ProductionJob, CurationJob, ProductionTrack, ProductionScene
 from pydantic import BaseModel
 from datetime import datetime
-# from tasks.production import start_production_job # Add this only when Stage 3 is ready
+from tasks.production import run_production_pipeline
 
 router = APIRouter()
 
@@ -25,7 +27,7 @@ class ProductionJobResponse(BaseModel):
         from_attributes = True
 
 @router.post("/start", response_model=ProductionJobResponse)
-async def start_production(request: ProductionStartRequest, db: AsyncSession = Depends(get_db)):
+async def start_production(request: ProductionStartRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     """
     Start a production job from an approved curation job.
     """
@@ -53,9 +55,8 @@ async def start_production(request: ProductionStartRequest, db: AsyncSession = D
     await db.commit()
     await db.refresh(new_job)
 
-    # Trigger Celery task
-    # task = start_production_job.delay(str(new_job.id))
-    # new_job.celery_task_id = task.id
+    # Trigger production pipeline as background task
+    background_tasks.add_task(run_production_pipeline, str(new_job.id))
     new_job.status = "queued"
     await db.commit()
 
@@ -107,3 +108,21 @@ async def get_job_by_curation(curation_job_id: uuid.UUID, db: AsyncSession = Dep
     if not job:
         return {"status": "none"}
     return job
+
+
+@router.get("/{job_id}/download")
+async def download_assembled_video(job_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    """
+    Download the assembled video file for a completed production job.
+    """
+    result = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Production job not found")
+    if not job.assembled_video_path or not os.path.exists(job.assembled_video_path):
+        raise HTTPException(status_code=404, detail="Assembled video not available yet")
+    return FileResponse(
+        path=job.assembled_video_path,
+        media_type="video/mp4",
+        filename=f"ymf_production_{job_id}.mp4",
+    )

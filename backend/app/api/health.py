@@ -20,7 +20,6 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     health_status = {
         "status": "ok",
         "database": "unknown",
-        "redis": "unknown",
         "cometapi": "unknown"
     }
     
@@ -32,17 +31,17 @@ async def health_check(db: AsyncSession = Depends(get_db)):
         health_status["database"] = f"error: {str(e)}"
         health_status["status"] = "error"
 
-    # 2. Check Redis (Disabled since Celery removed for now)
-    health_status["redis"] = "disabled"
-    # 3. Check CometAPI
+    # 2. Check CometAPI
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.get(
-                "https://api.cometapi.com/v1/dashboard/billing/subscription",
+                "https://api.cometapi.com/v1/models",
                 headers={"Authorization": f"Bearer {settings.COMETAPI_API_KEY}"}
             )
             if response.status_code == 200:
-                health_status["cometapi"] = "ok"
+                data = response.json()
+                count = len(data.get("data", []))
+                health_status["cometapi"] = f"ok ({count} models available)"
             elif response.status_code == 401:
                 health_status["cometapi"] = "unauthorized"
             else:
