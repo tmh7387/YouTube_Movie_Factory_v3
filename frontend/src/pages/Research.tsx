@@ -93,9 +93,13 @@ const Research = () => {
     }, [selectedJobId]);
 
     const curateMutation = useMutation({
-        mutationFn: (researchJobId: string) => curationService.startCuration(researchJobId),
+        mutationFn: (researchJobId: string) =>
+            curationService.startCuration(researchJobId, Array.from(selectedVideos)),
         onSuccess: () => {
             navigate('/curation');
+        },
+        onError: (err: any) => {
+            console.error('Curation start failed:', err?.response?.data || err);
         }
     });
 
@@ -171,10 +175,14 @@ const Research = () => {
                             {jobsLoading ? (
                                 <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-600" /></div>
                             ) : jobs?.map((job) => (
-                                <button
+                                // Use div instead of button to avoid nested button DOM violation
+                                <div
                                     key={job.id}
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => setSelectedJobId(job.id)}
-                                    className={`w-full text-left px-5 py-4 border-b border-white/5 hover:bg-white/5 transition-colors group ${selectedJobId === job.id ? 'bg-blue-600/10 border-l-2 border-l-blue-500 border-b-transparent' : 'border-l-2 border-l-transparent'} `}
+                                    onKeyDown={(e) => e.key === 'Enter' && setSelectedJobId(job.id)}
+                                    className={`w-full text-left px-5 py-4 border-b border-white/5 hover:bg-white/5 transition-colors group cursor-pointer ${selectedJobId === job.id ? 'bg-blue-600/10 border-l-2 border-l-blue-500 border-b-transparent' : 'border-l-2 border-l-transparent'} `}
                                 >
                                     <div className="flex justify-between items-start gap-2 mb-2">
                                         <p className="font-medium text-sm text-gray-300 line-clamp-2 max-w-[180px] group-hover:text-white transition-colors">{job.genre_topic}</p>
@@ -195,9 +203,9 @@ const Research = () => {
                                         </div>
                                     </div>
                                     <p className="text-[10px] text-gray-500 flex items-center gap-1 font-mono">
-                                        {new Date(job.created_at).toLocaleDateString()}
+                                        {job.created_at ? new Date(job.created_at).toLocaleDateString() : '—'}
                                     </p>
-                                </button>
+                                </div>
                             ))}
                         </div>
                     </div>

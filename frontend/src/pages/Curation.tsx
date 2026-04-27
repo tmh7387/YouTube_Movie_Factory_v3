@@ -82,7 +82,7 @@ const Curation: React.FC = () => {
                                         <Sparkles className="w-3 h-3" />
                                         {job.num_scenes || 0} Scenes
                                     </span>
-                                    <span>{new Date(job.id as any).toLocaleDateString()}</span>
+                                    <span>{job.created_at ? new Date(job.created_at).toLocaleDateString() : '—'}</span>
                                 </div>
                             </motion.div>
                         ))}

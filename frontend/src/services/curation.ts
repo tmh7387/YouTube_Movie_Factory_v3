@@ -37,6 +37,8 @@ export interface CurationJob {
     creative_brief?: CreativeBrief;
     user_approved_brief?: CreativeBrief;
     num_scenes?: number;
+    created_at?: string | null;
+    approved_at?: string | null;
 }
 
 /** Normalise a brief to always have a `storyboard` array regardless of which key the backend used */
