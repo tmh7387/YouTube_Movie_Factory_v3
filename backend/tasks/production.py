@@ -1,12 +1,11 @@
 import asyncio
 import logging
-import os
+from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import select, update
 from app.db.session import AsyncSessionLocal as async_session_factory
 from app.models import ProductionJob, CurationJob, ProductionScene, ProductionTrack
 from app.services.media_gen_service import media_gen_service
-from app.services.suno_service import suno_service
 from app.services.assembly_service import assembly_service
 from app.core.config import settings
 
@@ -14,10 +13,31 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# Status helpers
+# Helpers
 # ---------------------------------------------------------------------------
 
-async def _update_job_status(job_id: str, status: str, error: Optional[str] = None):
+def _ts() -> str:
+    return datetime.now(timezone.utc).strftime("%H:%M:%S")
+
+
+async def _log(job_id: str, message: str):
+    """Append a timestamped entry to the job's progress_log array."""
+    logger.info(f"[{job_id[:8]}] {message}")
+    async with async_session_factory() as db:
+        result = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
+        job = result.scalar_one_or_none()
+        if job:
+            current = list(job.progress_log or [])
+            current.append(f"[{_ts()}] {message}")
+            await db.execute(
+                update(ProductionJob)
+                .where(ProductionJob.id == job_id)
+                .values(progress_log=current)
+            )
+            await db.commit()
+
+
+async def _update_status(job_id: str, status: str, error: Optional[str] = None):
     async with async_session_factory() as db:
         vals = {"status": status}
         if error:
@@ -27,19 +47,22 @@ async def _update_job_status(job_id: str, status: str, error: Optional[str] = No
 
 
 # ---------------------------------------------------------------------------
-# Main pipeline entry point
+# Main pipeline
 # ---------------------------------------------------------------------------
 
-async def run_production_pipeline(job_id: str):
+async def run_production_pipeline(
+    job_id: str,
+    animation_mode: str = "std",
+):
     """
-    Full production pipeline:
-      Phase 1 — Initialize scenes + track rows in DB
-      Phase 2 — Generate still images for each scene
-      Phase 3 — Animate each still (Kling or Seedance)
-      Phase 4 — Generate music track (Suno via CometAPI)
-      Phase 5 — Assemble final video with ffmpeg
+    Full 5-phase production pipeline:
+      Phase 1 — Initialize scene rows
+      Phase 2 — Generate still images
+      Phase 3 — Animate each still (Kling Pro or Seedance 2.0)
+                 If beat_sync_enabled + .mp4 uploaded → passed as input_reference
+      Phase 4 — Assemble final video with ffmpeg (mixes music if music_url present)
     """
-    logger.info(f"Starting production pipeline for job {job_id}")
+    await _log(job_id, "Pipeline started")
 
     async with async_session_factory() as db:
         result = await db.execute(
@@ -54,68 +77,75 @@ async def run_production_pipeline(job_id: str):
 
         job, curation = row
         brief = curation.user_approved_brief or curation.creative_brief or {}
-
-        # Defensive: support both 'storyboard' (new Claude schema) and 'scenes' (legacy)
         storyboard_data = brief.get("storyboard") or brief.get("scenes", [])
+        music_url: Optional[str] = job.music_url
+        beat_sync_enabled: bool = bool(job.beat_sync_enabled)
+        music_filename: Optional[str] = job.music_filename or ""
+        # Only use as Seedance input_reference if it's a .mp4 file
+        is_video_reference = music_filename.lower().endswith(".mp4") if music_filename else False
+        seedance_audio_ref: Optional[str] = music_url if (beat_sync_enabled and is_video_reference) else None
+
         if not storyboard_data:
-            await _update_job_status(job_id, "failed", "No storyboard found in approved brief")
+            await _update_status(job_id, "failed", "No storyboard in brief")
+            await _log(job_id, "No storyboard found — aborting")
             return
 
-        # --- Phase 1: Initialize DB rows ---
+        # -----------------------------------------------------------------------
+        # Phase 1: Initialize DB rows
+        # -----------------------------------------------------------------------
+        await _update_status(job_id, "initializing")
+        await _log(job_id, f"Phase 1: Creating {len(storyboard_data)} scene rows")
+
         scenes = []
         for scene_data in storyboard_data:
-            # Handle both schema variants
             scene_num = scene_data.get("scene_index") or scene_data.get("scene_number") or 0
             description = scene_data.get("narration") or scene_data.get("description", "")
-            motion = scene_data.get("motion_prompt", "")
-            anim_model = scene_data.get("kling_mode", "std")
+
+            # Assign per-scene animation model override
+            scene_anim = scene_data.get("kling_mode", animation_mode)
 
             new_scene = ProductionScene(
                 job_id=job.id,
                 scene_number=scene_num,
                 description=description,
                 image_prompt=scene_data.get("visual_prompt", ""),
-                motion_prompt=motion,
-                animation_model=anim_model,
+                motion_prompt=scene_data.get("motion_prompt", ""),
+                animation_model=scene_anim,
                 image_model=settings.DEFAULT_IMAGE_MODEL,
                 animation_status="pending",
             )
             db.add(new_scene)
             scenes.append(new_scene)
 
-        new_track = ProductionTrack(
-            job_id=job.id,
-            track_number=1,
-            song_prompt=brief.get("music_mood", "Cinematic documentary instrumental"),
-            suno_status="pending",
-        )
-        db.add(new_track)
-
+        # No music track rows needed — music comes from the user-uploaded file
         await db.commit()
-        # Refresh to get DB-assigned IDs
         for s in scenes:
             await db.refresh(s)
-        await db.refresh(new_track)
 
         scene_ids = [str(s.id) for s in scenes]
-        track_id = str(new_track.id)
 
-    # --- Phase 2: Image generation ---
-    await _update_job_status(job_id, "generating_images")
-    for sid in scene_ids:
+    await _log(job_id, f"Phase 1 done — {len(scene_ids)} scenes initialized")
+
+    # Phase 2: Images
+    await _update_status(job_id, "generating_images")
+    await _log(job_id, "Phase 2: Generating still images...")
+    for i, sid in enumerate(scene_ids, 1):
         await _generate_scene_image(sid)
+        await _log(job_id, f"  Image {i}/{len(scene_ids)} done")
+    await _log(job_id, "Phase 2 done")
 
-    # --- Phase 3: Animation ---
-    await _update_job_status(job_id, "animating")
-    for sid in scene_ids:
-        await _animate_scene(sid)
+    # Phase 3: Animation
+    await _update_status(job_id, "animating")
+    beat_ref_note = f" with audio reference ({music_filename})" if seedance_audio_ref else ""
+    await _log(job_id, f"Phase 3: Animating scenes (mode={animation_mode}){beat_ref_note}...")
+    for i, sid in enumerate(scene_ids, 1):
+        await _animate_scene(sid, audio_reference_url=seedance_audio_ref)
+        await _log(job_id, f"  Animation {i}/{len(scene_ids)} done")
+    await _log(job_id, "Phase 3 done")
 
-    # --- Phase 4: Music generation (runs concurrently with animation in future) ---
-    await _update_job_status(job_id, "generating_music")
-    music_url = await _generate_music_track(track_id, brief.get("music_mood", "Cinematic"))
-
-    # --- Phase 5: Assembly ---
-    await _update_job_status(job_id, "assembling")
+    # Phase 4: ffmpeg assembly
+    await _update_status(job_id, "assembling")
+    await _log(job_id, f"Phase 4: Assembling video{' + mixing audio' if music_url else ''}...")
     await _assemble_video(job_id, scene_ids, music_url)
 
 
@@ -146,10 +176,10 @@ async def _generate_scene_image(scene_id: str):
 
 
 # ---------------------------------------------------------------------------
-# Phase 3 — Animation (Kling std/pro via CometAPI, or Seedance 2.0)
+# Phase 3 — Animation
 # ---------------------------------------------------------------------------
 
-async def _animate_scene(scene_id: str):
+async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = None):
     async with async_session_factory() as db:
         result = await db.execute(select(ProductionScene).where(ProductionScene.id == scene_id))
         scene = result.scalar_one_or_none()
@@ -160,14 +190,19 @@ async def _animate_scene(scene_id: str):
         scene.animation_status = "animating"
         await db.commit()
 
-        # Route to Seedance for 'std' mode (cheaper), Kling pro for 'pro' mode
         anim_model_key = (scene.animation_model or "std").lower()
         if anim_model_key == "pro":
-            video_model = settings.DEFAULT_VIDEO_MODEL  # kling_video
+            video_model = settings.DEFAULT_VIDEO_MODEL   # kling_video
             mode = "pro"
         else:
             video_model = settings.SEEDANCE_VIDEO_MODEL  # doubao-seedance-2-0
             mode = "std"
+
+        # Pass audio_reference_url to Seedance for beat-sync (only if .mp4 provided)
+        extra_kwargs = {}
+        if audio_reference_url and mode == "std":
+            extra_kwargs["input_reference"] = audio_reference_url
+            logger.info(f"Scene {scene_id}: using audio reference for Seedance beat-sync")
 
         res = await media_gen_service.animate_image(
             image_url=scene.image_url,
@@ -175,6 +210,7 @@ async def _animate_scene(scene_id: str):
             model=video_model,
             duration=5,
             mode=mode,
+            **extra_kwargs,
         )
 
         if "error" in res:
@@ -194,7 +230,7 @@ async def _animate_scene(scene_id: str):
 # ---------------------------------------------------------------------------
 
 async def _generate_music_track(track_id: str, mood: str) -> Optional[str]:
-    """Returns the audio URL if successful, else None."""
+    """Returns audio URL on success, None on failure."""
     async with async_session_factory() as db:
         result = await db.execute(select(ProductionTrack).where(ProductionTrack.id == track_id))
         track = result.scalar_one_or_none()
@@ -213,7 +249,7 @@ async def _generate_music_track(track_id: str, mood: str) -> Optional[str]:
             await db.commit()
             return None
 
-        audio_url = res.get("audio_url") or res.get("url")
+        audio_url = res.get("audio_url")
         track.suno_task_id = res.get("id", "")
         track.audio_url = audio_url
         track.suno_status = "completed"
@@ -228,7 +264,6 @@ async def _generate_music_track(track_id: str, mood: str) -> Optional[str]:
 
 async def _assemble_video(job_id: str, scene_ids: list, music_url: Optional[str]):
     async with async_session_factory() as db:
-        # Collect completed video paths
         result = await db.execute(
             select(ProductionScene)
             .where(ProductionScene.id.in_(scene_ids))
@@ -237,28 +272,31 @@ async def _assemble_video(job_id: str, scene_ids: list, music_url: Optional[str]
         scenes = result.scalars().all()
         video_clips = [s.local_video_path for s in scenes if s.local_video_path]
 
-        if not video_clips:
-            await _update_job_status(job_id, "failed", "No video clips generated to assemble")
-            return
+    if not video_clips:
+        await _update_status(job_id, "failed", "No video clips generated to assemble")
+        await _log(job_id, "❌ Phase 5 failed — no clips available")
+        return
 
-        res = await assembly_service.assemble_video(
-            job_id=job_id,
-            clip_urls=video_clips,
-            music_url=music_url,
-        )
+    res = await assembly_service.assemble_video(
+        job_id=job_id,
+        clip_urls=video_clips,
+        music_url=music_url,
+    )
 
-        if "error" in res:
-            await _update_job_status(job_id, "assembly_failed", res["error"])
-        else:
-            async with async_session_factory() as db2:
-                await db2.execute(
-                    update(ProductionJob)
-                    .where(ProductionJob.id == job_id)
-                    .values(
-                        status="completed",
-                        assembled_video_path=res.get("output_path"),
-                        total_duration_sec=res.get("duration"),
-                    )
+    if "error" in res:
+        await _update_status(job_id, "assembly_failed", res["error"])
+        await _log(job_id, f"❌ Phase 5 failed: {res['error']}")
+    else:
+        async with async_session_factory() as db2:
+            await db2.execute(
+                update(ProductionJob)
+                .where(ProductionJob.id == job_id)
+                .values(
+                    status="completed",
+                    assembled_video_path=res.get("output_path"),
+                    total_duration_sec=res.get("duration"),
+                    file_size_bytes=res.get("file_size_bytes"),
                 )
-                await db2.commit()
-            logger.info(f"Job {job_id} assembled: {res.get('output_path')}")
+            )
+            await db2.commit()
+        await _log(job_id, f"✅ Phase 5 complete — {res.get('duration', 0):.1f}s video assembled")

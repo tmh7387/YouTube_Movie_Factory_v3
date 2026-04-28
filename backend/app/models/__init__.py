@@ -72,6 +72,11 @@ class ProductionJob(Base):
     file_size_bytes = Column(BigInteger)
     error_message = Column(Text)
     celery_task_id = Column(String)
+    progress_log = Column(JSONB, default=list)
+    # Audio reference for Seedance beat-sync and ffmpeg assembly
+    music_url = Column(Text)              # Supabase public URL of uploaded audio/video
+    music_filename = Column(Text)         # Original filename (e.g. 'beat.mp4', 'track.mp3')
+    beat_sync_enabled = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     published_at = Column(DateTime(timezone=True))
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ClipboardCheck,
@@ -19,6 +20,7 @@ import { curationService, youtubeUrl, youtubeThumbnail } from '../services/curat
 import type { CreativeBrief } from '../services/curation';
 
 const Curation: React.FC = () => {
+    const navigate = useNavigate();
     const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
     const [hoveredJobId, setHoveredJobId] = useState<string | null>(null);
     const queryClient = useQueryClient();
@@ -152,9 +154,7 @@ const Curation: React.FC = () => {
                                         <BriefDetail brief={selectedJob.creative_brief} sourceVideoIds={selectedJob.selected_video_ids} />
                                         <div className="p-8 border-t border-white/10 bg-blue-600/10 flex justify-end">
                                             <button
-                                                onClick={() => {
-                                                    window.location.href = '/production';
-                                                }}
+                                                onClick={() => navigate('/production', { state: { curationJobId: selectedJob.id } })}
                                                 className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95"
                                             >
                                                 <Sparkles className="w-5 h-5" />

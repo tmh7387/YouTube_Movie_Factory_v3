@@ -37,6 +37,11 @@ class Settings(BaseSettings):
     # FastAPI Secret Key
     SECRET_KEY: str
 
+    # --- Supabase Storage (audio file hosting for Seedance beat-sync) ---
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_KEY: str = ""
+    SUPABASE_AUDIO_BUCKET: str = "production-audio"
+
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(__file__), "..", "..", "..", "env", ".env"),
         env_file_encoding="utf-8",
