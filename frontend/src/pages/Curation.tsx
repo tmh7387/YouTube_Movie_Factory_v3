@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ClipboardCheck,
@@ -10,23 +10,42 @@ import {
     Target,
     Sparkles,
     AlertCircle,
-    Layout
+    Layout,
+    Trash2,
+    Youtube,
+    ExternalLink,
 } from 'lucide-react';
-import { curationService } from '../services/curation';
+import { curationService, youtubeUrl, youtubeThumbnail } from '../services/curation';
 import type { CreativeBrief } from '../services/curation';
 
 const Curation: React.FC = () => {
     const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+    const [hoveredJobId, setHoveredJobId] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
     const { data: jobs, isLoading } = useQuery({
         queryKey: ['curationJobs'],
         queryFn: curationService.listJobs,
         refetchInterval: (query) => {
-            // Poll if any job is still processing
             const hasRunningJobs = query.state.data?.some(j => j.status === 'pending' || j.status === 'generating_brief');
             return hasRunningJobs ? 3000 : false;
         }
     });
+
+    const deleteMutation = useMutation({
+        mutationFn: (jobId: string) => curationService.deleteJob(jobId),
+        onSuccess: (_, deletedId) => {
+            queryClient.invalidateQueries({ queryKey: ['curationJobs'] });
+            if (selectedJobId === deletedId) setSelectedJobId(null);
+        },
+    });
+
+    const handleDelete = (e: React.MouseEvent, jobId: string) => {
+        e.stopPropagation();
+        if (window.confirm('Remove this curation job? This cannot be undone.')) {
+            deleteMutation.mutate(jobId);
+        }
+    };
 
     const selectedJob = jobs?.find(j => j.id === selectedJobId);
 
@@ -63,12 +82,29 @@ const Curation: React.FC = () => {
                                 key={job.id}
                                 whileHover={{ scale: 1.02 }}
                                 onClick={() => setSelectedJobId(job.id)}
-                                className={`p-4 rounded-xl cursor-pointer border transition-all ${selectedJobId === job.id
+                                onHoverStart={() => setHoveredJobId(job.id)}
+                                onHoverEnd={() => setHoveredJobId(null)}
+                                className={`p-4 rounded-xl cursor-pointer border transition-all relative ${selectedJobId === job.id
                                     ? 'bg-blue-600/20 border-blue-500 shadow-lg shadow-blue-500/10'
                                     : 'bg-white/5 border-white/10 hover:bg-white/10'
                                     }`}
                             >
-                                <div className="flex justify-between items-start mb-2">
+                                {/* Delete button — uses React hover state (framer-motion blocks CSS group-hover) */}
+                                <button
+                                    onClick={(e) => handleDelete(e, job.id)}
+                                    disabled={deleteMutation.isPending && deleteMutation.variables === job.id}
+                                    className={`absolute top-3 right-3 p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all z-10 ${
+                                        hoveredJobId === job.id ? 'opacity-100' : 'opacity-0'
+                                    }`}
+                                    title="Remove this curation"
+                                >
+                                    {deleteMutation.isPending && deleteMutation.variables === job.id
+                                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                        : <Trash2 className="w-3.5 h-3.5" />
+                                    }
+                                </button>
+
+                                <div className="flex justify-between items-start mb-2 pr-6">
                                     <span className="text-xs font-mono text-gray-500 uppercase tracking-wider">
                                         JOB-{job.id.slice(0, 8)}
                                     </span>
@@ -82,6 +118,12 @@ const Curation: React.FC = () => {
                                         <Sparkles className="w-3 h-3" />
                                         {job.num_scenes || 0} Scenes
                                     </span>
+                                    {job.selected_video_ids?.length ? (
+                                        <span className="flex items-center gap-1">
+                                            <Youtube className="w-3 h-3 text-red-500" />
+                                            {job.selected_video_ids.length} Source{job.selected_video_ids.length !== 1 ? 's' : ''}
+                                        </span>
+                                    ) : null}
                                     <span>{job.created_at ? new Date(job.created_at).toLocaleDateString() : '—'}</span>
                                 </div>
                             </motion.div>
@@ -107,11 +149,10 @@ const Curation: React.FC = () => {
                             >
                                 {selectedJob.status === 'completed' && selectedJob.creative_brief ? (
                                     <>
-                                        <BriefDetail brief={selectedJob.creative_brief} />
+                                        <BriefDetail brief={selectedJob.creative_brief} sourceVideoIds={selectedJob.selected_video_ids} />
                                         <div className="p-8 border-t border-white/10 bg-blue-600/10 flex justify-end">
                                             <button
                                                 onClick={() => {
-                                                    // Handle production start
                                                     window.location.href = '/production';
                                                 }}
                                                 className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95"
@@ -123,11 +164,18 @@ const Curation: React.FC = () => {
                                     </>
                                 ) : (
                                     <div className="p-20 flex flex-col items-center justify-center text-center">
-                                        {selectedJob.status === 'error' ? (
+                                        {selectedJob.status === 'error' || selectedJob.status === 'failed' ? (
                                             <>
                                                 <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
                                                 <h3 className="text-xl font-semibold text-white">Generation Failed</h3>
                                                 <p className="text-gray-400 mt-2">{selectedJob.creative_brief?.error || 'Unknown error occurred.'}</p>
+                                                <button
+                                                    onClick={(e) => handleDelete(e as any, selectedJob.id)}
+                                                    className="mt-6 flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    Remove this job
+                                                </button>
                                             </>
                                         ) : (
                                             <>
@@ -160,6 +208,8 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
         pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
         generating_brief: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
         error: 'bg-red-500/20 text-red-400 border-red-500/30',
+        failed: 'bg-red-500/20 text-red-400 border-red-500/30',
+        ready: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
     };
 
     return (
@@ -169,7 +219,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     );
 };
 
-const BriefDetail: React.FC<{ brief: CreativeBrief }> = ({ brief }) => {
+const BriefDetail: React.FC<{ brief: CreativeBrief; sourceVideoIds?: string[] | null }> = ({ brief, sourceVideoIds }) => {
     return (
         <div className="divide-y divide-white/10">
             <div className="p-8 bg-gradient-to-br from-blue-600/10 to-purple-600/10">
@@ -180,10 +230,43 @@ const BriefDetail: React.FC<{ brief: CreativeBrief }> = ({ brief }) => {
                 </div>
             </div>
 
+            {/* Source Videos */}
+            {sourceVideoIds && sourceVideoIds.length > 0 && (
+                <div className="p-8 bg-black/20">
+                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <Youtube className="w-4 h-4 text-red-500" />
+                        Source Videos
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                        {sourceVideoIds.map((vid) => (
+                            <a
+                                key={vid}
+                                href={youtubeUrl(vid)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-red-500/40 rounded-xl overflow-hidden transition-all pr-3"
+                            >
+                                <div className="w-16 h-12 shrink-0 relative overflow-hidden">
+                                    <img
+                                        src={youtubeThumbnail(vid)}
+                                        alt={vid}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
+                                </div>
+                                <span className="text-xs font-mono text-gray-400 group-hover:text-white transition-colors">{vid}</span>
+                                <ExternalLink className="w-3 h-3 text-gray-600 group-hover:text-red-400 transition-colors ml-1 shrink-0" />
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <div className="p-8 bg-white/5">
                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                     <Palette className="w-5 h-5 text-pink-400" />
-                    Style & Direction
+                    Style &amp; Direction
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
@@ -195,7 +278,7 @@ const BriefDetail: React.FC<{ brief: CreativeBrief }> = ({ brief }) => {
                     </div>
                     <div className="space-y-4">
                         <h4 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Visual Palette</h4>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
                             {brief.color_palette.map((color, idx) => (
                                 <div key={idx} className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color.toLowerCase().includes('#') ? color : '#3b82f6' }} />

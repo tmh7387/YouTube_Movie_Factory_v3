@@ -46,7 +46,7 @@ class ClaudeService:
         try:
             response = await self.client.messages.create(
                 model=settings.CLAUDE_CREATIVE_MODEL,
-                max_tokens=2500,
+                max_tokens=4096,
                 temperature=0.8,
                 system=system_prompt,
                 messages=[
@@ -54,12 +54,20 @@ class ClaudeService:
                 ]
             )
             
-            content = response.content[0].text
-            # Parse the JSON response
+            content = response.content[0].text.strip()
+
+            # Strip markdown code fences Claude sometimes wraps around JSON
+            if content.startswith("```"):
+                content = content.split("```", 2)[1]          # drop opening fence line
+                if content.startswith("json"):
+                    content = content[4:]                      # drop "json" language tag
+                content = content.rsplit("```", 1)[0].strip()  # drop closing fence
+
             return json.loads(content)
                 
         except Exception as e:
-            logger.error(f"Creative Brief generation error via Anthropic SDK: {e}")
+            logger.error(f"Creative Brief generation error: {e}")
+            logger.debug(f"Raw Claude response was: {locals().get('content', '<not captured>')[:500]}")
             return {"error": str(e)}
 
 claude_service = ClaudeService()

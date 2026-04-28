@@ -4,6 +4,7 @@ from sqlalchemy import select, update
 from typing import List, Optional
 from pydantic import BaseModel
 from uuid import UUID
+from datetime import datetime
 
 from app.db.session import get_db
 from app.models import ResearchJob, CurationJob, ResearchVideo
@@ -21,6 +22,8 @@ class CurationJobResponse(BaseModel):
     status: str
     creative_brief: Optional[dict] = None
     num_scenes: Optional[int] = None
+    selected_video_ids: Optional[List[str]] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -53,6 +56,15 @@ async def create_curation_job(req: CurationStartRequest, background_tasks: Backg
 async def list_curation_jobs(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(CurationJob).order_by(CurationJob.created_at.desc()))
     return result.scalars().all()
+
+@router.delete("/{job_id}", status_code=204)
+async def delete_curation_job(job_id: UUID, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(CurationJob).where(CurationJob.id == job_id))
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Curation job not found")
+    await db.delete(job)
+    await db.commit()
 
 @router.get("/{job_id}", response_model=CurationJobResponse)
 async def get_curation_job(job_id: UUID, db: AsyncSession = Depends(get_db)):

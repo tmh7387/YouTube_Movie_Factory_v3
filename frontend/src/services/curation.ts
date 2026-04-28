@@ -37,6 +37,7 @@ export interface CurationJob {
     creative_brief?: CreativeBrief;
     user_approved_brief?: CreativeBrief;
     num_scenes?: number;
+    selected_video_ids?: string[] | null;
     created_at?: string | null;
     approved_at?: string | null;
 }
@@ -67,4 +68,13 @@ export const curationService = {
         const response = await axios.get(`${API_BASE_URL}/${jobId}`);
         return response.data;
     },
+
+    deleteJob: async (jobId: string): Promise<void> => {
+        await axios.delete(`${API_BASE_URL}/${jobId}`);
+    },
 };
+
+/** Build a YouTube watch URL from a video ID */
+export const youtubeUrl = (videoId: string) => `https://youtube.com/watch?v=${videoId}`;
+/** Build a YouTube thumbnail URL from a video ID */
+export const youtubeThumbnail = (videoId: string) => `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;

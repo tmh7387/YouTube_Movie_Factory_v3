@@ -11,26 +11,31 @@ logger = logging.getLogger(__name__)
 def _build_brief_context(res_job) -> str:
     """Build the creative context block for Claude.
     Uses Research Brief if present, falls back to topic string."""
-    if not res_job.research_brief:
-        return f"Topic: {res_job.genre_topic}"
+    rb = res_job.research_brief if res_job else None
+    if not rb or not isinstance(rb, dict):
+        return f"Topic: {res_job.genre_topic if res_job else 'Unknown'}"
 
-    rb = res_job.research_brief
     parts = [
-        f"Creative Intent: {rb['intent_summary']}",
-        f"Mood: {rb['mood']}",
-        f"Visual Style: {rb['visual_style']}",
-        f"Audio Character: {rb['audio_character']}",
+        f"Creative Intent: {rb.get('intent_summary', '')}",
+        f"Mood: {rb.get('mood', '')}",
+        f"Visual Style: {rb.get('visual_style', '')}",
+        f"Audio Character: {rb.get('audio_character', '')}",
     ]
-    if rb.get("negative_constraints"):
-        parts.append("Avoid: " + ", ".join(rb["negative_constraints"]))
-    if rb.get("reference_image_descriptions"):
-        parts.append(
-            "Visual References: " + "; ".join(rb["reference_image_descriptions"])
-        )
-    if rb.get("audio_metadata", {}).get("estimated_bpm"):
-        parts.append(f"Target BPM: ~{rb['audio_metadata']['estimated_bpm']}")
+    neg = rb.get("negative_constraints")
+    if neg:
+        parts.append("Avoid: " + ", ".join(neg))
 
-    return "\n".join(parts)
+    ref_imgs = rb.get("reference_image_descriptions")
+    if ref_imgs:
+        parts.append("Visual References: " + "; ".join(ref_imgs))
+
+    # Safely handle audio_metadata — may be None, not just missing
+    audio_meta = rb.get("audio_metadata") or {}
+    bpm = audio_meta.get("estimated_bpm")
+    if bpm:
+        parts.append(f"Target BPM: ~{bpm}")
+
+    return "\n".join(p for p in parts if p.split(": ", 1)[-1])  # strip empty values
 
 async def _orchestrate_curation(curation_job_id: str, research_job_id: str, selected_video_ids: list):
     async with AsyncSessionLocal() as session:
