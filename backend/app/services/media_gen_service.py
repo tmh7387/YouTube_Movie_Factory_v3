@@ -8,12 +8,19 @@ logger = logging.getLogger(__name__)
 
 COMET_BASE = "https://api.cometapi.com/v1"
 
+# Correct CometAPI endpoints (verified via live testing)
+IMAGE_URL = f"{COMET_BASE}/images/generations"
+VIDEO_SUBMIT_URL = f"{COMET_BASE}/videos"          # POST — submit task
+VIDEO_STATUS_URL = f"{COMET_BASE}/videos"          # GET  — poll: /v1/videos/{task_id}
+
+# CometAPI task status values
+TERMINAL_SUCCESS = {"succeeded", "completed", "done"}
+TERMINAL_FAILURE = {"failed", "error", "cancelled"}
+
 
 class MediaGenService:
     def __init__(self):
         self.api_key = settings.COMETAPI_API_KEY
-        self.image_url = f"{COMET_BASE}/images/generations"
-        self.video_url = f"{COMET_BASE}/videos/generations"
 
     # -------------------------------------------------------------------------
     # Image Generation
@@ -28,7 +35,7 @@ class MediaGenService:
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(
-                    self.image_url,
+                    IMAGE_URL,
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
@@ -64,38 +71,43 @@ class MediaGenService:
         prompt: str = "",
         model: str = "doubao-seedance-2-0",
         duration: int = 5,
+        input_reference: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Animate a still image using Seedance 2.0 via CometAPI.
+        - input_reference: optional .mp4 URL for beat-sync / audio reference.
         Returns the video URL when complete (polls until done).
         """
         try:
+            payload: Dict[str, Any] = {
+                "model": model,
+                "image": image_url,
+                "prompt": prompt or "slow dolly in, cinematic lighting, subtle depth of field shift, smooth motion",
+                "duration": duration,
+                "n": 1,
+            }
+            if input_reference:
+                payload["input_reference"] = input_reference
+                logger.info(f"Seedance: using audio reference for beat-sync")
+
             async with httpx.AsyncClient(timeout=60.0) as client:
-                # Submit generation task
                 response = await client.post(
-                    self.video_url,
+                    VIDEO_SUBMIT_URL,
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
                     },
-                    json={
-                        "model": model,
-                        "image": image_url,
-                        "prompt": prompt,
-                        "duration": duration,
-                        "n": 1,
-                    },
+                    json=payload,
                 )
                 response.raise_for_status()
                 task_data = response.json()
 
             task_id = task_data.get("id") or task_data.get("task_id")
             if not task_id:
-                # Some responses return the video URL immediately
                 video_url = self._extract_video_url(task_data)
                 if video_url:
                     return {"url": video_url, "model": model}
-                return {"error": f"No task_id in response: {task_data}"}
+                return {"error": f"No task_id in Seedance response: {task_data}"}
 
             logger.info(f"Seedance task submitted: {task_id}")
             return await self._poll_video_task(task_id, model)
@@ -126,14 +138,14 @@ class MediaGenService:
             payload: Dict[str, Any] = {
                 "model": model,
                 "image": image_url,
-                "prompt": prompt,
+                "prompt": prompt or "cinematic camera movement, smooth dolly, natural motion",
                 "duration": duration,
                 "mode": mode,
                 "n": 1,
             }
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(
-                    self.video_url,
+                    VIDEO_SUBMIT_URL,
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
@@ -170,14 +182,17 @@ class MediaGenService:
         model: str = "kling_video",
         duration: int = 5,
         mode: str = "std",
+        input_reference: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Route to the correct animation backend based on model name.
-        - 'doubao-seedance-*'  → Seedance via CometAPI
+        - 'doubao-seedance-*'  → Seedance via CometAPI  (supports input_reference)
         - 'kling_*' or default → Kling via CometAPI
         """
         if "seedance" in model.lower():
-            return await self.animate_image_seedance(image_url, prompt, model, duration)
+            return await self.animate_image_seedance(
+                image_url, prompt, model, duration, input_reference=input_reference
+            )
         return await self.animate_image_kling(image_url, prompt, model, duration, mode)
 
     # -------------------------------------------------------------------------
@@ -187,12 +202,12 @@ class MediaGenService:
         self,
         task_id: str,
         model: str,
-        max_wait: int = 300,
-        interval: int = 10,
+        max_wait: int = 600,   # 10 minutes — Seedance can be slow
+        interval: int = 15,
     ) -> Dict[str, Any]:
-        """Poll CometAPI until the video task completes or times out."""
+        """Poll CometAPI /v1/videos/{task_id} until the video task completes or times out."""
         elapsed = 0
-        status_url = f"{self.video_url}/{task_id}"
+        status_url = f"{VIDEO_STATUS_URL}/{task_id}"
         async with httpx.AsyncClient(timeout=30.0) as client:
             while elapsed < max_wait:
                 await asyncio.sleep(interval)
@@ -204,16 +219,17 @@ class MediaGenService:
                     )
                     r.raise_for_status()
                     data = r.json()
-                    status = data.get("status", "")
-                    logger.info(f"Video task {task_id} status: {status} ({elapsed}s)")
+                    status = (data.get("status") or "").lower()
+                    progress = data.get("progress", 0)
+                    logger.info(f"Video task {task_id}: status={status} progress={progress}% ({elapsed}s)")
 
-                    if status in ("succeeded", "completed", "done"):
+                    if status in TERMINAL_SUCCESS:
                         video_url = self._extract_video_url(data)
                         if video_url:
                             return {"url": video_url, "model": model, "task_id": task_id}
                         return {"error": f"Task succeeded but no video URL found: {data}"}
 
-                    if status in ("failed", "error", "cancelled"):
+                    if status in TERMINAL_FAILURE:
                         return {"error": f"Video task {task_id} failed: {data.get('error', data)}"}
 
                 except Exception as e:

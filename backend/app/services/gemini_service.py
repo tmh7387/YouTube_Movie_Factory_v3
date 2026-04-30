@@ -61,6 +61,27 @@ class GeminiVideoAnalyzerService:
         self.api_key = settings.GEMINI_API_KEY
         self.model = settings.GEMINI_MODEL
 
+    @staticmethod
+    def _clean_youtube_url(url: str) -> str:
+        """Strip playlist params (&list=, &index=, &si=, etc.) — Gemini rejects them."""
+        from urllib.parse import urlparse, parse_qs, urlencode
+
+        parsed = urlparse(url)
+
+        # Handle youtu.be short links (no query cleaning needed)
+        if "youtu.be" in parsed.netloc:
+            # Strip any query params, keep just the path (video ID)
+            return f"https://youtu.be{parsed.path}"
+
+        # For youtube.com/watch?v=..., keep ONLY the 'v' parameter
+        qs = parse_qs(parsed.query)
+        video_id = qs.get("v", [None])[0]
+        if video_id:
+            return f"https://www.youtube.com/watch?v={video_id}"
+
+        # Fallback: return as-is
+        return url
+
     def _build_analysis_prompt(self, youtube_url: str, category: str, extra_context: str = "") -> str:
         schema = CATEGORY_SCHEMAS.get(category, CATEGORY_SCHEMAS["general"])
         focus_lines = "\n".join(f"  - {f}" for f in schema["focus_areas"])
@@ -118,7 +139,12 @@ Respond ONLY with valid JSON — no markdown fences, no commentary outside the J
         Submit a YouTube URL directly to Gemini for native video understanding.
         Returns structured extraction of techniques, prompts, and workflow tips.
         """
-        prompt = self._build_analysis_prompt(youtube_url, category, extra_context)
+        # Gemini rejects playlist params — clean the URL first
+        clean_url = self._clean_youtube_url(youtube_url)
+        if clean_url != youtube_url:
+            logger.info(f"Cleaned YouTube URL: {youtube_url} → {clean_url}")
+
+        prompt = self._build_analysis_prompt(clean_url, category, extra_context)
 
         payload = {
             "contents": [
@@ -126,7 +152,7 @@ Respond ONLY with valid JSON — no markdown fences, no commentary outside the J
                     "parts": [
                         {
                             "fileData": {
-                                "fileUri": youtube_url,
+                                "fileUri": clean_url,
                                 "mimeType": "video/mp4",
                             }
                         },

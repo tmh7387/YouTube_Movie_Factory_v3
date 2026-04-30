@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Film, Sparkles, Music, Image as ImageIcon, CheckCircle2,
     AlertCircle, RefreshCcw, Download, ChevronRight, Layers,
-    Play, Zap, Upload, X, FileAudio, ToggleLeft, ToggleRight, Terminal
+    Play, Zap, Upload, X, FileAudio, ToggleLeft, ToggleRight, Terminal,
+    RotateCcw, Clapperboard
 } from 'lucide-react';
 import {
     productionService, type ProductionJob, type ProductionScene, type ProductionTrack,
@@ -73,9 +74,19 @@ function PhaseTracker({ status }: { status: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Scene card
+// Scene card  (with inline video review)
 // ---------------------------------------------------------------------------
-function SceneCard({ scene }: { scene: ProductionScene }) {
+function SceneCard({
+    scene,
+    approved,
+    onApprove,
+}: {
+    scene: ProductionScene;
+    approved: boolean;
+    onApprove: (id: string, val: boolean) => void;
+}) {
+    const [expanded, setExpanded] = useState(false);
+
     const statusLabel: Record<string, string> = {
         pending: 'Waiting',
         image_failed: 'Image Failed',
@@ -86,11 +97,26 @@ function SceneCard({ scene }: { scene: ProductionScene }) {
     const isDone = scene.animation_status === 'completed';
     const isFailed = ['failed', 'image_failed'].includes(scene.animation_status);
     const isAnim = scene.animation_status === 'animating';
+    const hasVideo = isDone && !!scene.local_video_path;
 
     return (
-        <motion.div layout className="bg-white/5 border border-white/10 rounded-xl overflow-hidden group">
-            <div className="aspect-video bg-black/40 relative overflow-hidden">
-                {scene.image_url ? (
+        <motion.div layout className={`rounded-xl overflow-hidden border transition-all ${
+            approved ? 'border-green-500/40 bg-green-500/5' : 'border-white/10 bg-white/5'
+        }`}>
+            {/* Thumbnail / video toggle row */}
+            <div
+                className={`aspect-video bg-black/60 relative overflow-hidden ${hasVideo ? 'cursor-pointer' : ''}`}
+                onClick={() => hasVideo && setExpanded(v => !v)}
+            >
+                {expanded && hasVideo ? (
+                    // Inline video player
+                    <video
+                        src={scene.local_video_path!}
+                        className="w-full h-full object-cover"
+                        autoPlay loop controls
+                        onClick={e => e.stopPropagation()}
+                    />
+                ) : scene.image_url ? (
                     <img src={scene.image_url} alt={`Scene ${scene.scene_number}`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
@@ -100,14 +126,23 @@ function SceneCard({ scene }: { scene: ProductionScene }) {
                          <Layers className="w-6 h-6 text-gray-700" />}
                     </div>
                 )}
+
+                {/* Scene number badge */}
                 <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-white">
                     #{scene.scene_number}
                 </div>
-                {isDone && (
-                    <div className="absolute top-2 right-2 bg-green-500/20 border border-green-500/40 backdrop-blur px-2 py-0.5 rounded text-[10px] text-green-400">
-                        ✓ Done
+
+                {/* Play / collapse toggle */}
+                {hasVideo && (
+                    <div className={`absolute top-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded backdrop-blur text-[10px] font-bold transition-all ${
+                        expanded ? 'bg-white/20 text-white' : 'bg-blue-600/70 text-blue-100'
+                    }`}>
+                        {expanded ? <X className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                        {expanded ? 'Close' : 'Preview'}
                     </div>
                 )}
+
+                {/* Animating overlay */}
                 {isAnim && (
                     <div className="absolute inset-0 bg-blue-600/10 flex items-end p-3">
                         <div className="text-xs text-blue-300 flex items-center gap-1.5">
@@ -116,13 +151,58 @@ function SceneCard({ scene }: { scene: ProductionScene }) {
                     </div>
                 )}
             </div>
-            <div className="p-3">
+
+            {/* Card footer */}
+            <div className="p-3 space-y-2">
                 <p className="text-xs text-gray-400 line-clamp-2 italic">"{scene.description}"</p>
-                <div className="mt-2 flex items-center justify-between">
+
+                {/* Expanded details */}
+                <AnimatePresence>
+                    {expanded && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                        >
+                            {scene.motion_prompt && (
+                                <p className="text-[11px] text-purple-300/80 mt-1 line-clamp-3">
+                                    🎬 {scene.motion_prompt}
+                                </p>
+                            )}
+                            {scene.local_video_path && (
+                                <a
+                                    href={scene.local_video_path}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-[10px] text-blue-400 hover:underline flex items-center gap-1 mt-1"
+                                >
+                                    <Download className="w-3 h-3" /> Open raw video
+                                </a>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <div className="flex items-center justify-between gap-2">
                     <span className={`text-[10px] px-1.5 py-0.5 rounded border ${statusColor(scene.animation_status)}`}>
                         {statusLabel[scene.animation_status] ?? scene.animation_status}
                     </span>
-                    <span className="text-[10px] text-gray-600">{scene.animation_model ?? 'std'}</span>
+
+                    {/* Approve toggle — only when video is ready */}
+                    {isDone && (
+                        <button
+                            onClick={() => onApprove(scene.id, !approved)}
+                            className={`flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-bold transition-all ${
+                                approved
+                                    ? 'bg-green-500/20 border-green-500/50 text-green-400'
+                                    : 'bg-white/5 border-white/20 text-gray-500 hover:border-green-500/40 hover:text-green-400'
+                            }`}
+                        >
+                            <CheckCircle2 className="w-3 h-3" />
+                            {approved ? 'Approved' : 'Approve'}
+                        </button>
+                    )}
                 </div>
             </div>
         </motion.div>
@@ -357,6 +437,16 @@ function Launcher({ prefillId, onStarted }: { prefillId?: string; onStarted: (jo
 // Job monitor
 // ---------------------------------------------------------------------------
 function JobMonitor({ jobId }: { jobId: string }) {
+    const queryClient = useQueryClient();
+    const [approvedScenes, setApprovedScenes] = useState<Set<string>>(new Set());
+
+    const handleApprove = (id: string, val: boolean) => {
+        setApprovedScenes(prev => {
+            const next = new Set(prev);
+            if (val) next.add(id); else next.delete(id);
+            return next;
+        });
+    };
     const { data, isLoading } = useQuery<ProductionJobDetail>({
         queryKey: ['production_detail', jobId],
         queryFn: () => productionService.getJob(jobId),
@@ -364,6 +454,16 @@ function JobMonitor({ jobId }: { jobId: string }) {
             const job = (q.state.data as ProductionJobDetail | undefined)?.job;
             return job && isRunning(job.status) ? 4000 : false;
         },
+    });
+
+    const retryMutation = useMutation({
+        mutationFn: () => productionService.retryFailed(jobId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['production_detail', jobId] }),
+    });
+
+    const assembleMutation = useMutation({
+        mutationFn: () => productionService.triggerAssemble(jobId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['production_detail', jobId] }),
     });
 
     if (isLoading || !data) return (
@@ -375,6 +475,12 @@ function JobMonitor({ jobId }: { jobId: string }) {
 
     const { job, scenes, tracks } = data;
     const { done, total, pct } = sceneProgress(scenes);
+    const failedCount = scenes.filter(s => ['failed', 'image_failed'].includes(s.animation_status)).length;
+    const allDone = done === total && total > 0;
+    const completedScenes = scenes.filter(s => s.animation_status === 'completed');
+    const allApproved = completedScenes.length > 0 && completedScenes.every(s => approvedScenes.has(s.id));
+    const canAssemble = allDone && allApproved && !['completed', 'assembling'].includes(job.status);
+    const canRetry = failedCount > 0 && !['assembling', 'completed'].includes(job.status);
 
     return (
         <div className="space-y-6">
@@ -402,6 +508,42 @@ function JobMonitor({ jobId }: { jobId: string }) {
                         <motion.div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
                             animate={{ width: `${pct}%` }} transition={{ duration: 0.8 }} />
                     </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="mt-4 flex flex-wrap gap-3">
+                    {canRetry && (
+                        <button
+                            onClick={() => retryMutation.mutate()}
+                            disabled={retryMutation.isPending}
+                            className="flex items-center gap-2 px-4 py-2 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/40 text-orange-300 text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
+                        >
+                            {retryMutation.isPending
+                                ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Retrying…</>
+                                : <><RotateCcw className="w-4 h-4" /> Retry {failedCount} Failed Scene{failedCount > 1 ? 's' : ''}</>}
+                        </button>
+                    )}
+                    {canAssemble && (
+                        <button
+                            onClick={() => assembleMutation.mutate()}
+                            disabled={assembleMutation.isPending}
+                            className="flex items-center gap-2 px-4 py-2 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
+                        >
+                            {assembleMutation.isPending
+                                ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Starting…</>
+                                : <><Clapperboard className="w-4 h-4" /> Assemble Video</>}
+                        </button>
+                    )}
+                    {retryMutation.isSuccess && !retryMutation.isPending && (
+                        <span className="flex items-center gap-1.5 text-sm text-green-400">
+                            <CheckCircle2 className="w-4 h-4" /> {retryMutation.data?.retried} scenes queued for retry
+                        </span>
+                    )}
+                    {assembleMutation.isSuccess && !assembleMutation.isPending && (
+                        <span className="flex items-center gap-1.5 text-sm text-purple-400">
+                            <CheckCircle2 className="w-4 h-4" /> Assembly running in background…
+                        </span>
+                    )}
                 </div>
 
                 {/* Completed stats */}
@@ -452,11 +594,34 @@ function JobMonitor({ jobId }: { jobId: string }) {
 
                 {/* Right: scene grid */}
                 <div className="lg:col-span-2">
-                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-blue-400" /> Scenes ({scenes.length})
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4 text-blue-400" /> Scenes ({scenes.length})
+                        </h3>
+                        {completedScenes.length > 0 && (
+                            <button
+                                onClick={() => setApprovedScenes(new Set(completedScenes.map(s => s.id)))}
+                                className="text-xs px-3 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-400 rounded-lg transition-all font-semibold"
+                            >
+                                ✓ Approve All
+                            </button>
+                        )}
+                    </div>
+                    {allDone && !allApproved && (
+                        <p className="text-xs text-amber-400/80 mb-3 flex items-center gap-1.5">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            Preview and approve each scene before assembling
+                        </p>
+                    )}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {scenes.map(s => <SceneCard key={s.id} scene={s} />)}
+                        {scenes.map(s => (
+                            <SceneCard
+                                key={s.id}
+                                scene={s}
+                                approved={approvedScenes.has(s.id)}
+                                onApprove={handleApprove}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>

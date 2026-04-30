@@ -55,4 +55,13 @@ export const skillsService = {
         const response = await axios.get(`${API_BASE}/for-production`, { params: { video_type: videoType, limit } });
         return response.data;
     },
+
+    updateSkill: async (id: string, data: Partial<Skill>): Promise<Skill> => {
+        const response = await axios.put(`${API_BASE}/${id}`, data);
+        return response.data;
+    },
+
+    deleteSkill: async (id: string): Promise<void> => {
+        await axios.delete(`${API_BASE}/${id}`);
+    },
 };

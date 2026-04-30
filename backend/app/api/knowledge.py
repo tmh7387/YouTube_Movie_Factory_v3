@@ -29,6 +29,15 @@ class IngestRequest(BaseModel):
     def validate_youtube_url(cls, v: str) -> str:
         if "youtube.com" not in v and "youtu.be" not in v:
             raise ValueError("youtube_url must be a YouTube URL")
+        # Strip playlist params — Gemini rejects them
+        from urllib.parse import urlparse, parse_qs
+        parsed = urlparse(v)
+        if "youtu.be" in parsed.netloc:
+            return f"https://youtu.be{parsed.path}"
+        qs = parse_qs(parsed.query)
+        video_id = qs.get("v", [None])[0]
+        if video_id:
+            return f"https://www.youtube.com/watch?v={video_id}"
         return v
 
 

@@ -10,7 +10,7 @@ from app.models import ProductionJob, CurationJob, ProductionTrack, ProductionSc
 from app.services.supabase_storage_service import supabase_storage
 from pydantic import BaseModel
 from datetime import datetime
-from tasks.production import run_production_pipeline
+from tasks.production import run_production_pipeline, _animate_scene, _assemble_video
 
 router = APIRouter()
 
@@ -226,6 +226,87 @@ async def download_assembled_video(job_id: uuid.UUID, db: AsyncSession = Depends
         media_type="video/mp4",
         filename=f"ymf_production_{job_id}.mp4",
     )
+
+
+# ---------------------------------------------------------------------------
+# Retry failed scenes
+# ---------------------------------------------------------------------------
+
+@router.post("/{job_id}/retry-failed")
+async def retry_failed_scenes(
+    job_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Re-submit animation for all scenes with status 'failed' or stale 'animating'.
+    Skips scenes that are already 'completed'. Safe to call multiple times.
+    """
+    result = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Production job not found")
+
+    scenes_res = await db.execute(
+        select(ProductionScene)
+        .where(ProductionScene.job_id == job_id)
+        .order_by(ProductionScene.scene_number)
+    )
+    scenes = scenes_res.scalars().all()
+
+    retry_ids = []
+    for s in scenes:
+        if s.animation_status in ("failed", "animating") or (
+            s.animation_status == "pending" and not s.local_video_path
+        ):
+            # Reset stale animating to failed so skip guard doesn't block it
+            if s.animation_status == "animating":
+                s.animation_status = "failed"
+            retry_ids.append(str(s.id))
+
+    if not retry_ids:
+        return {"message": "No scenes need retrying", "retried": 0}
+
+    await db.commit()
+
+    audio_url = job.music_url
+
+    async def _retry_all():
+        for scene_id in retry_ids:
+            try:
+                await _animate_scene(scene_id, audio_reference_url=audio_url)
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).error(f"Retry scene {scene_id} failed: {exc}")
+
+    background_tasks.add_task(_retry_all)
+    return {"message": f"Retrying {len(retry_ids)} scenes in background", "retried": len(retry_ids), "scene_ids": retry_ids}
+
+
+# ---------------------------------------------------------------------------
+# Trigger assembly
+# ---------------------------------------------------------------------------
+
+@router.post("/{job_id}/assemble")
+async def trigger_assembly(
+    job_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Trigger the ffmpeg assembly phase for a job. All scenes should be 'completed'
+    before calling this, but it will proceed with whatever videos are available.
+    """
+    result = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Production job not found")
+
+    job.status = "assembling"
+    await db.commit()
+
+    background_tasks.add_task(_assemble_video, str(job_id))
+    return {"message": "Assembly started in background", "job_id": str(job_id)}
 
 
 # ---------------------------------------------------------------------------

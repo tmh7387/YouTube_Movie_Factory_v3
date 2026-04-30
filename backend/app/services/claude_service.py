@@ -1,8 +1,9 @@
 import logging
 import json
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from anthropic import AsyncAnthropic
 from app.core.config import settings
+from app.services.skill_loader_service import skill_loader_service
 
 logger = logging.getLogger(__name__)
 
@@ -11,36 +12,58 @@ class ClaudeService:
         self.api_key = settings.ANTHROPIC_API_KEY
         self.client = AsyncAnthropic(api_key=self.api_key)
 
-    async def generate_creative_brief(self, analysis: str, style_notes: str = "") -> Dict[str, Any]:
+    async def generate_creative_brief(
+        self,
+        analysis: str,
+        style_notes: str = "",
+        animation_model: str = "",
+        video_type: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Generate a detailed creative brief including storyboard, narration, and technical direction.
         Uses the direct Anthropic SDK with Opus model for high quality.
+
+        When animation_model is specified (e.g. 'doubao-seedance-2-0'), relevant production
+        skills are automatically loaded and injected into the system prompt so Claude writes
+        model-optimized visual_prompt and motion_prompt values.
         """
-        system_prompt = """
-        You are an expert Creative Director for a high-end YouTube production house.
-        Transform the research analysis into a structured Creative Brief and Storyboard.
-        
-        The brief MUST be a valid JSON object with the following structure:
-        {
-          "title": "Compelling Video Title",
-          "hook": "The first 30 seconds strategy",
-          "narrative_goal": "What the viewer should learn/feel",
-          "music_mood": "e.g. Cinematic, Lo-fi, Tech-focused",
-          "color_palette": ["Color 1", "Color 2"],
-          "storyboard": [
-            {
-              "scene_index": 1,
-              "narration": "Exact text to be spoken by AI voiceover",
-              "visual_prompt": "Detailed prompt for AI video generation (Midjourney/Kling style)",
-              "pacing": "Fast/Slow/Steady",
-              "duration": 10
-            }
-          ]
-        }
-        
-        Focus on creating "wow" visual prompts that are descriptive and cinematic.
-        """
-        
+        # Load production skills relevant to the target animation model
+        skills_block = await skill_loader_service.build_prompt_block(
+            animation_model=animation_model or settings.SEEDANCE_VIDEO_MODEL,
+            video_type=video_type,
+        )
+
+        system_prompt = f"""\
+You are an expert Creative Director for a high-end YouTube production house.
+Transform the research analysis into a structured Creative Brief and Storyboard.
+
+The brief MUST be a valid JSON object with the following structure:
+{{
+  "title": "Compelling Video Title",
+  "hook": "The first 30 seconds strategy",
+  "narrative_goal": "What the viewer should learn/feel",
+  "music_mood": "e.g. Cinematic, Lo-fi, Tech-focused",
+  "color_palette": ["Color 1", "Color 2"],
+  "storyboard": [
+    {{
+      "scene_index": 1,
+      "narration": "Exact text to be spoken by AI voiceover",
+      "visual_prompt": "Detailed prompt for AI image generation — describe the scene as a single cinematic still",
+      "motion_prompt": "Detailed prompt for AI video animation — describe camera movement, speed, and pacing",
+      "pacing": "Fast/Slow/Steady",
+      "duration": 10
+    }}
+  ]
+}}
+
+IMPORTANT RULES FOR PROMPTS:
+- visual_prompt: Describe a photorealistic cinematic still. Include subject, environment, lighting, color grade, and composition.
+- motion_prompt: Describe camera movement and speed using precise terminology. Never write vague instructions like "zoom in" — use exact camera vocabulary.
+
+{skills_block}
+
+Focus on creating "wow" visual prompts that are descriptive and cinematic."""
+
         user_prompt = f"Research Analysis:\n{analysis}\n\nUser Style Notes: {style_notes}"
         
         try:
@@ -63,7 +86,12 @@ class ClaudeService:
                     content = content[4:]                      # drop "json" language tag
                 content = content.rsplit("```", 1)[0].strip()  # drop closing fence
 
-            return json.loads(content)
+            brief = json.loads(content)
+            logger.info(
+                f"Creative brief generated: {len(brief.get('storyboard', []))} scenes, "
+                f"skills injected: {bool(skills_block)}"
+            )
+            return brief
                 
         except Exception as e:
             logger.error(f"Creative Brief generation error: {e}")

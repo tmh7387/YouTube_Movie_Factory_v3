@@ -74,9 +74,24 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
             if descriptions:
                 combined_context += "Selected Video Descriptions:\n" + "\n\n---\n\n".join(descriptions[:2]) # Top 2 for detail
             
-            # 4. Generate Creative Brief
-            logger.info(f"Generating brief for topic: {topic}")
-            brief_result = await claude_service.generate_creative_brief(combined_context)
+            # 4. Generate Creative Brief (with production skill injection)
+            # Resolve animation model: prefer curation job's video_model, fall back to Seedance
+            from app.core.config import settings
+            animation_model = ""
+            curation_result = await session.execute(
+                select(CurationJob).where(CurationJob.id == curation_job_id)
+            )
+            curation_row = curation_result.scalar_one_or_none()
+            if curation_row and curation_row.video_model:
+                animation_model = curation_row.video_model
+            else:
+                animation_model = settings.SEEDANCE_VIDEO_MODEL
+
+            logger.info(f"Generating brief for topic: {topic} (animation_model={animation_model})")
+            brief_result = await claude_service.generate_creative_brief(
+                combined_context,
+                animation_model=animation_model,
+            )
             
             # 5. Final update
             if "error" in brief_result:

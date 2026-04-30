@@ -109,6 +109,16 @@ export const productionService = {
     },
 
     downloadUrl: (jobId: string) => `${API}/production/download/${jobId}`,
+
+    retryFailed: async (jobId: string): Promise<{ retried: number; message: string }> => {
+        const res = await axios.post(`${API}/production/${jobId}/retry-failed`);
+        return res.data;
+    },
+
+    triggerAssemble: async (jobId: string): Promise<{ message: string }> => {
+        const res = await axios.post(`${API}/production/${jobId}/assemble`);
+        return res.data;
+    },
 };
 
 // ---------------------------------------------------------------------------

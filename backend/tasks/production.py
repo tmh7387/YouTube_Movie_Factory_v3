@@ -1,15 +1,49 @@
 import asyncio
+import base64
 import logging
+import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
+
+import httpx
 from sqlalchemy import select, update
 from app.db.session import AsyncSessionLocal as async_session_factory
 from app.models import ProductionJob, CurationJob, ProductionScene, ProductionTrack
 from app.services.media_gen_service import media_gen_service
 from app.services.assembly_service import assembly_service
+from app.services.skill_loader_service import skill_loader_service
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+# Local cache dir for scene images (prevents pre-signed URL expiry)
+IMAGE_CACHE_DIR = Path("env/tmp/scene_images")
+IMAGE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+async def _download_image(url: str, dest_path: Path) -> bool:
+    """Download an image URL to a local file. Returns True on success."""
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            r = await client.get(url)
+            if r.status_code == 200:
+                dest_path.write_bytes(r.content)
+                return True
+            logger.warning(f"Image download failed HTTP {r.status_code}: {url[:80]}")
+    except Exception as e:
+        logger.warning(f"Image download error: {e}")
+    return False
+
+
+async def _image_url_alive(url: str) -> bool:
+    """Quick HEAD check — returns False if URL returns 403/404."""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.head(url)
+            return r.status_code == 200
+    except Exception:
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -169,8 +203,17 @@ async def _generate_scene_image(scene_id: str):
             logger.error(f"Image gen failed for scene {scene_id}: {res['error']}")
             scene.animation_status = "image_failed"
         else:
-            scene.image_url = res["url"]
-            logger.info(f"Scene {scene_id} image ready: {res['url']}")
+            remote_url = res["url"]
+            scene.image_url = remote_url
+
+            # Download and cache locally to survive pre-signed URL expiry
+            local_path = IMAGE_CACHE_DIR / f"{scene_id}.jpg"
+            ok = await _download_image(remote_url, local_path)
+            if ok:
+                scene.local_image_path = str(local_path)
+                logger.info(f"Scene {scene_id} image cached: {local_path}")
+            else:
+                logger.warning(f"Scene {scene_id} image cache failed — will use remote URL")
 
         await db.commit()
 
@@ -185,6 +228,11 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
         scene = result.scalar_one_or_none()
         if not scene or not scene.image_url:
             logger.warning(f"Skipping animation for scene {scene_id} — no image URL")
+            return
+
+        # Skip scenes that already have a video (idempotent retry safety)
+        if scene.animation_status == "completed" and scene.local_video_path:
+            logger.info(f"Scene {scene_id} already completed — skipping")
             return
 
         scene.animation_status = "animating"
@@ -204,9 +252,51 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
             extra_kwargs["input_reference"] = audio_reference_url
             logger.info(f"Scene {scene_id}: using audio reference for Seedance beat-sync")
 
+        # Resolve best image source: prefer cached local file as base64 data URI
+        # (avoids pre-signed URL expiry on remote CDNs)
+        image_source = scene.image_url
+        local_path = Path(scene.local_image_path) if scene.local_image_path else IMAGE_CACHE_DIR / f"{scene_id}.jpg"
+
+        if local_path.exists():
+            # Use base64 data URI — always available, no expiry
+            img_bytes = local_path.read_bytes()
+            b64 = base64.b64encode(img_bytes).decode()
+            image_source = f"data:image/jpeg;base64,{b64}"
+            logger.info(f"Scene {scene_id}: using local cached image ({local_path.stat().st_size // 1024}KB)")
+        elif image_source and not await _image_url_alive(image_source):
+            # Remote URL expired — re-generate the image
+            logger.warning(f"Scene {scene_id}: image URL expired (403), re-generating...")
+            async with async_session_factory() as regen_db:
+                regen_result = await regen_db.execute(select(ProductionScene).where(ProductionScene.id == scene_id))
+                regen_scene = regen_result.scalar_one_or_none()
+                if regen_scene:
+                    regen_res = await media_gen_service.generate_image(
+                        regen_scene.image_prompt,
+                        model=regen_scene.image_model or settings.DEFAULT_IMAGE_MODEL,
+                    )
+                    if "error" not in regen_res:
+                        image_source = regen_res["url"]
+                        regen_scene.image_url = image_source
+                        # Cache locally for future use
+                        ok = await _download_image(image_source, local_path)
+                        if ok:
+                            regen_scene.local_image_path = str(local_path)
+                            img_bytes = local_path.read_bytes()
+                            b64 = base64.b64encode(img_bytes).decode()
+                            image_source = f"data:image/jpeg;base64,{b64}"
+                        await regen_db.commit()
+                        logger.info(f"Scene {scene_id}: image re-generated successfully")
+                    else:
+                        logger.error(f"Scene {scene_id}: image re-generation failed: {regen_res['error']}")
+
+        # Use skill-aware default motion prompt instead of generic fallback
+        motion_prompt = scene.motion_prompt or scene.description or ""
+        if not motion_prompt or motion_prompt.strip() == "":
+            motion_prompt = skill_loader_service.build_motion_prompt_default(video_model)
+
         res = await media_gen_service.animate_image(
-            image_url=scene.image_url,
-            prompt=scene.motion_prompt or scene.description or "",
+            image_url=image_source,
+            prompt=motion_prompt,
             model=video_model,
             duration=5,
             mode=mode,
@@ -262,15 +352,34 @@ async def _generate_music_track(track_id: str, mood: str) -> Optional[str]:
 # Phase 5 — ffmpeg assembly
 # ---------------------------------------------------------------------------
 
-async def _assemble_video(job_id: str, scene_ids: list, music_url: Optional[str]):
+async def _assemble_video(job_id: str, scene_ids: Optional[list] = None, music_url: Optional[str] = None):
     async with async_session_factory() as db:
-        result = await db.execute(
-            select(ProductionScene)
-            .where(ProductionScene.id.in_(scene_ids))
-            .order_by(ProductionScene.scene_number)
-        )
+        # Fetch music_url from job if not provided (API-triggered assembly)
+        if music_url is None:
+            job_res = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
+            job_row = job_res.scalar_one_or_none()
+            if job_row:
+                music_url = job_row.music_url
+
+        if scene_ids:
+            result = await db.execute(
+                select(ProductionScene)
+                .where(ProductionScene.id.in_(scene_ids))
+                .order_by(ProductionScene.scene_number)
+            )
+        else:
+            # API-triggered: assemble all completed scenes for this job
+            result = await db.execute(
+                select(ProductionScene)
+                .where(
+                    ProductionScene.job_id == job_id,
+                    ProductionScene.animation_status == "completed",
+                )
+                .order_by(ProductionScene.scene_number)
+            )
         scenes = result.scalars().all()
         video_clips = [s.local_video_path for s in scenes if s.local_video_path]
+
 
     if not video_clips:
         await _update_status(job_id, "failed", "No video clips generated to assemble")

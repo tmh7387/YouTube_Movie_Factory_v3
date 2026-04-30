@@ -2,12 +2,29 @@ from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select, desc, func
 from sqlalchemy.dialects.postgresql import JSONB
 from typing import Optional
+from pydantic import BaseModel
+from pathlib import Path
 import uuid
+import shutil
 
 from app.db.session import AsyncSessionLocal
 from app.models import VideoProductionSkill
+from app.services.skill_synthesis_service import skill_synthesis_service, SKILLS_ROOT
 
 router = APIRouter()
+
+
+class SkillUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    prompt_template: Optional[str] = None
+    workflow_steps: Optional[list[str]] = None
+    example_prompts: Optional[list[str]] = None
+    tags: Optional[list[str]] = None
+    difficulty: Optional[str] = None
+    skill_body: Optional[str] = None
+    tools_tested_with: Optional[list[str]] = None
+    category: Optional[str] = None
 
 VALID_CATEGORIES = {"music_video", "product_brand", "asmr", "general"}
 
@@ -158,6 +175,72 @@ async def get_skill(skill_id_or_slug: str):
         await session.commit()
 
     return _skill_to_dict_full(skill)
+
+
+@router.put("/{skill_id}")
+async def update_skill(skill_id: str, body: SkillUpdateRequest):
+    """Update a skill's editable fields and rewrite SKILL.md on disk."""
+    try:
+        uid = uuid.UUID(skill_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid skill ID")
+
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(VideoProductionSkill).where(VideoProductionSkill.id == uid)
+        )
+        skill = result.scalar_one_or_none()
+        if not skill:
+            raise HTTPException(status_code=404, detail="Skill not found")
+
+        # Apply only the fields that were sent
+        update_data = body.model_dump(exclude_none=True)
+        for field, value in update_data.items():
+            setattr(skill, field, value)
+
+        # If skill_body was updated, rewrite to disk
+        if "skill_body" in update_data or "description" in update_data or "name" in update_data:
+            disk_dict = {
+                "slug": skill.slug,
+                "name": skill.name,
+                "description": skill.description,
+                "category": skill.category,
+                "skill_body_markdown": skill.skill_body or "",
+            }
+            file_path = skill_synthesis_service.write_skill_to_disk(disk_dict)
+            skill.skill_file_path = file_path
+
+        await session.commit()
+        await session.refresh(skill)
+
+    return _skill_to_dict_full(skill)
+
+
+@router.delete("/{skill_id}", status_code=204)
+async def delete_skill(skill_id: str):
+    """Delete a skill from the database and remove its SKILL.md from disk."""
+    try:
+        uid = uuid.UUID(skill_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid skill ID")
+
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(VideoProductionSkill).where(VideoProductionSkill.id == uid)
+        )
+        skill = result.scalar_one_or_none()
+        if not skill:
+            raise HTTPException(status_code=404, detail="Skill not found")
+
+        # Remove from disk
+        skill_dir = SKILLS_ROOT / (skill.category or "general") / skill.slug
+        if skill_dir.exists():
+            shutil.rmtree(skill_dir)
+
+        await session.delete(skill)
+        await session.commit()
+
+    return None
 
 
 def _extract_pro_tip(skill_body: Optional[str]) -> Optional[str]:
