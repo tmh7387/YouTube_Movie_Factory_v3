@@ -23,7 +23,7 @@ import {
 import { researchApi } from '../services/research';
 import type { ResearchVideo } from '../services/research';
 import { curationService } from '../services/curation';
-import { IntakeForm } from '../components/IntakeForm';
+import ResearchIntake from '../components/ResearchIntake';
 
 const JobStatusBadge = ({ status }: { status: string }) => {
     const styles: Record<string, string> = {
@@ -154,9 +154,11 @@ const Research = () => {
 
             <div className="flex-1 flex overflow-hidden">
                 {/* Column A: Left Sidebar */}
-                <div className="w-[320px] shrink-0 border-r border-white/10 flex flex-col bg-gray-900/30 overflow-hidden relative">
-                    {/* Top Section: IntakeForm */}
-                    <IntakeForm onJobCreated={handleJobCreated} />
+                <div className="w-[420px] shrink-0 border-r border-white/10 flex flex-col bg-gray-900/30 overflow-hidden relative">
+                    {/* Top Section: Multi-Source Research Intake */}
+                    <div className="p-4 shrink-0 overflow-auto max-h-[60vh]">
+                        <ResearchIntake onStarted={() => handleJobCreated()} />
+                    </div>
 
                     {/* Bottom Section: Analysis Log */}
                     <div className="flex-1 flex flex-col min-h-0 border-t border-white/5 relative bg-black/20">

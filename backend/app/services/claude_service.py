@@ -18,6 +18,7 @@ class ClaudeService:
         style_notes: str = "",
         animation_model: str = "",
         video_type: Optional[str] = None,
+        bible: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Generate a detailed creative brief including storyboard, narration, and technical direction.
@@ -26,12 +27,54 @@ class ClaudeService:
         When animation_model is specified (e.g. 'doubao-seedance-2-0'), relevant production
         skills are automatically loaded and injected into the system prompt so Claude writes
         model-optimized visual_prompt and motion_prompt values.
+
+        When bible is provided, character and environment references are injected
+        so Claude maintains visual consistency across all scenes.
         """
         # Load production skills relevant to the target animation model
         skills_block = await skill_loader_service.build_prompt_block(
             animation_model=animation_model or settings.SEEDANCE_VIDEO_MODEL,
             video_type=video_type,
         )
+
+        # Build bible injection block
+        bible_block = ""
+        if bible and "error" not in bible:
+            chars = bible.get("characters", [])
+            envs = bible.get("environments", [])
+            style = bible.get("style_lock", {})
+
+            char_lines = "\n".join(
+                f"- **{c.get('name', '?')}**: {c.get('physical', '')} | Wardrobe: {c.get('wardrobe', '')}"
+                for c in chars
+            ) if chars else "None defined"
+
+            env_lines = "\n".join(
+                f"- **{e.get('name', '?')}**: {e.get('description', '')} | Lighting: {e.get('lighting', '')}"
+                for e in envs
+            ) if envs else "None defined"
+
+            rules = style.get("visual_rules", [])
+            neg = style.get("negative_prompt", "")
+            palette = style.get("color_palette", [])
+
+            bible_block = f"""
+## Pre-Production Bible — FOLLOW THESE RULES
+
+### Characters (reference by name in visual_prompt)
+{char_lines}
+
+### Environments (reference by name in visual_prompt)
+{env_lines}
+
+### Style Lock
+- Color Palette: {', '.join(palette) if palette else 'Not specified'}
+- Visual Rules: {'; '.join(rules) if rules else 'None'}
+- Negative Prompt (add to every visual_prompt): {neg}
+
+CRITICAL: Every scene's visual_prompt MUST reference bible characters by name and
+apply the style_lock rules. Use the negative prompt to avoid unwanted artifacts.
+"""
 
         system_prompt = f"""\
 You are an expert Creative Director for a high-end YouTube production house.
@@ -59,6 +102,8 @@ The brief MUST be a valid JSON object with the following structure:
 IMPORTANT RULES FOR PROMPTS:
 - visual_prompt: Describe a photorealistic cinematic still. Include subject, environment, lighting, color grade, and composition.
 - motion_prompt: Describe camera movement and speed using precise terminology. Never write vague instructions like "zoom in" — use exact camera vocabulary.
+
+{bible_block}
 
 {skills_block}
 

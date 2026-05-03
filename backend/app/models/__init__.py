@@ -16,6 +16,8 @@ class ResearchJob(Base):
     error_message = Column(Text)
     research_summary = Column(Text)
     research_brief = Column(JSONB)
+    source_type = Column(String(30), default='youtube_search')
+    source_data = Column(JSONB, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True))
 
@@ -42,6 +44,7 @@ class CurationJob(Base):
     __tablename__ = 'curation_jobs'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     research_job_id = Column(UUID(as_uuid=True), ForeignKey('research_jobs.id'))
+    bible_id = Column(UUID(as_uuid=True), ForeignKey('pre_production_bibles.id'), nullable=True)
     status = Column(String(20))
     selected_video_ids = Column(JSONB)
     creative_brief = Column(JSONB)
@@ -51,6 +54,30 @@ class CurationJob(Base):
     video_model = Column(String(50))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     approved_at = Column(DateTime(timezone=True))
+
+class PreProductionBible(Base):
+    __tablename__ = 'pre_production_bibles'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    curation_job_id = Column(UUID(as_uuid=True), ForeignKey('curation_jobs.id'), nullable=True)
+    name = Column(String(200), nullable=False)
+    status = Column(String(20), default='draft')  # draft | locked | archived
+
+    # Structured bible sections (all JSONB)
+    characters = Column(JSONB, default=list)       # [{name, physical, expressions, ref_sheet_url, ...}]
+    environments = Column(JSONB, default=list)     # [{name, lighting, mood, ref_sheet_url, ...}]
+    style_lock = Column(JSONB, default=dict)       # {color_palette, visual_rules, negative_prompt, looks, angles}
+    surreal_motifs = Column(JSONB, default=list)   # [{symbol, meaning, visual_fragment}]
+    camera_specs = Column(JSONB, default=dict)     # {default_lens, default_movement, lighting_setup}
+
+    # Reference sheet image URLs (generated or uploaded)
+    character_sheet_urls = Column(JSONB, default=list)
+    environment_sheet_urls = Column(JSONB, default=list)
+
+    # Director process log
+    process_log = Column(JSONB, default=list)      # [{timestamp, agent, action, outcome}]
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 class ProductionJob(Base):
     __tablename__ = 'production_jobs'
@@ -115,6 +142,10 @@ class ProductionScene(Base):
     duration_seconds = Column(Numeric)
     beat_cut_start_sec = Column(Numeric)
     beat_cut_end_sec = Column(Numeric)
+    bible_character = Column(String(200), nullable=True)
+    bible_environment = Column(String(200), nullable=True)
+    qa_status = Column(String(20), default='pending')
+    qa_notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class SystemConfig(Base):

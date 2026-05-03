@@ -14,6 +14,7 @@ from app.services.media_gen_service import media_gen_service
 from app.services.assembly_service import assembly_service
 from app.services.skill_loader_service import skill_loader_service
 from app.core.config import settings
+from app.services.model_router import recommend_model
 
 logger = logging.getLogger(__name__)
 
@@ -135,8 +136,14 @@ async def run_production_pipeline(
             scene_num = scene_data.get("scene_index") or scene_data.get("scene_number") or 0
             description = scene_data.get("narration") or scene_data.get("description", "")
 
-            # Assign per-scene animation model override
-            scene_anim = scene_data.get("kling_mode", animation_mode)
+            # Smart model routing — analyze prompt to choose best model
+            recommendation = recommend_model(
+                visual_prompt=scene_data.get("visual_prompt", ""),
+                motion_prompt=scene_data.get("motion_prompt", ""),
+                preferred_model=None,
+            )
+            scene_anim = recommendation["mode"]
+            resolved_model = recommendation["model"]
 
             new_scene = ProductionScene(
                 job_id=job.id,
@@ -144,9 +151,11 @@ async def run_production_pipeline(
                 description=description,
                 image_prompt=scene_data.get("visual_prompt", ""),
                 motion_prompt=scene_data.get("motion_prompt", ""),
-                animation_model=scene_anim,
+                animation_model=resolved_model,
                 image_model=settings.DEFAULT_IMAGE_MODEL,
                 animation_status="pending",
+                bible_character=scene_data.get("bible_character"),
+                bible_environment=scene_data.get("bible_environment"),
             )
             db.add(new_scene)
             scenes.append(new_scene)
@@ -238,13 +247,16 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
         scene.animation_status = "animating"
         await db.commit()
 
-        anim_model_key = (scene.animation_model or "std").lower()
-        if anim_model_key == "pro":
-            video_model = settings.DEFAULT_VIDEO_MODEL   # kling_video
-            mode = "pro"
-        else:
-            video_model = settings.SEEDANCE_VIDEO_MODEL  # doubao-seedance-2-0
-            mode = "std"
+        # Use model_router's recommendation stored on the scene, or fallback
+        anim_model_key = (scene.animation_model or settings.SEEDANCE_VIDEO_MODEL).lower()
+        # Map known models to CometAPI model names + modes
+        model_mode_map = {
+            "kling-v2-master": (settings.DEFAULT_VIDEO_MODEL, "pro"),
+            "kling-v1-6": (settings.DEFAULT_VIDEO_MODEL, "std"),
+            "doubao-seedance-2-0": (settings.SEEDANCE_VIDEO_MODEL, "std"),
+            "wan-pro": ("wan_pro", "std"),
+        }
+        video_model, mode = model_mode_map.get(anim_model_key, (settings.SEEDANCE_VIDEO_MODEL, "std"))
 
         # Pass audio_reference_url to Seedance for beat-sync (only if .mp4 provided)
         extra_kwargs = {}

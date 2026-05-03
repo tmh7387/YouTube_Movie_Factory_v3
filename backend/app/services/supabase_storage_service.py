@@ -92,6 +92,49 @@ class SupabaseStorageService:
             logger.error(f"Supabase upload failed: {e}")
             return {"error": str(e)}
 
+    async def upload_file(
+        self,
+        file_bytes: bytes,
+        filename: str,
+        folder: str,
+        bucket: Optional[str] = None,
+    ) -> dict:
+        """
+        Generic file upload to Supabase Storage.
+        Used for reference sheets, image boards, and other media.
+
+        Args:
+            file_bytes: Raw file content.
+            filename:   Original filename.
+            folder:     Folder prefix (e.g. 'bibles/abc123', 'intake/def456').
+            bucket:     Override bucket (defaults to SUPABASE_AUDIO_BUCKET).
+
+        Returns:
+            {"public_url": str} on success, {"error": str} on failure.
+        """
+        try:
+            client = self._get_client()
+            target_bucket = bucket or settings.SUPABASE_AUDIO_BUCKET
+
+            self._ensure_bucket(client, target_bucket)
+
+            content_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+            storage_path = f"{folder}/{filename}"
+
+            client.storage.from_(target_bucket).upload(
+                path=storage_path,
+                file=file_bytes,
+                file_options={"content-type": content_type, "upsert": "true"},
+            )
+
+            public_url = self._public_url(target_bucket, storage_path)
+            logger.info(f"Uploaded {filename} → {public_url}")
+            return {"public_url": public_url}
+
+        except Exception as e:
+            logger.error(f"Supabase file upload failed: {e}")
+            return {"error": str(e)}
+
     def _public_url(self, bucket: str, path: str) -> str:
         """Construct the public URL from project URL + bucket + path."""
         base = settings.SUPABASE_URL.rstrip("/")

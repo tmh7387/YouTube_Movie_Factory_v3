@@ -1,12 +1,14 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, ClipboardCheck, BookOpen, Zap } from 'lucide-react';
+import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, ClipboardCheck, BookOpen, Zap, BookMarked, Layers } from 'lucide-react';
 import Research from './pages/Research';
 import Curation from './pages/Curation';
 import Production from './pages/Production';
 import Settings from './pages/Settings';
 import Knowledge from './pages/Knowledge';
 import Skills from './pages/Skills';
+import BibleWorkspace from './pages/BibleWorkspace';
+import StoryboardBoards from './pages/StoryboardBoards';
 
 const queryClient = new QueryClient();
 
@@ -17,8 +19,10 @@ function Navigation() {
         { path: '/', label: 'Overview', icon: LayoutDashboard },
         { path: '/research', label: 'Research', icon: Search },
         { path: '/curation', label: 'Curation', icon: ClipboardCheck },
+        { path: '/storyboard', label: 'Storyboard', icon: Layers },
         { path: '/production', label: 'Production', icon: Clapperboard },
         { path: '/knowledge', label: 'Knowledge', icon: BookOpen },
+        { path: '/bible', label: 'Bible', icon: BookMarked },
         { path: '/skills', label: 'Skills', icon: Zap },
         { path: '/settings', label: 'Settings', icon: SettingsIcon },
     ];
@@ -79,8 +83,10 @@ function App() {
                             <Route path="/" element={<Placeholder title="Dashboard Overview" />} />
                             <Route path="/research/*" element={<Research />} />
                             <Route path="/curation/*" element={<Curation />} />
+                            <Route path="/storyboard" element={<StoryboardBoards />} />
                             <Route path="/production/*" element={<Production />} />
                             <Route path="/knowledge" element={<Knowledge />} />
+                            <Route path="/bible" element={<BibleWorkspace />} />
                             <Route path="/skills" element={<Skills />} />
                             <Route path="/settings" element={<Settings />} />
                         </Routes>
