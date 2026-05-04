@@ -55,6 +55,8 @@ class ResearchJobSchema(BaseModel):
     status: str
     genre_topic: str
     research_summary: str | None = None
+    source_type: str | None = None
+    source_data: dict | None = None
     created_at: datetime
 
     class Config:

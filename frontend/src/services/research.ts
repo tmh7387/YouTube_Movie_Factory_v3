@@ -20,6 +20,8 @@ export interface ResearchJob {
     status: 'pending' | 'searching' | 'analyzing' | 'completed' | 'failed' | 'error';
     genre_topic: string;
     research_summary: string | null;
+    source_type?: string | null;
+    source_data?: Record<string, any> | null;
     created_at: string;
 }
 

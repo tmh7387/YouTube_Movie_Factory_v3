@@ -97,6 +97,59 @@ export interface RippleEditResult {
     changes_summary: string;
 }
 
+// ── Inspiration Extraction Types ───────────────────────────────────
+
+export interface InspirationCharacter {
+    name: string;
+    physical: string;
+    wardrobe: string;
+    expressions: string[];
+    role: string;
+    visual_keywords: string[];
+    confidence: 'high' | 'medium' | 'low';
+}
+
+export interface InspirationEnvironment {
+    name: string;
+    description: string;
+    lighting: string;
+    mood: string;
+    color_palette_description: string;
+    time_of_day: string;
+    confidence: 'high' | 'medium' | 'low';
+}
+
+export interface InspirationData {
+    characters: InspirationCharacter[];
+    environments: InspirationEnvironment[];
+    style_signals: {
+        color_grade: string;
+        visual_aesthetic: string;
+        cinematography_notes: string;
+    };
+    camera_signals: {
+        dominant_shot_types: string[];
+        movement_style: string;
+        lens_feel: string;
+    };
+    source_video_url: string;
+    source_video_title: string;
+    error: string | null;
+}
+
+export interface ApplySuggestionsPayload {
+    characters: InspirationCharacter[];
+    environments: InspirationEnvironment[];
+    style_signals?: InspirationData['style_signals'];
+    camera_signals?: InspirationData['camera_signals'];
+    apply_style: boolean;
+    apply_camera: boolean;
+    source_video_url: string;
+    source_video_title: string;
+}
+
+// ── Bible Service ──────────────────────────────────────────────────
+
 export const bibleService = {
     create: async (data: BibleCreatePayload): Promise<Bible> => {
         const response = await axios.post(`${API_BASE_URL}/`, data);
@@ -134,6 +187,24 @@ export const bibleService = {
 
     delete: async (bibleId: string): Promise<void> => {
         await axios.delete(`${API_BASE_URL}/${bibleId}`);
+    },
+
+    extractInspiration: async (videoUrl: string): Promise<InspirationData> => {
+        const response = await axios.post(`${API_BASE_URL}/extract-inspiration`, {
+            video_url: videoUrl,
+        });
+        return response.data;
+    },
+
+    applySuggestions: async (
+        bibleId: string,
+        payload: ApplySuggestionsPayload
+    ): Promise<Bible> => {
+        const response = await axios.post(
+            `${API_BASE_URL}/${bibleId}/apply-suggestions`,
+            payload
+        );
+        return response.data;
     },
 };
 

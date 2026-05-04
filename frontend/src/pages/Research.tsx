@@ -24,6 +24,7 @@ import { researchApi } from '../services/research';
 import type { ResearchVideo } from '../services/research';
 import { curationService } from '../services/curation';
 import ResearchIntake from '../components/ResearchIntake';
+import InspirationExtractor from '../components/InspirationExtractor';
 
 const JobStatusBadge = ({ status }: { status: string }) => {
     const styles: Record<string, string> = {
@@ -271,9 +272,15 @@ const Research = () => {
                                             {activeTab === 'analysis' && (
                                                 <div className="max-w-3xl animate-in fade-in duration-300">
                                                     {selectedJob.status === 'completed' ? (
-                                                        <div className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-6 text-gray-300 leading-relaxed prose prose-invert prose-purple max-w-none shadow-sm font-serif">
-                                                            <ReactMarkdown>{selectedJob.research_summary || "No summary available."}</ReactMarkdown>
-                                                        </div>
+                                                        <>
+                                                            <div className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-6 text-gray-300 leading-relaxed prose prose-invert prose-purple max-w-none shadow-sm font-serif">
+                                                                <ReactMarkdown>{selectedJob.research_summary || "No summary available."}</ReactMarkdown>
+                                                            </div>
+                                                            {/* Inspiration Extraction for Single Video jobs */}
+                                                            {selectedJob.source_type === 'single_video' && selectedJob.source_data?.video_url && (
+                                                                <InspirationExtractor videoUrl={selectedJob.source_data.video_url} />
+                                                            )}
+                                                        </>
                                                     ) : (
                                                         <div className="bg-white/5 rounded-xl p-12 text-center text-gray-500 border border-dashed border-white/10">
                                                             {selectedJob.status === 'analyzing' ? (
