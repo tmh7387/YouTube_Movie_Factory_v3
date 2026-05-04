@@ -139,6 +139,59 @@ each with a different tone or structure.
 Return your analysis as structured markdown."""
 
 
+CHANNEL_DNA_PROMPT = """\
+You are a creative strategist for an original AI video production studio.
+
+You have been given transcripts from a YouTube channel's top-performing videos.
+Your task is to extract the channel's creative DNA — the storytelling principles,
+narrative voice, and structural techniques that make this content resonate — as
+transferable inspiration for producing original work on entirely different topics.
+
+Think of this the way a filmmaker studies Kubrick not to copy his films, but to
+understand his principles of spatial tension and deliberate pacing, then applies
+those insights to a completely new story.
+
+IMPORTANT: Do not produce a formula for replication. Produce creative principles
+that can be repurposed. The output will be used to inspire original production
+work, not to reproduce this channel's content.
+
+Return ONLY a valid JSON object with this exact schema (no markdown fences):
+{
+  "channel_name": "The channel name from the transcripts",
+  "videos_analyzed_titles": ["title 1", "title 2"],
+  "style_brief": "A 2-3 paragraph creative brief capturing this channel's essence — what makes it work emotionally, what creative tension it creates, what kind of experience it delivers. Written as inspiration for a creative director, not a description of the channel.",
+  "narrative_dna": {
+    "opening_hook_style": "How do they grab attention in the first 30 seconds? Describe the underlying technique, not the specific content.",
+    "storytelling_approach": "How do they structure their narrative arc? What tension or question propels the viewer forward?",
+    "pacing_cadence": "Information density and rhythm — how do they control the pace? Dense/punchy, slow-burn, conversational, escalating?",
+    "tone_and_voice": "The emotional register and voice — authoritative, intimate, provocative, wondering, urgent? What feeling does it create?",
+    "content_format": "How content is organised — list-based, story-driven, essay, narration, revelation-based?",
+    "emotional_register": "What emotions do they consistently evoke, and what structural techniques create those emotions?"
+  },
+  "transferable_principles": [
+    "Each entry is an actionable creative principle stated in a way that works for any subject matter. E.g.: 'Open by establishing a gap between what the audience assumes and what is actually true — then spend the video closing that gap'. Include 4-6 principles. Each should stand alone as a directing insight."
+  ],
+  "what_makes_it_distinctive": "1-2 sentences on the single most distinctive quality of this channel's creative approach — the thing that would be hardest to find elsewhere.",
+  "bible_narrative_style": {
+    "tone": "Concise tone description suitable for a production bible — 1 sentence",
+    "opening_hook": "Concise hook pattern description — 1 sentence",
+    "storytelling_approach": "Concise approach description — 1 sentence",
+    "pacing": "Concise pacing description — 1 sentence",
+    "principles": [
+      "Condensed transferable principle 1 — 1-2 sentences suitable for bible injection",
+      "Condensed transferable principle 2",
+      "Condensed transferable principle 3",
+      "Condensed transferable principle 4"
+    ]
+  }
+}
+
+Base your analysis strictly on the transcripts provided. Where transcripts are
+unavailable for a video, work from titles and context but note the limitation.
+Do not invent characteristics not supported by the content.
+"""
+
+
 class AIService:
     def __init__(self):
         self.client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
@@ -276,6 +329,79 @@ class AIService:
         except Exception as e:
             logger.error(
                 f"Content analysis error: {type(e).__name__}: {e}",
+                exc_info=True,
+            )
+            return {"error": f"{type(e).__name__}: {e}"}
+
+    async def analyze_channel_dna(
+        self,
+        topic: str,
+        text_content: str,
+        video_analysis: Optional[Dict] = None,
+    ) -> Dict[str, Any]:
+        """
+        Analyse a channel's top transcripts to extract transferable creative
+        principles for inspiring original production work.
+
+        Returns structured Channel DNA JSON stored in research_brief,
+        with style_brief text also stored in research_summary.
+        """
+        channel_name = (
+            video_analysis.get('channel_name', 'Unknown')
+            if video_analysis else 'Unknown'
+        )
+        creative_intent = (
+            video_analysis.get('creative_intent', topic)
+            if video_analysis else topic
+        )
+        videos_info = (
+            video_analysis.get('videos_sampled', [])
+            if video_analysis else []
+        )
+
+        user_message = (
+            f"Channel: {channel_name}\n"
+            f"Creative intent for our production: {creative_intent}\n"
+            f"Videos sampled: {len(videos_info)}\n\n"
+            f"--- TRANSCRIPT CONTENT ---\n"
+            f"{text_content[:14000]}"
+        )
+
+        try:
+            response = await self.client.messages.create(
+                model=settings.CLAUDE_CREATIVE_MODEL,
+                max_tokens=4096,
+                system=CHANNEL_DNA_PROMPT,
+                messages=[{"role": "user", "content": user_message}],
+            )
+
+            raw = response.content[0].text.strip()
+
+            # Strip markdown fences if present
+            if raw.startswith("```"):
+                raw = raw.split("```", 2)[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+                raw = raw.rsplit("```", 1)[0].strip()
+
+            import json
+            dna = json.loads(raw)
+
+            logger.info(
+                f"Channel DNA extracted: {channel_name} | "
+                f"{len(dna.get('transferable_principles', []))} principles"
+            )
+
+            return {
+                "raw_analysis": dna.get("style_brief", ""),
+                "research_brief": dna,
+                "model": response.model,
+                "analysis_type": "channel_dna",
+            }
+
+        except Exception as e:
+            logger.error(
+                f"Channel DNA analysis error: {type(e).__name__}: {e}",
                 exc_info=True,
             )
             return {"error": f"{type(e).__name__}: {e}"}

@@ -70,6 +70,9 @@ async def normalize_to_research_context(
     elif source_type == "web_article":
         context = await _normalize_web_article(context, source_data)
 
+    elif source_type == "youtube_channel":
+        context = await _normalize_youtube_channel(context, source_data)
+
     elif source_type == "youtube_search":
         # Passthrough — handled by existing pipeline in research.py
         context["text_content"] = topic
@@ -215,6 +218,117 @@ async def _normalize_web_article(context: dict, source_data: dict) -> dict:
     except Exception as e:
         logger.error(f"Web article fetch failed: {e}")
         context["text_content"] = f"Failed to fetch article: {e}"
+
+    return context
+
+
+async def _normalize_youtube_channel(
+    context: dict, source_data: dict
+) -> dict:
+    """
+    Resolve a channel URL, fetch top-N videos by view count, and extract
+    transcripts from each for style DNA analysis.
+    """
+    channel_url = (
+        source_data.get("channel_url")
+        or source_data.get("url", "")
+    )
+    video_count = int(source_data.get("video_count", 5))
+    creative_intent = source_data.get("creative_intent", "")
+
+    if not channel_url:
+        context["text_content"] = "No channel URL provided"
+        return context
+
+    try:
+        from app.services.youtube_service import youtube_service
+
+        # Resolve channel URL to channel ID
+        channel_id = youtube_service.resolve_channel_id(channel_url)
+        if not channel_id:
+            context["text_content"] = (
+                f"Could not resolve channel from URL: {channel_url}. "
+                "Try using the full channel URL with @handle or /channel/ID format."
+            )
+            return context
+
+        # Fetch channel name for context
+        channel_meta = youtube_service.get_channel_metadata(channel_id)
+        channel_name = (
+            channel_meta.get('name', 'Unknown Channel')
+            if channel_meta else 'Unknown Channel'
+        )
+
+        # Fetch top videos
+        videos = youtube_service.get_channel_top_videos(
+            channel_id, max_results=video_count
+        )
+        if not videos:
+            context["text_content"] = (
+                f"No public videos found for channel: {channel_name}"
+            )
+            return context
+
+        # Extract transcripts (uses existing yt-dlp infrastructure)
+        transcript_blocks = []
+        video_summaries = []
+
+        for video in videos:
+            transcript = youtube_service.get_transcript(video['video_id'])
+            video_summaries.append({
+                'title': video['title'],
+                'view_count': video['view_count'],
+                'url': video['url'],
+                'has_transcript': bool(transcript),
+            })
+            if transcript:
+                transcript_blocks.append(
+                    f"=== {video['title']} "
+                    f"({video['view_count']:,} views) ===\n{transcript}"
+                )
+
+        # Store structured metadata for the AI analysis step
+        context["video_analysis"] = {
+            "channel_id": channel_id,
+            "channel_url": channel_url,
+            "channel_name": channel_name,
+            "creative_intent": creative_intent,
+            "videos_sampled": video_summaries,
+            "transcripts_extracted": len(transcript_blocks),
+        }
+
+        # Build combined text for AI consumption
+        parts = [
+            f"Channel: {channel_name}",
+            f"URL: {channel_url}",
+            f"Creative intent: {creative_intent or context.get('topic', '')}",
+            f"Videos sampled: {len(videos)} (top by view count)",
+            f"Transcripts available: {len(transcript_blocks)} of {len(videos)}",
+            "",
+        ]
+
+        if transcript_blocks:
+            parts.append("--- TRANSCRIPTS ---")
+            parts.extend(transcript_blocks)
+        else:
+            parts.append(
+                "No transcripts could be extracted. Analysis will draw "
+                "from video titles and metadata only."
+            )
+
+        context["text_content"] = "\n\n".join(parts)
+
+        logger.info(
+            f"Channel normalized: {channel_name} | "
+            f"{len(videos)} videos | "
+            f"{len(transcript_blocks)} transcripts"
+        )
+
+    except Exception as e:
+        logger.error(
+            f"Channel normalization failed: {e}", exc_info=True
+        )
+        context["text_content"] = f"Failed to analyze channel: {e}"
 
     return context
 

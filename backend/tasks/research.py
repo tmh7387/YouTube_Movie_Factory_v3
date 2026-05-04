@@ -46,6 +46,12 @@ async def _orchestrate_research(
                         video_analysis=context.get("video_analysis"),
                         text_content=context.get("text_content", ""),
                     )
+                elif source_type == "youtube_channel":
+                    analysis_result = await ai_service.analyze_channel_dna(
+                        topic=topic,
+                        text_content=context.get("text_content", ""),
+                        video_analysis=context.get("video_analysis"),
+                    )
                 else:
                     analysis_result = await ai_service.analyze_content(
                         topic=topic,
@@ -63,15 +69,20 @@ async def _orchestrate_research(
                         )
                     )
                 else:
+                    update_values = {
+                        "status": "completed",
+                        "research_summary": analysis_result.get(
+                            "raw_analysis", "Analysis failed"
+                        ),
+                    }
+                    # Store structured DNA in research_brief if present
+                    if "research_brief" in analysis_result:
+                        update_values["research_brief"] = analysis_result["research_brief"]
+
                     await session.execute(
                         update(ResearchJob)
                         .where(ResearchJob.id == job_id)
-                        .values(
-                            status="completed",
-                            research_summary=analysis_result.get(
-                                "raw_analysis", "Analysis failed"
-                            ),
-                        )
+                        .values(**update_values)
                     )
                 await session.commit()
                 logger.info(f"Research job {job_id} completed (source_type={source_type})")

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Upload, FileText, Youtube, Image, Music, BookMarked, Globe, Send, Loader2, CheckCircle } from 'lucide-react';
+import { Upload, FileText, Youtube, Image, Music, BookMarked, Globe, Send, Loader2, CheckCircle, Tv } from 'lucide-react';
 import axios from 'axios';
 
 const API = 'http://localhost:8000/api';
@@ -21,6 +21,7 @@ const SOURCE_OPTIONS: SourceOption[] = [
     { id: 'audio_track', label: 'Audio Track', icon: <Music className="w-5 h-5" />, description: 'Upload music / audio reference', color: 'text-purple-400' },
     { id: 'existing_bible', label: 'Existing Bible', icon: <BookMarked className="w-5 h-5" />, description: 'Start from a pre-production bible', color: 'text-yellow-400' },
     { id: 'web_article', label: 'Web Article', icon: <Globe className="w-5 h-5" />, description: 'Import content from a URL', color: 'text-cyan-400' },
+    { id: 'youtube_channel', label: 'Channel DNA', icon: <Tv className="w-5 h-5" />, description: 'Extract creative principles from a channel\'s top videos', color: 'text-pink-400' },
 ];
 
 export default function ResearchIntake({ onStarted }: { onStarted?: (jobId: string) => void }) {
@@ -31,6 +32,9 @@ export default function ResearchIntake({ onStarted }: { onStarted?: (jobId: stri
     const [webUrl, setWebUrl] = useState('');
     const [bibleId, setBibleId] = useState('');
     const [files, setFiles] = useState<File[]>([]);
+    const [channelUrl, setChannelUrl] = useState('');
+    const [channelIntent, setChannelIntent] = useState('');
+    const [channelVideoCount, setChannelVideoCount] = useState(5);
     const fileRef = useRef<HTMLInputElement>(null);
 
     const startMutation = useMutation({
@@ -67,10 +71,18 @@ export default function ResearchIntake({ onStarted }: { onStarted?: (jobId: stri
                         sourceData.urls = urls;
                     }
                     break;
+                case 'youtube_channel':
+                    sourceData.channel_url = channelUrl;
+                    sourceData.creative_intent = channelIntent;
+                    sourceData.video_count = channelVideoCount;
+                    break;
             }
 
             const resp = await axios.post(`${API}/research/start`, {
-                topic: query || textBrief?.slice(0, 100) || videoUrl || webUrl || `${sourceType} intake`,
+                topic:
+                    sourceType === 'youtube_channel'
+                        ? channelIntent || channelUrl
+                        : query || textBrief?.slice(0, 100) || videoUrl || webUrl || `${sourceType} intake`,
                 source_type: sourceType,
                 source_data: sourceData,
             });
@@ -161,6 +173,43 @@ export default function ResearchIntake({ onStarted }: { onStarted?: (jobId: stri
                                 ))}
                             </div>
                         )}
+                    </div>
+                )}
+
+                {sourceType === 'youtube_channel' && (
+                    <div className="space-y-3">
+                        <input
+                            type="text"
+                            value={channelUrl}
+                            onChange={e => setChannelUrl(e.target.value)}
+                            placeholder="https://youtube.com/@channelname"
+                            className="w-full bg-gray-800 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none"
+                        />
+                        <textarea
+                            value={channelIntent}
+                            onChange={e => setChannelIntent(e.target.value)}
+                            placeholder="What are you making? e.g. 'A cinematic documentary about aviation history' — this shapes how principles are extracted"
+                            rows={3}
+                            className="w-full bg-gray-800 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+                        />
+                        <div className="flex items-center gap-3">
+                            <label className="text-xs text-gray-500 shrink-0">
+                                Videos to sample:
+                            </label>
+                            <input
+                                type="range"
+                                min={3}
+                                max={7}
+                                value={channelVideoCount}
+                                onChange={e => setChannelVideoCount(Number(e.target.value))}
+                                className="flex-1"
+                            />
+                            <span className="text-xs text-gray-400 w-4">{channelVideoCount}</span>
+                        </div>
+                        <p className="text-[11px] text-gray-600">
+                            Fetches the channel's top videos by view count and extracts
+                            transferable creative principles — not a replication formula.
+                        </p>
                     </div>
                 )}
             </div>

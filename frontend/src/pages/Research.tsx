@@ -25,6 +25,7 @@ import type { ResearchVideo } from '../services/research';
 import { curationService } from '../services/curation';
 import ResearchIntake from '../components/ResearchIntake';
 import InspirationExtractor from '../components/InspirationExtractor';
+import ChannelDnaDisplay from '../components/ChannelDnaDisplay';
 
 const JobStatusBadge = ({ status }: { status: string }) => {
     const styles: Record<string, string> = {
@@ -279,6 +280,12 @@ const Research = () => {
                                                             {/* Inspiration Extraction for Single Video jobs */}
                                                             {selectedJob.source_type === 'single_video' && selectedJob.source_data?.video_url && (
                                                                 <InspirationExtractor videoUrl={selectedJob.source_data.video_url} />
+                                                            )}
+                                                            {/* Channel DNA Display */}
+                                                            {selectedJob.source_type === 'youtube_channel' && selectedJob.research_brief && (
+                                                                <div className="mt-6">
+                                                                    <ChannelDnaDisplay dna={selectedJob.research_brief as any} />
+                                                                </div>
                                                             )}
                                                         </>
                                                     ) : (
