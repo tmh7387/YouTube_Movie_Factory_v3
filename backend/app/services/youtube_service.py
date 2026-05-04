@@ -149,13 +149,13 @@ class YouTubeService:
           - https://youtube.com/c/customname
           - https://youtube.com/user/username
         """
-        if not self.youtube:
-            return None
-
-        # Direct channel ID embedded in URL
+        # Direct channel ID embedded in URL — no API call needed
         m = re.search(r'/channel/(UC[a-zA-Z0-9_-]+)', channel_url)
         if m:
             return m.group(1)
+
+        if not self.youtube:
+            return None
 
         # @handle format — use forHandle parameter (YouTube API v3)
         m = re.search(r'@([a-zA-Z0-9_.-]+)', channel_url)

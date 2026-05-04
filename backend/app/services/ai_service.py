@@ -147,7 +147,7 @@ Your task is to extract the channel's creative DNA — the storytelling principl
 narrative voice, and structural techniques that make this content resonate — as
 transferable inspiration for producing original work on entirely different topics.
 
-Think of this the way a filmmaker studies Kubrick not to copy his films, but to
+Think of this the way a filmmaker studies Kubrick not to imitate his films, but to
 understand his principles of spatial tension and deliberate pacing, then applies
 those insights to a completely new story.
 

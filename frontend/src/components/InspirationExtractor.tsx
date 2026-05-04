@@ -21,11 +21,7 @@ import {
   Loader2, ChevronDown,
 } from 'lucide-react';
 import { bibleService } from '../services/bible';
-import type {
-  InspirationData,
-  InspirationCharacter,
-  InspirationEnvironment,
-} from '../services/bible';
+import type { InspirationData } from '../services/bible';
 
 interface Props {
   videoUrl: string;
