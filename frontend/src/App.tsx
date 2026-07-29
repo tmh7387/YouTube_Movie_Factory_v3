@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, ClipboardCheck, BookOpen, Zap, BookMarked, Layers } from 'lucide-react';
+import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, ClipboardCheck, BookOpen, Zap, BookMarked, Layers, Library } from 'lucide-react';
 import Research from './pages/Research';
 import Curation from './pages/Curation';
 import Production from './pages/Production';
@@ -9,6 +9,7 @@ import Knowledge from './pages/Knowledge';
 import Skills from './pages/Skills';
 import BibleWorkspace from './pages/BibleWorkspace';
 import StoryboardBoards from './pages/StoryboardBoards';
+import PromptLibrary from './pages/PromptLibrary';
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ function Navigation() {
         { path: '/knowledge', label: 'Knowledge', icon: BookOpen },
         { path: '/bible', label: 'Bible', icon: BookMarked },
         { path: '/skills', label: 'Skills', icon: Zap },
+        { path: '/prompts', label: 'Prompt Library', icon: Library },
         { path: '/settings', label: 'Settings', icon: SettingsIcon },
     ];
 
@@ -88,6 +90,7 @@ function App() {
                             <Route path="/knowledge" element={<Knowledge />} />
                             <Route path="/bible" element={<BibleWorkspace />} />
                             <Route path="/skills" element={<Skills />} />
+                            <Route path="/prompts" element={<PromptLibrary />} />
                             <Route path="/settings" element={<Settings />} />
                         </Routes>
                     </main>
