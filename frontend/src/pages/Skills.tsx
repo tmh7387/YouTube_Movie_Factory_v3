@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Zap,
@@ -13,7 +13,6 @@ import {
     Wrench,
     ListOrdered,
     TrendingUp,
-    Clock,
     BarChart3,
     ExternalLink,
     Pencil,
@@ -319,7 +318,7 @@ const SkillDetail: React.FC<SkillDetailProps> = ({ skill, onClose, onDelete, onU
                 prompt_template: editTemplate || null,
                 workflow_steps: editSteps.split('\n').map(s => s.trim()).filter(Boolean),
                 tags: editTags.split(',').map(s => s.trim()).filter(Boolean),
-                difficulty: editDifficulty as any,
+                difficulty: editDifficulty,
                 skill_body: editBody || null,
             });
             setEditing(false);
@@ -454,7 +453,7 @@ const SkillDetail: React.FC<SkillDetailProps> = ({ skill, onClose, onDelete, onU
             {editing && (
                 <div className="p-5">
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Difficulty</h3>
-                    <select value={editDifficulty} onChange={e => setEditDifficulty(e.target.value)} className="text-sm text-gray-300 bg-black/40 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-violet-500">
+                    <select value={editDifficulty} onChange={e => setEditDifficulty(e.target.value as SkillDifficulty)} className="text-sm text-gray-300 bg-black/40 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-violet-500">
                         <option value="beginner">Beginner</option>
                         <option value="intermediate">Intermediate</option>
                         <option value="advanced">Advanced</option>

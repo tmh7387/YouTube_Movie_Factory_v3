@@ -23,7 +23,7 @@ export interface Skill {
     skill_file_path: string | null;
     created_at: string | null;
     // Full detail only
-    skill_body?: string;
+    skill_body?: string | null;
     source_knowledge_entry_id?: string;
 }
 
