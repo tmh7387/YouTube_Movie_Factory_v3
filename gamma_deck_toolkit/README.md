@@ -30,9 +30,27 @@ outline.md  ──lint_content.py──>  Gamma generate  ──normalize_pptx.p
 
 | File | Role |
 |---|---|
-| `avs_tokens.py` | All measured design tokens. Single source of truth. |
+| `avs_tokens.py` | All measured design tokens, grouped into profiles. Single source of truth. |
 | `lint_content.py` | Pre-flight: checks an outline against char budgets. |
 | `normalize_pptx.py` | Post-export: enforces tokens on a Gamma `.pptx`. |
+
+## Profiles
+
+Aviation Synergy runs more than one house standard, so tokens are grouped into
+profiles. Both tools take `--profile`.
+
+| Profile | Status | Canvas | Source |
+|---|---|---|---|
+| `training_4x3` | ✅ measured | 4:3, 10.00 × 7.50in | `IOSARBIDay3_v31_1.pptx`, 43 slides |
+| `corporate_16x9` | ⏳ pending | — | Claude Design "Aviation Synergy PPT Template" `.dc.html` |
+
+`corporate_16x9` is declared but deliberately unpopulated — its tokens must be
+measured from the design bundle, not guessed. Both tools fail with an
+explanatory message if you select it before then.
+
+Adding a profile: copy the `TRAINING_4X3` dict, replace every value with one
+measured from a real source deck, register it in `PROFILES`. Never hand-tune a
+number without a deck to measure it from.
 
 ## Install
 
@@ -46,8 +64,9 @@ Costs nothing and catches the shrink before you spend credits.
 
 ```bash
 python lint_content.py outline.md
-python lint_content.py outline.md --column half     # for 2-column decks
-python lint_content.py outline.md --json            # for CI
+python lint_content.py outline.md --column half        # for 2-column decks
+python lint_content.py outline.md --profile training_4x3
+python lint_content.py outline.md --json               # for CI
 ```
 
 Outline format matches what you feed Gamma with `cardSplit: "inputTextBreaks"`:
@@ -74,9 +93,10 @@ place.
 ## 3. Normalize the export
 
 ```bash
-python normalize_pptx.py deck.pptx              # -> deck-normalized.pptx
-python normalize_pptx.py deck.pptx --dry-run    # report only
-python normalize_pptx.py deck.pptx --skip snap  # opt out of a step
+python normalize_pptx.py deck.pptx                     # -> deck-normalized.pptx
+python normalize_pptx.py deck.pptx --dry-run           # report only
+python normalize_pptx.py deck.pptx --profile training_4x3
+python normalize_pptx.py deck.pptx --skip snap         # opt out of a step
 ```
 
 | Step | Action |
@@ -101,9 +121,8 @@ logo       0           already correct
 
 ## Canvas
 
-Tokens assume **4:3 (10.00 × 7.50in)**. The normalizer warns if the input canvas
-differs. Moving to 16:9 means changing `CANVAS` and re-deriving `COLUMNS` and
-`LOGO`.
+The normalizer warns when the input canvas does not match the selected profile,
+since grid snapping and logo placement would land in the wrong places.
 
 ## Still manual
 
@@ -115,3 +134,15 @@ in the Gamma editor:
 - Upload the AVS logo as **theme logo** (enables `headerFooter` auto-placement)
 - Save a corrected deck as a **Template** — the workspace currently has none,
   so `generate_from_template` is unavailable until one exists
+
+## Importing a Claude Design template
+
+`mcp__Gamma__import-claude-design-from-url` imports a Claude Design bundle into
+Gamma, but note two limits:
+
+- It needs a short-lived (~10 min) **publicly fetchable** URL to the
+  self-contained `.dc.html`. A `claude.ai/design/p/...?via=share` viewer link is
+  auth-gated and returns 403 to the server.
+- It creates a **gamma, not a theme**. Save the result as a Template in the
+  editor for the layout layer; the theme layer (fonts, colours, logo) still has
+  to be rebuilt by hand from the design's tokens.

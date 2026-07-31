@@ -4,17 +4,21 @@
 Takes a raw Gamma .pptx export and enforces the measured house tokens that
 Gamma's auto-fit will not hold on its own:
 
-  1. Font floor        -- lift any run below MIN_FONT_PT
-  2. Colour unification-- fold near-identical navy strays into the canonical navy
-  3. Logo placement    -- snap the footer logo to its exact size and position
-  4. Margin snapping   -- pull drifted shapes back onto the layout grid
-  5. Title audit       -- report titles Gamma shrank (needs a text edit, not a
-                          geometry one, so it is reported rather than forced)
+  1. Font floor         -- lift any run below the profile's min_font_pt
+  2. Colour unification -- fold near-identical stray brand colours into the
+                           canonical one
+  3. Logo placement     -- snap the footer logo to its exact size and position
+  4. Margin snapping    -- pull drifted shapes back onto the layout grid
+  5. Title audit        -- report titles Gamma shrank (needs a text edit, not a
+                           geometry one, so it is reported rather than forced)
+
+Idempotent: re-running a normalized file makes zero changes.
 
 Usage:
     python normalize_pptx.py deck.pptx                    # -> deck-normalized.pptx
     python normalize_pptx.py deck.pptx -o out.pptx
     python normalize_pptx.py deck.pptx --dry-run
+    python normalize_pptx.py deck.pptx --profile training_4x3
     python normalize_pptx.py deck.pptx --skip snap,logo
 """
 
@@ -34,11 +38,14 @@ import avs_tokens as T
 
 ALL_STEPS = ("floor", "colour", "logo", "snap", "titles")
 
+GROUP_SHAPE = 6
+PICTURE = 13
+
 
 def iter_shapes(container):
     """Walk shapes, descending into groups."""
     for shape in container.shapes:
-        if shape.shape_type == 6:  # GROUP
+        if shape.shape_type == GROUP_SHAPE:
             yield from iter_shapes(shape)
         else:
             yield shape
@@ -71,7 +78,7 @@ def max_run_pt(shape):
 def is_section_divider(slide):
     """Section dividers carry a tall portrait image hard against the right edge."""
     for shape in iter_shapes(slide):
-        if shape.shape_type != 13:  # PICTURE
+        if shape.shape_type != PICTURE:
             continue
         if (T.inches(shape.left) > 7.0
                 and T.inches(shape.height) > 2.5
@@ -80,78 +87,80 @@ def is_section_divider(slide):
     return False
 
 
-def looks_like_logo(shape):
+def looks_like_logo(shape, logo):
     return (
-        shape.shape_type == 13
-        and T.inches(shape.width) <= T.LOGO["detect_max_width_in"]
-        and T.inches(shape.top) >= T.LOGO["detect_min_top_in"]
+        shape.shape_type == PICTURE
+        and T.inches(shape.width) <= logo["detect_max_width_in"]
+        and T.inches(shape.top) >= logo["detect_min_top_in"]
     )
 
 
 # --- Steps ------------------------------------------------------------------
 
-def step_floor(slide, slide_no, log):
+def step_floor(slide, slide_no, log, profile):
+    floor = profile["min_font_pt"]
     changed = 0
     for shape in iter_shapes(slide):
         for run in iter_runs(shape):
             size = run.font.size
-            if size is not None and size.pt < T.MIN_FONT_PT:
-                log.append(f"s{slide_no}: font {size.pt:g}pt -> {T.MIN_FONT_PT:g}pt "
+            if size is not None and size.pt < floor:
+                log.append(f"s{slide_no}: font {size.pt:g}pt -> {floor:g}pt "
                            f"| {run.text[:38]!r}")
-                run.font.size = Pt(T.MIN_FONT_PT)
+                run.font.size = Pt(floor)
                 changed += 1
     return changed
 
 
-def step_colour(slide, slide_no, log):
+def step_colour(slide, slide_no, log, profile):
+    primary = profile["colour"]["primary"]
+    variants = {v.upper() for v in profile["colour"]["variants"]}
     changed = 0
-    variants = {v.upper() for v in T.NAVY_VARIANTS}
     for shape in iter_shapes(slide):
         for run in iter_runs(shape):
             hexval = run_rgb(run)
             if hexval and hexval.upper() in variants:
-                log.append(f"s{slide_no}: #{hexval} -> #{T.NAVY} "
-                           f"| {run.text[:38]!r}")
-                run.font.color.rgb = RGBColor.from_string(T.NAVY)
+                log.append(f"s{slide_no}: #{hexval} -> #{primary} | {run.text[:38]!r}")
+                run.font.color.rgb = RGBColor.from_string(primary)
                 changed += 1
     return changed
 
 
-def step_logo(slide, slide_no, log):
+def step_logo(slide, slide_no, log, profile):
+    logo = profile["logo"]
+    target_x = (logo["x_section_in"] if is_section_divider(slide)
+                else logo["x_content_in"])
     changed = 0
-    target_x = (T.LOGO["x_section_in"] if is_section_divider(slide)
-                else T.LOGO["x_content_in"])
     for shape in iter_shapes(slide):
-        if not looks_like_logo(shape):
+        if not looks_like_logo(shape, logo):
             continue
         before = (T.inches(shape.left), T.inches(shape.top),
                   T.inches(shape.width), T.inches(shape.height))
-        after = (target_x, T.LOGO["top_in"],
-                 T.LOGO["width_in"], T.LOGO["height_in"])
+        after = (target_x, logo["top_in"], logo["width_in"], logo["height_in"])
         if any(abs(b - a) > 0.005 for b, a in zip(before, after)):
             log.append(
                 f"s{slide_no}: logo "
                 f"[{before[0]:.2f},{before[1]:.2f} {before[2]:.2f}x{before[3]:.2f}] -> "
                 f"[{after[0]:.2f},{after[1]:.2f} {after[2]:.2f}x{after[3]:.2f}]")
-            shape.left = T.emu(after[0])
-            shape.top = T.emu(after[1])
-            shape.width = T.emu(after[2])
-            shape.height = T.emu(after[3])
+            shape.left, shape.top = T.emu(after[0]), T.emu(after[1])
+            shape.width, shape.height = T.emu(after[2]), T.emu(after[3])
             changed += 1
     return changed
 
 
-def step_snap(slide, slide_no, log):
-    """Pull drifted left edges back onto the grid, but only small drifts --
-    anything further out was a deliberate placement."""
+def step_snap(slide, slide_no, log, profile):
+    """Pull drifted left edges back onto the grid. Only drift inside the band is
+    touched -- below it is rounding noise, above it was deliberate."""
+    grid = profile["grid"]
+    logo = profile["logo"]
+    lo, hi = grid["snap_min_in"], grid["snap_max_in"]
     changed = 0
     for shape in iter_shapes(slide):
-        if looks_like_logo(shape):
+        if looks_like_logo(shape, logo):
             continue
         left_in = T.inches(shape.left)
-        nearest = min(T.COLUMNS, key=lambda c: abs(c - left_in))
+        nearest = min(grid["columns"], key=lambda c: abs(c - left_in))
         delta = abs(nearest - left_in)
-        if T.SNAP_MIN_IN <= delta <= T.SNAP_TOLERANCE_IN:
+        if lo <= delta <= hi:
             log.append(f"s{slide_no}: left {left_in:.3f}in -> {nearest:.2f}in "
                        f"(drift {delta:.3f})")
             shape.left = T.emu(nearest)
@@ -159,10 +168,10 @@ def step_snap(slide, slide_no, log):
     return changed
 
 
-def step_titles(slide, slide_no, log):
+def step_titles(slide, slide_no, log, profile):
     """Report-only: a shrunk title needs shorter text, not a bigger box."""
-    target = T.TYPE_RAMP["title"]["pt"]
-    limit = T.TYPE_RAMP["title"]["max_chars"]
+    spec = profile["type_ramp"]["title"]
+    target, limit = spec["pt"], spec["max_chars"]
     flagged = 0
     for shape in iter_shapes(slide):
         if not shape.has_text_frame or not shape.text_frame.text.strip():
@@ -194,11 +203,19 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("pptx", help="Gamma .pptx export to normalize")
     ap.add_argument("-o", "--output", help="Output path (default: <name>-normalized.pptx)")
+    ap.add_argument("--profile", default=T.DEFAULT_PROFILE,
+                    help=f"Token profile (default: {T.DEFAULT_PROFILE}). "
+                         f"Available: {', '.join(T.profile_names())}")
     ap.add_argument("--dry-run", action="store_true", help="Report without writing")
     ap.add_argument("--skip", default="",
                     help=f"Comma-separated steps to skip from: {','.join(ALL_STEPS)}")
     ap.add_argument("--quiet", action="store_true", help="Summary only")
     args = ap.parse_args()
+
+    try:
+        profile = T.get_profile(args.profile)
+    except KeyError as exc:
+        sys.exit(str(exc).strip('"'))
 
     skip = {s.strip() for s in args.skip.split(",") if s.strip()}
     unknown = skip - set(ALL_STEPS)
@@ -208,18 +225,22 @@ def main():
 
     prs = Presentation(args.pptx)
 
+    canvas = profile["canvas"]
     w, h = T.inches(prs.slide_width), T.inches(prs.slide_height)
-    if abs(w - CANVAS_W) > 0.02 or abs(h - CANVAS_H) > 0.02:
-        print(f"WARNING: canvas is {w:.2f}x{h:.2f}in, tokens expect "
-              f"{CANVAS_W:.2f}x{CANVAS_H:.2f}in ({T.CANVAS['name']}). "
-              f"Grid snapping may be wrong.\n")
+    if (abs(w - canvas["width_in"]) > 0.02
+            or abs(h - canvas["height_in"]) > 0.02):
+        print(f"WARNING: canvas is {w:.2f}x{h:.2f}in but profile "
+              f"'{args.profile}' expects {canvas['width_in']:.2f}x"
+              f"{canvas['height_in']:.2f}in ({canvas['gamma_dimensions']}). "
+              f"Grid snapping and logo placement will be wrong -- "
+              f"use a matching --profile.\n")
 
     logs = {s: [] for s in steps}
     counts = Counter()
 
     for n, slide in enumerate(prs.slides, start=1):
         for step in steps:
-            counts[step] += STEP_FUNCS[step](slide, n, logs[step])
+            counts[step] += STEP_FUNCS[step](slide, n, logs[step], profile)
 
     if not args.quiet:
         for step in steps:
@@ -232,7 +253,9 @@ def main():
                 print(f"  {line}")
             print()
 
-    print(f"{os.path.basename(args.pptx)}: {len(prs.slides._sldIdLst)} slides")
+    n_slides = len(prs.slides._sldIdLst)
+    print(f"{os.path.basename(args.pptx)}: {n_slides} slides "
+          f"| profile '{args.profile}'")
     for step in steps:
         label = "flagged" if step == "titles" else "fixed"
         print(f"  {step:<7} {counts[step]:>4} {label}")
@@ -249,10 +272,6 @@ def main():
     if counts.get("titles"):
         print(f"note: {counts['titles']} title(s) need a text edit -- see TITLES above")
     return 0
-
-
-CANVAS_W = T.CANVAS["width_in"]
-CANVAS_H = T.CANVAS["height_in"]
 
 
 if __name__ == "__main__":

@@ -9,15 +9,16 @@ while it is still free to fix.
 Expected outline format (the same shape you feed Gamma with
 cardSplit: "inputTextBreaks"):
 
-    # Slide title                 <- title, <= 36 chars
-    ## Subhead                    <- subhead, <= 27 chars
-    - Body line                   <- body, <= column budget
+    # Slide title                 <- title
+    ## Subhead                    <- subhead
+    - Body line                   <- body
     Plain paragraph text          <- also treated as body
     ---                           <- card break
 
 Usage:
     python lint_content.py outline.md
     python lint_content.py outline.md --column half
+    python lint_content.py outline.md --profile training_4x3
     python lint_content.py outline.md --json
 """
 
@@ -74,9 +75,11 @@ def strip_markup(text):
     return text.strip()
 
 
-def lint(lines, column_profile):
-    profile = T.COLUMN_PROFILES[column_profile]
-    body_limit = profile["budget"]
+def lint(lines, profile, column):
+    ramp = profile["type_ramp"]
+    body_limit = profile["columns"][column]["budget"]
+    max_lines = profile["max_body_lines_per_block"]
+    max_subheads = profile["max_subheads_per_card"]
 
     findings = []
     card_no = 1
@@ -85,12 +88,14 @@ def lint(lines, column_profile):
     body_run = 0
     cards_seen = 0
 
+    def close_card(at_line):
+        if subheads_in_card > max_subheads:
+            findings.append(Finding(at_line, card_no, "density", subheads_in_card,
+                                    max_subheads, "too many subheads on one card"))
+
     for idx, raw in enumerate(lines, start=1):
         if CARD_BREAK.match(raw):
-            if subheads_in_card > T.MAX_SUBHEADS_PER_CARD:
-                findings.append(Finding(
-                    idx, card_no, "density", subheads_in_card,
-                    T.MAX_SUBHEADS_PER_CARD, "too many subheads on one card"))
+            close_card(idx)
             card_no += 1
             card_titles = 0
             subheads_in_card = 0
@@ -103,7 +108,7 @@ def lint(lines, column_profile):
             body_run = 0
             subheads_in_card += 1
             text = strip_markup(m.group(1))
-            limit = T.TYPE_RAMP["subhead"]["max_chars"]
+            limit = ramp["subhead"]["max_chars"]
             if len(text) > limit:
                 findings.append(Finding(idx, card_no, "subhead", len(text), limit, text))
             continue
@@ -114,7 +119,7 @@ def lint(lines, column_profile):
             body_run = 0
             card_titles += 1
             text = strip_markup(m.group(1))
-            limit = T.TYPE_RAMP["title"]["max_chars"]
+            limit = ramp["title"]["max_chars"]
             if len(text) > limit:
                 findings.append(Finding(idx, card_no, "title", len(text), limit, text))
             if card_titles > 1:
@@ -132,16 +137,12 @@ def lint(lines, column_profile):
         body_run += 1
         if len(text) > body_limit:
             findings.append(Finding(idx, card_no, "body", len(text), body_limit, text))
-        if body_run == T.MAX_BODY_LINES_PER_BLOCK + 1:
+        if body_run == max_lines + 1:
             findings.append(Finding(
-                idx, card_no, "density", body_run, T.MAX_BODY_LINES_PER_BLOCK,
+                idx, card_no, "density", body_run, max_lines,
                 "body block longer than fits without shrinking"))
 
-    if subheads_in_card > T.MAX_SUBHEADS_PER_CARD:
-        findings.append(Finding(
-            len(lines), card_no, "density", subheads_in_card,
-            T.MAX_SUBHEADS_PER_CARD, "too many subheads on one card"))
-
+    close_card(len(lines))
     return findings, max(cards_seen, 1)
 
 
@@ -149,33 +150,46 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("outline", help="Markdown outline to check")
-    ap.add_argument("--column", default=T.DEFAULT_COLUMN_PROFILE,
-                    choices=sorted(T.COLUMN_PROFILES),
-                    help="Body column profile the deck uses (default: standard)")
+    ap.add_argument("--profile", default=T.DEFAULT_PROFILE,
+                    help=f"Token profile (default: {T.DEFAULT_PROFILE}). "
+                         f"Available: {', '.join(T.profile_names())}")
+    ap.add_argument("--column", default=None,
+                    help="Body column profile the deck uses "
+                         "(default: the profile's own default)")
     ap.add_argument("--json", action="store_true", help="Emit findings as JSON")
     args = ap.parse_args()
+
+    try:
+        profile = T.get_profile(args.profile)
+    except KeyError as exc:
+        sys.exit(str(exc).strip('"'))
+
+    column = args.column or profile["default_column"]
+    if column not in profile["columns"]:
+        sys.exit(f"unknown column '{column}' for profile '{args.profile}'. "
+                 f"Available: {', '.join(sorted(profile['columns']))}")
 
     with open(args.outline, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
 
-    findings, n_cards = lint(lines, args.column)
-    profile = T.COLUMN_PROFILES[args.column]
+    findings, n_cards = lint(lines, profile, column)
+    col = profile["columns"][column]
 
     if args.json:
         json.dump({
             "outline": args.outline,
+            "profile": args.profile,
             "cards": n_cards,
-            "column_profile": args.column,
-            "body_limit": profile["budget"],
+            "column": column,
+            "body_limit": col["budget"],
             "findings": [f.as_dict() for f in findings],
         }, sys.stdout, indent=2)
         sys.stdout.write("\n")
         return 1 if findings else 0
 
     print(f"Aviation Synergy deck linter -- {args.outline}")
-    print(f"  {n_cards} cards | column '{args.column}' "
-          f"({profile['width_in']}in @ {profile['body_pt']}pt, "
-          f"{profile['budget']} chars/line)")
+    print(f"  profile '{args.profile}' | {n_cards} cards | column '{column}' "
+          f"({col['width_in']}in @ {col['body_pt']}pt, {col['budget']} chars/line)")
     print()
 
     if not findings:
