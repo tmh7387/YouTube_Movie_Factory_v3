@@ -10,9 +10,20 @@ one house standard:
                  production-corrected. See AVS_Gamma_Deck_SPEC.md.
 
   corporate_16x9 Corporate presentations, from the Claude Design
-                 "Aviation Synergy PPT Template". NOT YET POPULATED -- awaiting
-                 the .dc.html bundle so the tokens can be measured rather than
-                 guessed. Do not invent values here.
+                 "Aviation Synergy PPT Template" (11 layouts). Canvas, colour,
+                 fonts, type ramp and layouts are measured. Char budgets are
+                 ESTIMATED -- the template ships uniform placeholder copy that
+                 carries no overflow signal -- so it sets budgets_provisional.
+
+The brand palette is authoritative over any deck or design file:
+
+    #103558  Prussian Blue      #FFFFFF  White
+    #027EA7  Cerulean           #6E6E6E  Dim gray
+    #E9E8E8  Platinum           #E58F65  Atomic tangerine
+
+Both source files drifted from it by a channel or two (#103458 navy in the
+training .pptx, #0080A9 teal in the design bundle). Those are listed as
+`variants` so the normalizer folds them back rather than enshrining them.
 
 Add a profile by copying the training_4x3 dict and replacing measured values.
 Never hand-tune a number in here without a source deck to measure it from.
@@ -45,10 +56,16 @@ TRAINING_4X3 = {
         "content_width_in": 8.91,
     },
 
+    # Brand palette is authoritative: #103558 "Prussian Blue" is the house navy.
+    # The exported .pptx carries #103458 on 283 body runs -- a one-digit drift
+    # introduced downstream of the brand spec, folded back here.
     "colour": {
-        "primary": "103458",        # canonical brand navy, 283 runs
-        "variants": ["103558"],     # near-identical strays to fold in, 65 runs
-        "accent": "1A6496",
+        "primary": "103558",        # Prussian Blue -- canonical
+        "variants": ["103458"],     # drift found in .pptx body copy, 283 runs
+        "accent": "027EA7",         # Cerulean
+        "platinum": "E9E8E8",
+        "dim_gray": "6E6E6E",
+        "tangerine": "E58F65",
         "reverse": "FFFFFF",
     },
 
@@ -150,16 +167,23 @@ CORPORATE_16X9 = {
         "content_width_in": 12.083,
     },
 
+    # Brand palette (Prussian Blue / Cerulean / Platinum / White / Dim gray /
+    # Atomic tangerine) is authoritative. The design file matches on navy and
+    # tangerine but ships a slightly-off teal, so that one folds back.
     "colour": {
-        "primary": "103558",       # navy -- all h1/h2/h3, 47 uses
-        "variants": [],            # no strays in the source design
-        "accent": "0080A9",        # teal -- eyebrow labels, numerals, 57 uses
-        "body": "3D5570",          # mid slate -- subtitles and body copy
-        "muted": "5C7085",         # light slate -- captions, presenter, notes
-        "warm": "E58F65",          # links and the quote glyph
-        "warm_dark": "C96F45",     # link hover
-        "lettermark": "5EC8DC",    # cyan "AS" on the navy brand mark
+        "primary": "103558",       # Prussian Blue -- all h1/h2/h3, 47 uses
+        "variants": ["0080A9"],    # design-file teal, 3 channels off Cerulean
+        "accent": "027EA7",        # Cerulean -- brand spec
+        "platinum": "E9E8E8",
+        "dim_gray": "6E6E6E",
+        "tangerine": "E58F65",     # Atomic tangerine -- exact match, 11 uses
         "reverse": "FFFFFF",
+        # Tints the design introduces beyond the six brand colours. Kept
+        # separate so they are visibly elaboration, not brand values.
+        "design_body": "3D5570",
+        "design_muted": "5C7085",
+        "design_warm_dark": "C96F45",
+        "design_lettermark": "5EC8DC",
         "backgrounds": ["FAFCFE", "F1F6FA", "F4F9FC", "E8F1F7", "E9EFF5"],
     },
 
@@ -212,7 +236,10 @@ CORPORATE_16X9 = {
     "default_column": "half",
 
     "max_body_lines_per_block": 6,
-    "max_subheads_per_card": 3,
+    # The design ships explicit 4-up layouts -- Key Figures is "four large
+    # numbers with tracked labels", Timeline is "four milestones on a teal
+    # line" -- so 4, not the 3 that training_4x3 uses.
+    "max_subheads_per_card": 4,
 
     # No measured grid yet -- the source design uses flex/grid layout rather
     # than absolute positions, so left-edge columns only become knowable from a

@@ -66,7 +66,8 @@ title-length-vs-point-size analysis used for `training_4x3`.
 ### Corporate tokens at a glance
 
 - **Fonts** — Michroma (headings + eyebrow labels), Inter (body), Georgia (quote glyph only)
-- **Navy** `#103558` · **Teal** `#0080A9` · body `#3D5570` · muted `#5C7085` · warm `#E58F65`
+- **Brand palette** (authoritative) — `#103558` Prussian Blue · `#027EA7` Cerulean ·
+  `#E9E8E8` Platinum · `#FFFFFF` White · `#6E6E6E` Dim gray · `#E58F65` Atomic tangerine
 - **Type ramp** — cover 31pt, section 29pt, slide title 25pt, card title 16pt,
   body 14pt, eyebrow 12pt
 - **11 layouts** — Cover, Agenda, Section Divider, Content + Image,
@@ -131,7 +132,7 @@ python normalize_pptx.py deck.pptx --skip snap         # opt out of a step
 | Step | Action |
 |---|---|
 | `floor` | Lifts any run below 14 pt |
-| `colour` | Folds stray `#103558` into canonical `#103458` |
+| `colour` | Folds drift back to the brand palette — `#103458` → `#103558`, `#0080A9` → `#027EA7` |
 | `logo` | Snaps footer logo to 1.00 × 0.84in at y 6.46 — x 8.81 content, x 6.14 section dividers |
 | `snap` | Corrects left-edge drift of 0.010–0.060in back onto the grid |
 | `titles` | **Reports** shrunk titles (needs a text edit, so never forced) |
@@ -141,7 +142,7 @@ Idempotent: re-running a normalized file makes zero changes.
 ### On the current deck
 
 ```
-colour    65 fixed     all titles carried the #103558 variant
+colour   283 fixed     body copy had drifted to #103458
 snap      63 fixed     drifts of 0.013–0.043in
 titles     6 flagged   the six over-length titles
 floor      0           already ≥ 14 pt
@@ -152,6 +153,14 @@ logo       0           already correct
 
 The normalizer warns when the input canvas does not match the selected profile,
 since grid snapping and logo placement would land in the wrong places.
+
+## Outlines
+
+`outlines/` holds linted source outlines ready to feed Gamma.
+
+| File | Profile | Cards |
+|---|---|---|
+| `corporate_capability.md` | `corporate_16x9` | 11, one per template layout |
 
 ## Still manual
 
