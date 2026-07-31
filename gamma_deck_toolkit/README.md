@@ -167,11 +167,25 @@ since grid snapping and logo placement would land in the wrong places.
 The Gamma MCP cannot edit an existing gamma or theme, so these are one-time jobs
 in the Gamma editor:
 
-- Unify the theme text colour to `#103458`
+- Unify the theme text colour to `#103558` Prussian Blue
 - Confirm heading font **Open Sans Bold**, body **Fira Sans**
-- Upload the AVS logo as **theme logo** (enables `headerFooter` auto-placement)
-- Save a corrected deck as a **Template** — the workspace currently has none,
+- Save a corrected deck as a **Template** — the production workspace has none,
   so `generate_from_template` is unavailable until one exists
+
+Already done, confirmed by reading the Day 3 gamma's `page-setup`:
+
+```
+<card-dimensions>4:3</card-dimensions>
+<font-size>lg</font-size>
+<scale-content-to-fit>true</scale-content-to-fit>
+<card-margins>
+  <bottom-center type="card-numbers" />
+  <bottom-right type="theme-logo" size="xl" />
+```
+
+The theme logo is already wired into `card-margins`, so it needs no upload.
+`scale-content-to-fit: true` is Gamma's name for the auto-shrink behaviour this
+whole toolkit exists to work around.
 
 ## Importing a Claude Design template
 
@@ -184,3 +198,8 @@ Gamma, but note two limits:
 - It creates a **gamma, not a theme**. Save the result as a Template in the
   editor for the layout layer; the theme layer (fonts, colours, logo) still has
   to be rebuilt by hand from the design's tokens.
+
+Note that Claude Design's send-to-Gamma targets `labs.gamma.app`, a separate
+research surface. Docs created there are invisible to the production Gamma API
+(`read_gamma` on a labs id returns 404, and `get_gammas type=template` stays
+empty), so a labs template cannot drive `generate_from_template`.
