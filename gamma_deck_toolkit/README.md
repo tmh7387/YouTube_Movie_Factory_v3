@@ -42,11 +42,36 @@ profiles. Both tools take `--profile`.
 | Profile | Status | Canvas | Source |
 |---|---|---|---|
 | `training_4x3` | ✅ measured | 4:3, 10.00 × 7.50in | `IOSARBIDay3_v31_1.pptx`, 43 slides |
-| `corporate_16x9` | ⏳ pending | — | Claude Design "Aviation Synergy PPT Template" `.dc.html` |
+| `corporate_16x9` | ⚠️ partial | 16:9, 13.33 × 7.50in | Claude Design "Aviation Synergy PPT Template", 11 layouts |
 
-`corporate_16x9` is declared but deliberately unpopulated — its tokens must be
-measured from the design bundle, not guessed. Both tools fail with an
-explanatory message if you select it before then.
+### What each profile actually knows
+
+`training_4x3` is fully measured. Its char budgets are real overflow thresholds
+observed across 43 production slides.
+
+`corporate_16x9` has **measured** canvas, colours, fonts, type ramp and layout
+inventory — all read straight out of the design source (1920 × 1080 px at
+144 px/in, so every px halves to points). Three things are **not** measured, and
+the tools behave accordingly:
+
+| Gap | Why | Effect |
+|---|---|---|
+| Char budgets | The template ships uniform ~60-char placeholder copy, which carries no overflow signal | `budgets_provisional: True`; linter prints an advisory banner |
+| Layout grid | The design uses flex/grid, not absolute positions | `snap` step is inert and says so |
+| Logo tokens | No explicit logo image on the slides — brand presence is background art | `logo` step is inert and says so |
+
+To close all three: generate one corporate deck, export it, and run the same
+title-length-vs-point-size analysis used for `training_4x3`.
+
+### Corporate tokens at a glance
+
+- **Fonts** — Michroma (headings + eyebrow labels), Inter (body), Georgia (quote glyph only)
+- **Navy** `#103558` · **Teal** `#0080A9` · body `#3D5570` · muted `#5C7085` · warm `#E58F65`
+- **Type ramp** — cover 31pt, section 29pt, slide title 25pt, card title 16pt,
+  body 14pt, eyebrow 12pt
+- **11 layouts** — Cover, Agenda, Section Divider, Content + Image,
+  Three-Column Cards, Key Figures, Timeline, Comparison Table, Quote,
+  Full-Bleed Image, Closing
 
 Adding a profile: copy the `TRAINING_4X3` dict, replace every value with one
 measured from a real source deck, register it in `PROFILES`. Never hand-tune a
@@ -68,6 +93,10 @@ python lint_content.py outline.md --column half        # for 2-column decks
 python lint_content.py outline.md --profile training_4x3
 python lint_content.py outline.md --json               # for CI
 ```
+
+Markdown roles map onto whichever ramp entry a profile defines — `##` is a
+`subhead` under `training_4x3` and a `card_title` under `corporate_16x9`. The
+linter prints the mapping it resolved.
 
 Outline format matches what you feed Gamma with `cardSplit: "inputTextBreaks"`:
 

@@ -131,20 +131,136 @@ TRAINING_4X3 = {
 }
 
 
+CORPORATE_16X9 = {
+    "name": "corporate_16x9",
+    "description": "Aviation Synergy corporate presentations. 16:9.",
+    "source": "Claude Design 'Aviation Synergy PPT Template', 11 layouts",
+
+    # Design canvas is 1920x1080 CSS px, declared on the deck-stage import.
+    # That is 144 px/in against PowerPoint's 13.333x7.5in 16:9 slide, so every
+    # px value in the source converts to points by halving it.
+    "canvas": {
+        "gamma_dimensions": "16x9",
+        "width_in": 13.333,
+        "height_in": 7.50,
+        "px_per_inch": 144,
+        "margin_left_in": 0.625,   # 90px
+        "margin_right_in": 0.625,
+        "margin_top_in": 0.556,    # 80px
+        "content_width_in": 12.083,
+    },
+
+    "colour": {
+        "primary": "103558",       # navy -- all h1/h2/h3, 47 uses
+        "variants": [],            # no strays in the source design
+        "accent": "0080A9",        # teal -- eyebrow labels, numerals, 57 uses
+        "body": "3D5570",          # mid slate -- subtitles and body copy
+        "muted": "5C7085",         # light slate -- captions, presenter, notes
+        "warm": "E58F65",          # links and the quote glyph
+        "warm_dark": "C96F45",     # link hover
+        "lettermark": "5EC8DC",    # cyan "AS" on the navy brand mark
+        "reverse": "FFFFFF",
+        "backgrounds": ["FAFCFE", "F1F6FA", "F4F9FC", "E8F1F7", "E9EFF5"],
+    },
+
+    "fonts": {
+        "heading": "Michroma",     # all headings + eyebrow labels, 74 uses
+        "body": "Inter",
+        "quote_glyph": "Georgia",  # the decorative opening quote only
+    },
+
+    "min_font_pt": 12.0,
+
+    # Measured from the source design (px halved). max_chars here are the
+    # PLACEHOLDER lengths, not overflow thresholds -- see budgets_provisional.
+    "type_ramp": {
+        "cover_title":     {"pt": 31.0, "max_chars": 28},
+        "section_title":   {"pt": 29.0, "max_chars": 23},
+        "closing_title":   {"pt": 28.0, "max_chars": 9},
+        "agenda_title":    {"pt": 26.0, "max_chars": 6},
+        "title":           {"pt": 25.0, "max_chars": 21},   # workhorse slide title
+        "image_statement": {"pt": 23.0, "max_chars": 25},
+        "quote":           {"pt": 23.0, "max_chars": 60},
+        "card_title":      {"pt": 16.0, "max_chars": 17},
+        "agenda_item":     {"pt": 15.0, "max_chars": 28},
+        "body":            {"pt": 14.0, "max_chars": 60},
+        "supporting":      {"pt": 13.5, "max_chars": 60},
+        "presenter":       {"pt": 13.0, "max_chars": 42},
+        "note":            {"pt": 12.5, "max_chars": 21},
+        "eyebrow":         {"pt": 12.0, "max_chars": 35},   # most common, 53 uses
+        "stat_numeral":    {"pt": 44.0, "max_chars": 5},
+        "step_numeral":    {"pt": 22.0, "max_chars": 1},
+    },
+
+    # IMPORTANT: unlike training_4x3, these budgets are NOT measured overflow
+    # thresholds. The source template ships uniform ~60-char placeholder copy,
+    # which carries no signal about where Gamma starts shrinking. These are
+    # estimated by holding the training profile's chars-per-inch at a given
+    # point size (86 chars / 5.63in at 14pt = 15.3 ch/in) and applying it to
+    # this canvas's column widths. Inter runs slightly wider than Fira Sans, so
+    # treat them as a starting point.
+    #
+    # To replace with real numbers: generate one corporate deck, export it, and
+    # run the same title-length-vs-point-size analysis used for training_4x3.
+    "budgets_provisional": True,
+
+    "columns": {
+        "full":   {"width_in": 12.08, "body_pt": 14.0, "budget": 185},
+        "half":   {"width_in": 5.90,  "body_pt": 14.0, "budget": 90},
+        "third":  {"width_in": 3.83,  "body_pt": 13.5, "budget": 60},
+    },
+    "default_column": "half",
+
+    "max_body_lines_per_block": 6,
+    "max_subheads_per_card": 3,
+
+    # No measured grid yet -- the source design uses flex/grid layout rather
+    # than absolute positions, so left-edge columns only become knowable from a
+    # real .pptx export. Snapping is a no-op until then.
+    "grid": {
+        "columns": [],
+        "snap_min_in": 0.010,
+        "snap_max_in": 0.060,
+    },
+
+    # The source design places no explicit logo image on its slides -- brand
+    # presence comes from the background art and the cover mark. Populate from a
+    # real export before enabling the logo step.
+    "logo": None,
+
+    "layouts": [
+        "Cover", "Agenda", "Section Divider", "Content + Image",
+        "Three-Column Cards", "Key Figures", "Timeline",
+        "Comparison Table", "Quote", "Full-Bleed Image", "Closing",
+    ],
+
+    "generation_profile": {
+        # No Gamma theme id yet: the design lives on labs.gamma.app, which the
+        # production API cannot see. Fill this in once a matching custom theme
+        # exists in the main workspace.
+        "themeId": None,
+        "textMode": "preserve",
+        "cardSplit": "inputTextBreaks",
+        "cardOptions": {"dimensions": "16x9"},
+        "textOptions": {
+            "amount": "brief",
+            "language": "en-gb",
+            "tone": "professional",
+        },
+    },
+}
+
+
 PROFILES = {
     "training_4x3": TRAINING_4X3,
+    "corporate_16x9": CORPORATE_16X9,
 }
 
 DEFAULT_PROFILE = "training_4x3"
 
 # Profiles that are declared but not yet measured. Named here so the tools can
 # fail with a useful message instead of a KeyError.
-PENDING_PROFILES = {
-    "corporate_16x9": (
-        "Awaiting the Claude Design 'Aviation Synergy PPT Template' .dc.html "
-        "bundle. Tokens must be measured from it, not guessed."
-    ),
-}
+PENDING_PROFILES = {}
 
 
 def get_profile(name=None):

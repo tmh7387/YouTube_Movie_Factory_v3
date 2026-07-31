@@ -75,8 +75,27 @@ def strip_markup(text):
     return text.strip()
 
 
+# Markdown roles map onto whichever ramp entry a profile actually defines, in
+# order of preference. Profiles name their roles after their own design system,
+# so "##" is a subhead in the training ramp and a card_title in the corporate one.
+ROLE_ALIASES = {
+    "title": ("title", "cover_title", "slide_title"),
+    "subhead": ("subhead", "card_title", "agenda_item"),
+}
+
+
+def resolve_role(ramp, role):
+    """Return (ramp_key, spec) for a markdown role, or (None, None)."""
+    for key in ROLE_ALIASES[role]:
+        if key in ramp:
+            return key, ramp[key]
+    return None, None
+
+
 def lint(lines, profile, column):
     ramp = profile["type_ramp"]
+    title_key, title_spec = resolve_role(ramp, "title")
+    subhead_key, subhead_spec = resolve_role(ramp, "subhead")
     body_limit = profile["columns"][column]["budget"]
     max_lines = profile["max_body_lines_per_block"]
     max_subheads = profile["max_subheads_per_card"]
@@ -108,9 +127,9 @@ def lint(lines, profile, column):
             body_run = 0
             subheads_in_card += 1
             text = strip_markup(m.group(1))
-            limit = ramp["subhead"]["max_chars"]
-            if len(text) > limit:
-                findings.append(Finding(idx, card_no, "subhead", len(text), limit, text))
+            if subhead_spec and len(text) > subhead_spec["max_chars"]:
+                findings.append(Finding(idx, card_no, "subhead", len(text),
+                                        subhead_spec["max_chars"], text))
             continue
 
         m = TITLE.match(raw)
@@ -119,9 +138,9 @@ def lint(lines, profile, column):
             body_run = 0
             card_titles += 1
             text = strip_markup(m.group(1))
-            limit = ramp["title"]["max_chars"]
-            if len(text) > limit:
-                findings.append(Finding(idx, card_no, "title", len(text), limit, text))
+            if title_spec and len(text) > title_spec["max_chars"]:
+                findings.append(Finding(idx, card_no, "title", len(text),
+                                        title_spec["max_chars"], text))
             if card_titles > 1:
                 findings.append(Finding(
                     idx, card_no, "struct", card_titles, 1,
@@ -174,6 +193,9 @@ def main():
 
     findings, n_cards = lint(lines, profile, column)
     col = profile["columns"][column]
+    ramp = profile["type_ramp"]
+    title_key, _ = resolve_role(ramp, "title")
+    subhead_key, _ = resolve_role(ramp, "subhead")
 
     if args.json:
         json.dump({
@@ -190,6 +212,10 @@ def main():
     print(f"Aviation Synergy deck linter -- {args.outline}")
     print(f"  profile '{args.profile}' | {n_cards} cards | column '{column}' "
           f"({col['width_in']}in @ {col['body_pt']}pt, {col['budget']} chars/line)")
+    print(f"  roles: # -> {title_key or 'unmapped'}, ## -> {subhead_key or 'unmapped'}")
+    if profile.get("budgets_provisional"):
+        print("  NOTE: this profile's budgets are estimated, not measured from a "
+              "real export -- treat failures as advisory")
     print()
 
     if not findings:

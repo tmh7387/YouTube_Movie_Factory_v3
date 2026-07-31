@@ -88,6 +88,8 @@ def is_section_divider(slide):
 
 
 def looks_like_logo(shape, logo):
+    if not logo:
+        return False
     return (
         shape.shape_type == PICTURE
         and T.inches(shape.width) <= logo["detect_max_width_in"]
@@ -127,6 +129,8 @@ def step_colour(slide, slide_no, log, profile):
 
 def step_logo(slide, slide_no, log, profile):
     logo = profile["logo"]
+    if not logo:
+        return 0
     target_x = (logo["x_section_in"] if is_section_divider(slide)
                 else logo["x_content_in"])
     changed = 0
@@ -151,6 +155,8 @@ def step_snap(slide, slide_no, log, profile):
     """Pull drifted left edges back onto the grid. Only drift inside the band is
     touched -- below it is rounding noise, above it was deliberate."""
     grid = profile["grid"]
+    if not grid["columns"]:
+        return 0
     logo = profile["logo"]
     lo, hi = grid["snap_min_in"], grid["snap_max_in"]
     changed = 0
@@ -234,6 +240,17 @@ def main():
               f"{canvas['height_in']:.2f}in ({canvas['gamma_dimensions']}). "
               f"Grid snapping and logo placement will be wrong -- "
               f"use a matching --profile.\n")
+
+    inert = []
+    if not profile.get("logo"):
+        inert.append("logo (no measured logo tokens in this profile)")
+    if not profile["grid"]["columns"]:
+        inert.append("snap (no measured layout grid in this profile)")
+    for note in inert:
+        if note.split()[0] in steps:
+            print(f"NOTE: skipping {note}")
+    if inert:
+        print()
 
     logs = {s: [] for s in steps}
     counts = Counter()
