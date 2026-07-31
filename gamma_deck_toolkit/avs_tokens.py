@@ -161,10 +161,12 @@ CORPORATE_16X9 = {
         "width_in": 13.333,
         "height_in": 7.50,
         "px_per_inch": 144,
-        "margin_left_in": 0.625,   # 90px
-        "margin_right_in": 0.625,
-        "margin_top_in": 0.556,    # 80px
-        "content_width_in": 12.083,
+        # Measured by rendering the design in headless Chromium at 1920x1080
+        # and normalising out the deck-stage transform. Supersedes the CSS
+        # padding values, which belonged to sub-elements rather than the slide.
+        "margin_left_in": 0.764,   # 110px, symmetric
+        "margin_right_in": 0.764,  # 110px
+        "content_width_in": 11.806,  # 1700px
     },
 
     # Brand palette (Prussian Blue / Cerulean / Platinum / White / Dim gray /
@@ -195,45 +197,50 @@ CORPORATE_16X9 = {
 
     "min_font_pt": 12.0,
 
-    # Measured from the source design (px halved). max_chars here are the
-    # PLACEHOLDER lengths, not overflow thresholds -- see budgets_provisional.
+    # MEASURED. The design was rendered in headless Chromium at 1920x1080 and
+    # every text element grown word by word until a descendant clipped past the
+    # section's fixed 1080px bounds (sections are height:1080px, overflow:hidden).
+    # max_chars is the worst case across all 11 layouts, floored at the longest
+    # string the template itself ships -- so a value here fits every layout.
     "type_ramp": {
-        "cover_title":     {"pt": 31.0, "max_chars": 28},
-        "section_title":   {"pt": 29.0, "max_chars": 23},
-        "closing_title":   {"pt": 28.0, "max_chars": 9},
-        "agenda_title":    {"pt": 26.0, "max_chars": 6},
-        "title":           {"pt": 25.0, "max_chars": 21},   # workhorse slide title
-        "image_statement": {"pt": 23.0, "max_chars": 25},
-        "quote":           {"pt": 23.0, "max_chars": 60},
-        "card_title":      {"pt": 16.0, "max_chars": 17},
-        "agenda_item":     {"pt": 15.0, "max_chars": 28},
-        "body":            {"pt": 14.0, "max_chars": 60},
-        "supporting":      {"pt": 13.5, "max_chars": 60},
-        "presenter":       {"pt": 13.0, "max_chars": 42},
-        "note":            {"pt": 12.5, "max_chars": 21},
-        "eyebrow":         {"pt": 12.0, "max_chars": 35},   # most common, 53 uses
-        "stat_numeral":    {"pt": 44.0, "max_chars": 5},
+        "cover_title":     {"pt": 31.0, "max_chars": 64},
+        "section_title":   {"pt": 29.0, "max_chars": 194},
+        "closing_title":   {"pt": 28.0, "max_chars": 90},
+        "agenda_title":    {"pt": 26.0, "max_chars": 429},
+        "title":           {"pt": 25.0, "max_chars": 246},  # workhorse slide title
+        "image_statement": {"pt": 23.0, "max_chars": 25},   # tightest box in the set
+        "quote":           {"pt": 23.0, "max_chars": 662},
+        "card_title":      {"pt": 16.0, "max_chars": 241},
+        "agenda_item":     {"pt": 15.0, "max_chars": 151},
+        "body":            {"pt": 14.0, "max_chars": 80},
+        "supporting":      {"pt": 13.5, "max_chars": 222},
+        "presenter":       {"pt": 13.0, "max_chars": 195},
+        "note":            {"pt": 12.5, "max_chars": 219},
+        "eyebrow":         {"pt": 12.0, "max_chars": 35},   # at capacity by design
+        "stat_numeral":    {"pt": 44.0, "max_chars": 5},    # at capacity by design
         "step_numeral":    {"pt": 22.0, "max_chars": 1},
     },
 
-    # IMPORTANT: unlike training_4x3, these budgets are NOT measured overflow
-    # thresholds. The source template ships uniform ~60-char placeholder copy,
-    # which carries no signal about where Gamma starts shrinking. These are
-    # estimated by holding the training profile's chars-per-inch at a given
-    # point size (86 chars / 5.63in at 14pt = 15.3 ch/in) and applying it to
-    # this canvas's column widths. Inter runs slightly wider than Fira Sans, so
-    # treat them as a starting point.
+    # Budgets below are measured, not estimated. Note they describe the DESIGN's
+    # box capacity -- the point at which content clips in this fixed-height
+    # template. Gamma responds to the same pressure by shrinking type instead of
+    # clipping, so treat these as the ceiling for a fixed-layout render and
+    # re-measure against a Gamma export if you drive generation from this profile.
     #
-    # To replace with real numbers: generate one corporate deck, export it, and
-    # run the same title-length-vs-point-size analysis used for training_4x3.
-    "budgets_provisional": True,
+    # Budget varies with box HEIGHT as much as width: the 6.67in slot holds only
+    # 80 chars at 14pt because it is short, while the 2.71in slot holds 176.
+    # Each entry is therefore the worst case observed at that width and size.
+    "budgets_provisional": False,
 
     "columns": {
-        "full":   {"width_in": 12.08, "body_pt": 14.0, "budget": 185},
-        "half":   {"width_in": 5.90,  "body_pt": 14.0, "budget": 90},
-        "third":  {"width_in": 3.83,  "body_pt": 13.5, "budget": 60},
+        "full":    {"width_in": 11.81, "body_pt": 25.0, "budget": 471},
+        "wide":    {"width_in": 6.67,  "body_pt": 14.0, "budget": 80},
+        "half":    {"width_in": 5.56,  "body_pt": 15.0, "budget": 682},
+        "content": {"width_in": 4.72,  "body_pt": 15.0, "budget": 151},
+        "third":   {"width_in": 3.75,  "body_pt": 14.0, "budget": 268},
+        "quarter": {"width_in": 2.71,  "body_pt": 14.0, "budget": 176},
     },
-    "default_column": "half",
+    "default_column": "wide",   # tightest body slot -- safe default
 
     "max_body_lines_per_block": 6,
     # The design ships explicit 4-up layouts -- Key Figures is "four large
@@ -241,19 +248,31 @@ CORPORATE_16X9 = {
     # line" -- so 4, not the 3 that training_4x3 uses.
     "max_subheads_per_card": 4,
 
-    # No measured grid yet -- the source design uses flex/grid layout rather
-    # than absolute positions, so left-edge columns only become knowable from a
-    # real .pptx export. Snapping is a no-op until then.
+    # Measured left edges from the rendered design (>=3 occurrences each).
+    # The dominant edge is 110px / 0.764in, used by 49 elements.
     "grid": {
-        "columns": [],
+        "columns": [0.764, 1.007, 1.076, 1.181, 1.264, 1.361,
+                    1.910, 4.521, 5.111, 6.833, 7.146, 7.201,
+                    9.153, 9.882, 12.250],
         "snap_min_in": 0.010,
         "snap_max_in": 0.060,
     },
 
-    # The source design places no explicit logo image on its slides -- brand
-    # presence comes from the background art and the cover mark. Populate from a
-    # real export before enabling the logo step.
-    "logo": None,
+    # There IS a logo: a 34x34px mark sits at a fixed spot on slides 2-9.
+    # Cover and closing carry larger brand marks at their own positions.
+    "logo": {
+        "width_in": 0.236,
+        "height_in": 0.236,
+        "top_in": 6.938,
+        "x_content_in": 0.764,
+        "x_section_in": 0.764,   # same slot on every content slide
+        "detect_max_width_in": 0.40,
+        "detect_min_top_in": 6.50,
+    },
+    "brand_marks": {
+        "cover":   {"x_in": 1.326, "y_in": 1.326, "w_in": 1.389, "h_in": 1.192},
+        "closing": {"x_in": 5.938, "y_in": 1.864, "w_in": 1.458, "h_in": 1.251},
+    },
 
     "layouts": [
         "Cover", "Agenda", "Section Divider", "Content + Image",

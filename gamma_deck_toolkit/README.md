@@ -42,26 +42,30 @@ profiles. Both tools take `--profile`.
 | Profile | Status | Canvas | Source |
 |---|---|---|---|
 | `training_4x3` | ✅ measured | 4:3, 10.00 × 7.50in | `IOSARBIDay3_v31_1.pptx`, 43 slides |
-| `corporate_16x9` | ⚠️ partial | 16:9, 13.33 × 7.50in | Claude Design "Aviation Synergy PPT Template", 11 layouts |
+| `corporate_16x9` | ✅ measured | 16:9, 13.33 × 7.50in | Claude Design "Aviation Synergy PPT Template", 11 layouts |
 
 ### What each profile actually knows
 
-`training_4x3` is fully measured. Its char budgets are real overflow thresholds
-observed across 43 production slides.
+`training_4x3` is measured from output: 43 production slides, budgets taken from
+where Gamma's auto-fit actually shrank the type.
 
-`corporate_16x9` has **measured** canvas, colours, fonts, type ramp and layout
-inventory — all read straight out of the design source (1920 × 1080 px at
-144 px/in, so every px halves to points). Three things are **not** measured, and
-the tools behave accordingly:
+`corporate_16x9` is measured too, by a different method. The design bundle was
+rendered in headless Chromium at 1920 × 1080, the deck-stage transform
+normalised out, and every text element grown word by word until a descendant
+clipped past the section's fixed bounds (`height: 1080px; overflow: hidden`).
 
-| Gap | Why | Effect |
-|---|---|---|
-| Char budgets | The template ships uniform ~60-char placeholder copy, which carries no overflow signal | `budgets_provisional: True`; linter prints an advisory banner |
-| Layout grid | The design uses flex/grid, not absolute positions | `snap` step is inert and says so |
-| Logo tokens | No explicit logo image on the slides — brand presence is background art | `logo` step is inert and says so |
+That yields real numbers for the three things a static read of the HTML could
+not give: the layout grid, the logo tokens, and the char budgets.
 
-To close all three: generate one corporate deck, export it, and run the same
-title-length-vs-point-size analysis used for `training_4x3`.
+**Budget tracks box height, not just width.** The 6.67in slot holds only 80
+chars at 14pt because it is short; the 2.71in slot holds 176. Each column entry
+is the worst case observed at that width and size, floored at the longest string
+the template itself ships — so anything inside budget fits every layout.
+
+One caveat worth keeping in view: these describe the **design's** capacity, the
+point at which content clips in a fixed-height template. Gamma answers the same
+pressure by shrinking type rather than clipping. Re-measure against a Gamma
+export if you drive generation from this profile.
 
 ### Corporate tokens at a glance
 
@@ -70,6 +74,9 @@ title-length-vs-point-size analysis used for `training_4x3`.
   `#E9E8E8` Platinum · `#FFFFFF` White · `#6E6E6E` Dim gray · `#E58F65` Atomic tangerine
 - **Type ramp** — cover 31pt, section 29pt, slide title 25pt, card title 16pt,
   body 14pt, eyebrow 12pt
+- **Grid** — symmetric 110px (0.764in) margins, 1700px (11.81in) content width
+- **Logo** — 34 × 34px mark at 0.764, 6.938in on slides 2–9; larger brand marks
+  on cover and closing
 - **11 layouts** — Cover, Agenda, Section Divider, Content + Image,
   Three-Column Cards, Key Figures, Timeline, Comparison Table, Quote,
   Full-Bleed Image, Closing

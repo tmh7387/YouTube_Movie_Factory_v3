@@ -1,6 +1,6 @@
 # Aviation Synergy
 
-## Quality & Safety
+## Excellence Through Synergy
 - Aviation quality, safety and compliance consulting.
 - Audit preparation, assurance systems and technical training.
 
@@ -21,7 +21,7 @@
 
 # Who We Are
 
-## Independent
+## Independent Specialists
 - Aviation quality, safety and regulatory compliance.
 - Practitioner-led, drawn from airline and operator roles.
 
@@ -47,7 +47,7 @@
 ## Safety Management
 - SMS maturity, hazard and risk registers, SPIs.
 
-## Data & Fatigue
+## Flight Data & Fatigue
 - FDM programme design and FRMS implementation.
 
 ---
@@ -57,7 +57,7 @@
 ## Operators Served
 - [figure]
 
-## Training Days
+## Training Days Delivered
 - [figure]
 
 ## Countries
@@ -107,7 +107,7 @@
 
 # Our Standard
 
-## Evidence First
+## Evidence Over Assertion
 - Every finding traceable to objective evidence.
 
 ---
@@ -115,5 +115,5 @@
 # Thank You
 
 ## Aviation Synergy
-- https://aviationsynergy.org
+- https://aviationsynergy.aero
 - Excellence is achieved through Synergy!
