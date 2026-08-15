@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     KLING_ACCESS_KEY: str = ""
     KLING_SECRET_KEY: str = ""
 
+    # --- Ported from neural-frames review: optional feature services ---
+    OPENAI_API_KEY: str = ""                 # GPT-Image-2 generation
+    STEM_SEPARATION_ENABLED: bool = False    # requires demucs + GPU
+    UPSCALING_ENABLED: bool = False          # requires realesrgan binary
+
     # --- Application Settings ---
     CLAUDE_CREATIVE_MODEL: str = "claude-opus-4-6"
     CLAUDE_FAST_MODEL: str = "claude-sonnet-4-6"
