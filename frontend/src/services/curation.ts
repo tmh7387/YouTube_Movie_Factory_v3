@@ -7,7 +7,7 @@ export interface StoryboardScene {
     // New Claude schema
     scene_index?: number;
     narration?: string;
-    visual_prompt: string;
+    visual_prompt?: string;
     pacing?: string;
     duration?: number;
     // Legacy / extended fields from older curation jobs
@@ -18,28 +18,62 @@ export interface StoryboardScene {
     negative_prompt?: string;
 }
 
+/** Scene shape emitted by the Stage-2 aligned brief (guide §3.3). */
+export type BriefScene = StoryboardScene & {
+    lyric_or_timestamp?: string;
+    target_duration_sec?: number;
+    kling_model?: string;
+    image_tail_scene?: number | null;
+    animation_method?: string;
+    transition_note?: string | null;
+};
+
+export interface SunoMusicDirection {
+    genre?: string;
+    mood?: string;
+    bpm_hint?: number;
+    instruments?: string[];
+    style_tags?: string[];
+}
+
+/**
+ * Union of both brief shapes in circulation:
+ *  - the tolerant storyboard schema emitted by claude_service (analyzer line)
+ *  - the Stage-2 aligned schema (guide §3.3)
+ * Every field outside the tolerant core is optional so either payload renders.
+ */
 export interface CreativeBrief {
-    title: string;
-    hook: string;
-    narrative_goal: string;
-    music_mood: string;
-    color_palette: string[];
+    title?: string;
+    hook?: string;
+    narrative_goal?: string;
+    music_mood?: string;
+    color_palette?: string[];
     // Supports both key variants
-    storyboard?: StoryboardScene[];
-    scenes?: StoryboardScene[];
+    storyboard?: BriefScene[];
+    scenes?: BriefScene[];
+    // Stage-2 aligned fields
+    theme?: string;
+    mood?: string;
+    genre?: string;
+    palette?: string[];
+    total_scenes?: number;
+    audio_duration_hint_sec?: number;
+    suno_music_direction?: SunoMusicDirection;
     error?: string;
 }
 
 export interface CurationJob {
     id: string;
     research_job_id: string;
-    status: 'pending' | 'generating_brief' | 'completed' | 'error' | 'failed';
+    status: 'pending' | 'generating_brief' | 'completed' | 'error' | 'failed'
+          | 'briefing' | 'ready' | 'approved';
     creative_brief?: CreativeBrief;
     user_approved_brief?: CreativeBrief;
     num_scenes?: number;
     selected_video_ids?: string[] | null;
     created_at?: string | null;
     approved_at?: string | null;
+    error_message?: string;
 }
 
 /** Normalise a brief to always have a `storyboard` array regardless of which key the backend used */
@@ -50,11 +84,20 @@ export function normaliseBrief(brief: CreativeBrief): CreativeBrief {
     };
 }
 
+// ---------------------------------------------------------------------------
+// Service methods
+// ---------------------------------------------------------------------------
+
 export const curationService = {
-    startCuration: async (researchJobId: string, selectedVideoIds?: string[]): Promise<CurationJob> => {
+    startCuration: async (
+        researchJobId: string,
+        selectedVideoIds?: string[],
+        numScenes?: number,
+    ): Promise<CurationJob> => {
         const response = await axios.post(`${API_BASE_URL}/start`, {
             research_job_id: researchJobId,
             selected_video_ids: selectedVideoIds,
+            num_scenes: numScenes,
         });
         return response.data;
     },
@@ -66,6 +109,20 @@ export const curationService = {
 
     getJob: async (jobId: string): Promise<CurationJob> => {
         const response = await axios.get(`${API_BASE_URL}/${jobId}`);
+        return response.data;
+    },
+
+    /** Edit the creative brief before approval (full JSON replacement). */
+    updateBrief: async (jobId: string, brief: CreativeBrief): Promise<CurationJob> => {
+        const response = await axios.put(`${API_BASE_URL}/${jobId}/brief`, { brief });
+        return response.data;
+    },
+
+    /** Approve the creative brief (Stage 2 -> Stage 3 gate). */
+    approveBrief: async (jobId: string, editedBrief?: CreativeBrief): Promise<CurationJob> => {
+        const response = await axios.put(`${API_BASE_URL}/${jobId}/approve`, {
+            edited_brief: editedBrief || null,
+        });
         return response.data;
     },
 

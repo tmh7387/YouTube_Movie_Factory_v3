@@ -8,16 +8,21 @@ import {
     Video,
     Music,
     Palette,
-    Target,
     Sparkles,
     AlertCircle,
     Layout,
     Trash2,
     Youtube,
     ExternalLink,
+    CheckCircle2,
+    Zap,
+    Film,
+    Clock,
+    ChevronUp,
+    ChevronDown,
 } from 'lucide-react';
 import { curationService, youtubeUrl, youtubeThumbnail } from '../services/curation';
-import type { CreativeBrief } from '../services/curation';
+import type { CreativeBrief, BriefScene } from '../services/curation';
 
 const Curation: React.FC = () => {
     const navigate = useNavigate();
@@ -31,7 +36,7 @@ const Curation: React.FC = () => {
         refetchInterval: (query) => {
             const hasRunningJobs = query.state.data?.some(j => j.status === 'pending' || j.status === 'generating_brief');
             return hasRunningJobs ? 3000 : false;
-        }
+        },
     });
 
     const deleteMutation = useMutation({
@@ -42,6 +47,17 @@ const Curation: React.FC = () => {
         },
     });
 
+    // Stage 2 -> Stage 3 approval gate (endpoints from Stage-2 schema alignment)
+    const approveMutation = useMutation({
+        mutationFn: (jobId: string) => curationService.approveBrief(jobId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['curationJobs'] });
+        },
+    });
+
+    const canApprove = (status?: string) =>
+        status === 'ready' || status === 'completed';
+
     const handleDelete = (e: React.MouseEvent, jobId: string) => {
         e.stopPropagation();
         if (window.confirm('Remove this curation job? This cannot be undone.')) {
@@ -50,6 +66,8 @@ const Curation: React.FC = () => {
     };
 
     const selectedJob = jobs?.find(j => j.id === selectedJobId);
+
+
 
     if (isLoading) {
         return (
@@ -67,7 +85,9 @@ const Curation: React.FC = () => {
                         <ClipboardCheck className="text-blue-400" />
                         Curation Board
                     </h1>
-                    <p className="text-gray-400 mt-1">Refine your AI-generated storyboards and creative briefs.</p>
+                    <p className="text-gray-400 mt-1">
+                        Review, edit, and approve your AI-generated creative briefs.
+                    </p>
                 </div>
             </header>
 
@@ -113,7 +133,7 @@ const Curation: React.FC = () => {
                                     <StatusBadge status={job.status} />
                                 </div>
                                 <h3 className="text-gray-200 font-medium truncate">
-                                    {job.creative_brief?.title || 'Initializing Brief...'}
+                                    {job.creative_brief?.theme || 'Initializing Brief...'}
                                 </h3>
                                 <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
                                     <span className="flex items-center gap-1">
@@ -133,6 +153,9 @@ const Curation: React.FC = () => {
                         {jobs?.length === 0 && (
                             <div className="text-center py-12 bg-white/5 rounded-xl border border-dashed border-white/10">
                                 <p className="text-gray-500">No curation jobs yet.</p>
+                                <p className="text-gray-600 text-xs mt-1">
+                                    Start from the Research page to create one.
+                                </p>
                             </div>
                         )}
                     </div>
@@ -149,16 +172,40 @@ const Curation: React.FC = () => {
                                 exit={{ opacity: 0, y: -20 }}
                                 className="bg-white/5 rounded-2xl border border-white/10 overflow-hidden"
                             >
-                                {selectedJob.status === 'completed' && selectedJob.creative_brief ? (
+                                {canApprove(selectedJob.status) && selectedJob.creative_brief ? (
                                     <>
                                         <BriefDetail brief={selectedJob.creative_brief} sourceVideoIds={selectedJob.selected_video_ids} />
                                         <div className="p-8 border-t border-white/10 bg-blue-600/10 flex justify-end">
                                             <button
+                                                onClick={() => approveMutation.mutate(selectedJob.id)}
+                                                disabled={approveMutation.isPending}
+                                                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95"
+                                            >
+                                                {approveMutation.isPending ? (
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                ) : (
+                                                    <CheckCircle2 className="w-5 h-5" />
+                                                )}
+                                                Approve & Lock Brief
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : selectedJob.status === 'approved' && selectedJob.user_approved_brief ? (
+                                    <>
+                                        <BriefDetail brief={selectedJob.user_approved_brief} readOnly />
+                                        <div className="p-8 border-t border-white/10 bg-blue-600/10 flex justify-between items-center">
+                                            <div className="text-sm text-emerald-400 flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                Approved{' '}
+                                                {selectedJob.approved_at &&
+                                                    `on ${new Date(selectedJob.approved_at).toLocaleString()}`}
+                                            </div>
+                                            <button
                                                 onClick={() => navigate('/production', { state: { curationJobId: selectedJob.id } })}
                                                 className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/20 flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95"
                                             >
-                                                <Sparkles className="w-5 h-5" />
-                                                Start Production Pipeline
+                                                <Zap className="w-5 h-5" />
+                                                Start Production
                                             </button>
                                         </div>
                                     </>
@@ -168,7 +215,7 @@ const Curation: React.FC = () => {
                                             <>
                                                 <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
                                                 <h3 className="text-xl font-semibold text-white">Generation Failed</h3>
-                                                <p className="text-gray-400 mt-2">{selectedJob.creative_brief?.error || 'Unknown error occurred.'}</p>
+                                                <p className="text-gray-400 mt-2">{selectedJob.error_message || selectedJob.creative_brief?.error || 'Unknown error occurred.'}</p>
                                                 <button
                                                     onClick={(e) => handleDelete(e as any, selectedJob.id)}
                                                     className="mt-6 flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm transition-colors"
@@ -191,7 +238,9 @@ const Curation: React.FC = () => {
                             <div className="h-full flex items-center justify-center border-2 border-dashed border-white/10 rounded-2xl p-12 text-center">
                                 <div>
                                     <Sparkles className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                                    <h3 className="text-gray-400 text-lg">Select a project to view the Creative Brief</h3>
+                                    <h3 className="text-gray-400 text-lg">
+                                        Select a project to view the Creative Brief
+                                    </h3>
                                 </div>
                             </div>
                         )}
@@ -202,31 +251,78 @@ const Curation: React.FC = () => {
     );
 };
 
+// ---------------------------------------------------------------------------
+// StatusBadge — updated for guide status values
+// ---------------------------------------------------------------------------
+
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const colors: Record<string, string> = {
-        completed: 'bg-green-500/20 text-green-400 border-green-500/30',
+        ready: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+        approved: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
         pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
         generating_brief: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
         error: 'bg-red-500/20 text-red-400 border-red-500/30',
         failed: 'bg-red-500/20 text-red-400 border-red-500/30',
-        ready: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
     };
 
     return (
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter border ${colors[status] || colors.pending}`}>
+        <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter border ${colors[status] || colors.pending}`}
+        >
             {status.replace('_', ' ')}
         </span>
     );
 };
 
-const BriefDetail: React.FC<{ brief: CreativeBrief; sourceVideoIds?: string[] | null }> = ({ brief, sourceVideoIds }) => {
+const BriefDetail: React.FC<{
+    brief: CreativeBrief;
+    sourceVideoIds?: string[] | null;
+    readOnly?: boolean;
+}> = ({ brief, sourceVideoIds, readOnly = false }) => {
+    const briefScenes = brief.scenes ?? brief.storyboard ?? [];
+    const totalDuration = briefScenes.reduce(
+        (sum, sc) => sum + Number(sc.target_duration_sec ?? sc.duration ?? 0),
+        0,
+    );
+    const imageTailCount = briefScenes.filter(
+        (sc) => sc.image_tail_scene !== null && sc.image_tail_scene !== undefined,
+    ).length;
     return (
         <div className="divide-y divide-white/10">
-            <div className="p-8 bg-gradient-to-br from-blue-600/10 to-purple-600/10">
-                <h2 className="text-2xl font-bold text-white mb-4">{brief.title}</h2>
-                <div className="flex flex-wrap gap-4">
-                    <MetaItem icon={<Target />} label="Hook" value={brief.hook} />
-                    <MetaItem icon={<Sparkles />} label="Narrative" value={brief.narrative_goal} />
+            {/* Header */}
+            <div className="p-8 bg-gradient-to-br from-blue-600/10 to-cyan-600/10">
+                <div className="flex items-start justify-between mb-4">
+                    <div>
+                        <h2 className="text-2xl font-bold text-white mb-2">{brief.theme}</h2>
+                        <p className="text-gray-300 text-sm">{brief.mood} · {brief.genre}</p>
+                    </div>
+                    {readOnly && (
+                        <span className="flex items-center gap-1 px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-xs font-bold border border-emerald-500/30">
+                            <CheckCircle2 className="w-3 h-3" /> Locked
+                        </span>
+                    )}
+                </div>
+                <div className="flex flex-wrap gap-4 mt-4">
+                    <StatChip
+                        icon={<Film className="w-3 h-3" />}
+                        label="Scenes"
+                        value={String(brief.total_scenes || briefScenes.length)}
+                    />
+                    <StatChip
+                        icon={<Clock className="w-3 h-3" />}
+                        label="Total Duration"
+                        value={`${totalDuration.toFixed(1)}s`}
+                    />
+                    <StatChip
+                        icon={<Zap className="w-3 h-3" />}
+                        label="Image Tails"
+                        value={String(imageTailCount)}
+                    />
+                    <StatChip
+                        icon={<Music className="w-3 h-3" />}
+                        label="Audio Hint"
+                        value={`${brief.audio_duration_hint_sec || 0}s`}
+                    />
                 </div>
             </div>
 
@@ -273,13 +369,13 @@ const BriefDetail: React.FC<{ brief: CreativeBrief; sourceVideoIds?: string[] | 
                         <h4 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Audible Mood</h4>
                         <div className="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
                             <Music className="text-blue-400" />
-                            <span className="text-gray-200">{brief.music_mood}</span>
+                            <span className="text-gray-200">{brief.music_mood ?? brief.mood}</span>
                         </div>
                     </div>
                     <div className="space-y-4">
                         <h4 className="text-sm font-medium text-gray-400 uppercase tracking-widest">Visual Palette</h4>
                         <div className="flex gap-2 flex-wrap">
-                            {brief.color_palette.map((color, idx) => (
+                            {(brief.color_palette ?? brief.palette ?? []).map((color, idx) => (
                                 <div key={idx} className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color.toLowerCase().includes('#') ? color : '#3b82f6' }} />
                                     <span className="text-xs text-gray-300">{color}</span>
@@ -287,16 +383,41 @@ const BriefDetail: React.FC<{ brief: CreativeBrief; sourceVideoIds?: string[] | 
                             ))}
                         </div>
                     </div>
+                    <div className="space-y-4">
+                        <h4 className="text-sm font-medium text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                            <Music className="w-4 h-4 text-blue-400" />
+                            Music Direction
+                        </h4>
+                        {brief.suno_music_direction && (
+                            <div className="bg-white/5 p-4 rounded-xl border border-white/10 space-y-2">
+                                <div className="flex gap-4 text-xs text-gray-300">
+                                    <span>Genre: <strong>{brief.suno_music_direction.genre}</strong></span>
+                                    <span>BPM: <strong>{brief.suno_music_direction.bpm_hint}</strong></span>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                    {brief.suno_music_direction?.style_tags?.map((tag: string, i: number) => (
+                                        <span
+                                            key={i}
+                                            className="px-2 py-0.5 text-[10px] bg-blue-500/10 text-blue-300 rounded-full border border-blue-500/20"
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
+            {/* Scenes */}
             <div className="p-8">
                 <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                     <Video className="w-5 h-5 text-orange-400" />
-                    Storyboard
+                    Storyboard ({briefScenes.length} scenes)
                 </h3>
                 <div className="space-y-6">
-                    {(brief.storyboard ?? brief.scenes ?? []).map((scene, idx) => (
+                    {briefScenes.map((scene, idx) => (
                         <motion.div
                             key={idx}
                             initial={{ opacity: 0, x: -20 }}
@@ -334,13 +455,101 @@ const BriefDetail: React.FC<{ brief: CreativeBrief; sourceVideoIds?: string[] | 
     );
 };
 
-const MetaItem: React.FC<{ icon: React.ReactNode, label: string, value: string }> = ({ icon, label, value }) => (
-    <div className="flex-1 min-w-[200px] bg-black/20 p-4 rounded-xl border border-white/5">
-        <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-            {React.cloneElement(icon as React.ReactElement, { className: 'w-3 h-3' })}
+// ---------------------------------------------------------------------------
+// SceneCard — individual scene display
+// ---------------------------------------------------------------------------
+
+export const SceneCard: React.FC<{
+    scene: BriefScene;
+    expanded: boolean;
+    onToggle: () => void;
+}> = ({ scene, expanded, onToggle }) => {
+    return (
+        <motion.div
+            layout
+            className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-colors"
+        >
+            {/* Header - always visible */}
+            <div
+                className="flex items-center gap-4 p-4 cursor-pointer"
+                onClick={onToggle}
+            >
+                <div className="flex-none w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-sm border border-blue-500/20">
+                    {scene.scene_number}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-gray-200 text-sm truncate">{scene.description}</p>
+                    <div className="flex gap-3 mt-1 text-[11px] text-gray-500">
+                        <span>{scene.target_duration_sec}s</span>
+                        <span>{(scene.kling_mode ?? 'std').toUpperCase()}</span>
+                        {scene.image_tail_scene && (
+                            <span className="text-cyan-400">→ tail from #{scene.image_tail_scene}</span>
+                        )}
+                        <span className="text-gray-600">{scene.animation_method}</span>
+                    </div>
+                </div>
+                {expanded ? (
+                    <ChevronUp className="w-4 h-4 text-gray-500 flex-none" />
+                ) : (
+                    <ChevronDown className="w-4 h-4 text-gray-500 flex-none" />
+                )}
+            </div>
+
+            {/* Expanded detail */}
+            <AnimatePresence>
+                {expanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/5"
+                    >
+                        <div className="p-4 space-y-3 text-sm">
+                            <DetailRow label="Motion Prompt" value={scene.motion_prompt ?? ''} />
+                            <DetailRow label="Negative Prompt" value={scene.negative_prompt ?? ''} />
+                            {scene.lyric_or_timestamp && (
+                                <DetailRow label="Lyric / Timestamp" value={scene.lyric_or_timestamp} />
+                            )}
+                            {scene.transition_note && (
+                                <DetailRow label="Transition Note" value={scene.transition_note} />
+                            )}
+                            <div className="flex gap-4 text-xs text-gray-500 pt-2 border-t border-white/5">
+                                <span>Model: {scene.kling_model}</span>
+                                <span>Mode: {scene.kling_mode}</span>
+                                <span>Duration: {scene.target_duration_sec}s</span>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
+// ---------------------------------------------------------------------------
+// Small utility components
+// ---------------------------------------------------------------------------
+
+const StatChip: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({
+    icon,
+    label,
+    value,
+}) => (
+    <div className="bg-black/20 px-4 py-2 rounded-xl border border-white/5 flex items-center gap-2">
+        <span className="text-gray-500">{icon}</span>
+        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{label}</span>
+        <span className="text-gray-200 font-semibold text-sm">{value}</span>
+    </div>
+);
+
+const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+    <div>
+        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
             {label}
-        </div>
-        <p className="text-gray-200 text-sm line-clamp-2">{value}</p>
+        </span>
+        <p className="text-gray-300 bg-black/20 p-3 rounded-lg border border-white/5 text-xs leading-relaxed">
+            {value}
+        </p>
     </div>
 );
 
