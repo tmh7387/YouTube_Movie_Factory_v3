@@ -23,7 +23,9 @@ import {
 import { researchApi } from '../services/research';
 import type { ResearchVideo } from '../services/research';
 import { curationService } from '../services/curation';
-import { IntakeForm } from '../components/IntakeForm';
+import ResearchIntake from '../components/ResearchIntake';
+import InspirationExtractor from '../components/InspirationExtractor';
+import ChannelDnaDisplay from '../components/ChannelDnaDisplay';
 
 const JobStatusBadge = ({ status }: { status: string }) => {
     const styles: Record<string, string> = {
@@ -93,10 +95,13 @@ const Research = () => {
     }, [selectedJobId]);
 
     const curateMutation = useMutation({
-        mutationFn: ({ researchJobId, videoIds }: { researchJobId: string; videoIds: string[] }) =>
-            curationService.startCuration(researchJobId, videoIds),
+        mutationFn: (researchJobId: string) =>
+            curationService.startCuration(researchJobId, Array.from(selectedVideos)),
         onSuccess: () => {
             navigate('/curation');
+        },
+        onError: (err: any) => {
+            console.error('Curation start failed:', err?.response?.data || err);
         }
     });
 
@@ -151,9 +156,11 @@ const Research = () => {
 
             <div className="flex-1 flex overflow-hidden">
                 {/* Column A: Left Sidebar */}
-                <div className="w-[320px] shrink-0 border-r border-white/10 flex flex-col bg-gray-900/30 overflow-hidden relative">
-                    {/* Top Section: IntakeForm */}
-                    <IntakeForm onJobCreated={handleJobCreated} />
+                <div className="w-[420px] shrink-0 border-r border-white/10 flex flex-col bg-gray-900/30 overflow-hidden relative">
+                    {/* Top Section: Multi-Source Research Intake */}
+                    <div className="p-4 shrink-0 overflow-auto max-h-[60vh]">
+                        <ResearchIntake onStarted={() => handleJobCreated()} />
+                    </div>
 
                     {/* Bottom Section: Analysis Log */}
                     <div className="flex-1 flex flex-col min-h-0 border-t border-white/5 relative bg-black/20">
@@ -172,10 +179,14 @@ const Research = () => {
                             {jobsLoading ? (
                                 <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-600" /></div>
                             ) : jobs?.map((job) => (
-                                <button
+                                // Use div instead of button to avoid nested button DOM violation
+                                <div
                                     key={job.id}
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => setSelectedJobId(job.id)}
-                                    className={`w-full text-left px-5 py-4 border-b border-white/5 hover:bg-white/5 transition-colors group ${selectedJobId === job.id ? 'bg-blue-600/10 border-l-2 border-l-blue-500 border-b-transparent' : 'border-l-2 border-l-transparent'} `}
+                                    onKeyDown={(e) => e.key === 'Enter' && setSelectedJobId(job.id)}
+                                    className={`w-full text-left px-5 py-4 border-b border-white/5 hover:bg-white/5 transition-colors group cursor-pointer ${selectedJobId === job.id ? 'bg-blue-600/10 border-l-2 border-l-blue-500 border-b-transparent' : 'border-l-2 border-l-transparent'} `}
                                 >
                                     <div className="flex justify-between items-start gap-2 mb-2">
                                         <p className="font-medium text-sm text-gray-300 line-clamp-2 max-w-[180px] group-hover:text-white transition-colors">{job.genre_topic}</p>
@@ -196,9 +207,9 @@ const Research = () => {
                                         </div>
                                     </div>
                                     <p className="text-[10px] text-gray-500 flex items-center gap-1 font-mono">
-                                        {new Date(job.created_at).toLocaleDateString()}
+                                        {job.created_at ? new Date(job.created_at).toLocaleDateString() : '—'}
                                     </p>
-                                </button>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -262,9 +273,21 @@ const Research = () => {
                                             {activeTab === 'analysis' && (
                                                 <div className="max-w-3xl animate-in fade-in duration-300">
                                                     {selectedJob.status === 'completed' ? (
-                                                        <div className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-6 text-gray-300 leading-relaxed prose prose-invert prose-purple max-w-none shadow-sm font-serif">
-                                                            <ReactMarkdown>{selectedJob.research_summary || "No summary available."}</ReactMarkdown>
-                                                        </div>
+                                                        <>
+                                                            <div className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-6 text-gray-300 leading-relaxed prose prose-invert prose-purple max-w-none shadow-sm font-serif">
+                                                                <ReactMarkdown>{selectedJob.research_summary || "No summary available."}</ReactMarkdown>
+                                                            </div>
+                                                            {/* Inspiration Extraction for Single Video jobs */}
+                                                            {selectedJob.source_type === 'single_video' && selectedJob.source_data?.video_url && (
+                                                                <InspirationExtractor videoUrl={selectedJob.source_data.video_url} />
+                                                            )}
+                                                            {/* Channel DNA Display */}
+                                                            {selectedJob.source_type === 'youtube_channel' && selectedJob.research_brief && (
+                                                                <div className="mt-6">
+                                                                    <ChannelDnaDisplay dna={selectedJob.research_brief as any} />
+                                                                </div>
+                                                            )}
+                                                        </>
                                                     ) : (
                                                         <div className="bg-white/5 rounded-xl p-12 text-center text-gray-500 border border-dashed border-white/10">
                                                             {selectedJob.status === 'analyzing' ? (
@@ -392,7 +415,7 @@ const Research = () => {
                                     <div className="pointer-events-auto">
                                         {selectedJob && selectedJob.status === 'completed' && (
                                             <button
-                                                onClick={() => curateMutation.mutate({ researchJobId: selectedJob.id, videoIds: Array.from(selectedVideos) })}
+                                                onClick={() => curateMutation.mutate(selectedJob.id)}
                                                 disabled={curateMutation.isPending || selectedVideos.size === 0}
                                                 className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-green-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between group overflow-hidden relative"
                                             >

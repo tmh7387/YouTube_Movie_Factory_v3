@@ -1,0 +1,23 @@
+{
+  "name": "claude-movie-director",
+  "version": "1.0.0",
+  "description": "Complete AI video production pipeline for Claude_Movie — from project bible and storyboarding through cinematic generation (Higgsfield, Seedance, Kling) to FFmpeg assembly. Includes agentic workflow features inspired by invideo Agent One: persistent project memory, ripple edits, and cinema-grade prompt engineering.",
+  "author": {
+    "name": "Aviation Synergy Co., Ltd."
+  },
+  "keywords": [
+    "video-production",
+    "ai-video",
+    "music-video",
+    "higgsfield",
+    "seedance",
+    "kling",
+    "project-bible",
+    "ripple-edit",
+    "agentic-director",
+    "claude-movie",
+    "cinema-studio",
+    "lip-sync",
+    "storyboard"
+  ]
+}

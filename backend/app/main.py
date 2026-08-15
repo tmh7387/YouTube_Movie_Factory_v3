@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Fix moved to top
 
-from app.api import health, research, curation, production
+from app.api import health, research, curation, production, knowledge, skills, bible
 from app.core.config import settings
 
 app = FastAPI(
@@ -28,19 +28,10 @@ app = FastAPI(
     version="3.0.0",
 )
 
-# CORS middleware for React frontend
+# CORS middleware — allow any localhost port for local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173", 
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-        "http://localhost:5188",
-        "http://127.0.0.1:5188"
-    ],
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -51,6 +42,9 @@ app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(research.router, prefix="/api/research", tags=["Research"])
 app.include_router(curation.router, prefix="/api/curation", tags=["Curation"])
 app.include_router(production.router, prefix="/api/production", tags=["Production"])
+app.include_router(knowledge.router, prefix="/api/knowledge", tags=["Knowledge"])
+app.include_router(skills.router, prefix="/api/skills", tags=["Skills"])
+app.include_router(bible.router, prefix="/api/bible", tags=["Bible"])
 
 @app.on_event("startup")
 async def startup_event():

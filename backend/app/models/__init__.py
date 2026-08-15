@@ -16,6 +16,8 @@ class ResearchJob(Base):
     error_message = Column(Text)
     research_summary = Column(Text)
     research_brief = Column(JSONB)
+    source_type = Column(String(30), default='youtube_search')
+    source_data = Column(JSONB, default=dict)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True))
 
@@ -42,6 +44,7 @@ class CurationJob(Base):
     __tablename__ = 'curation_jobs'
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     research_job_id = Column(UUID(as_uuid=True), ForeignKey('research_jobs.id'))
+    bible_id = Column(UUID(as_uuid=True), ForeignKey('pre_production_bibles.id'), nullable=True)
     status = Column(String(20))  # pending | briefing | ready | approved | failed
     selected_video_ids = Column(JSONB)
     creative_brief = Column(JSONB)
@@ -52,6 +55,30 @@ class CurationJob(Base):
     error_message = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     approved_at = Column(DateTime(timezone=True))
+
+class PreProductionBible(Base):
+    __tablename__ = 'pre_production_bibles'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    curation_job_id = Column(UUID(as_uuid=True), ForeignKey('curation_jobs.id'), nullable=True)
+    name = Column(String(200), nullable=False)
+    status = Column(String(20), default='draft')  # draft | locked | archived
+
+    # Structured bible sections (all JSONB)
+    characters = Column(JSONB, default=list)       # [{name, physical, expressions, ref_sheet_url, ...}]
+    environments = Column(JSONB, default=list)     # [{name, lighting, mood, ref_sheet_url, ...}]
+    style_lock = Column(JSONB, default=dict)       # {color_palette, visual_rules, negative_prompt, looks, angles}
+    surreal_motifs = Column(JSONB, default=list)   # [{symbol, meaning, visual_fragment}]
+    camera_specs = Column(JSONB, default=dict)     # {default_lens, default_movement, lighting_setup}
+
+    # Reference sheet image URLs (generated or uploaded)
+    character_sheet_urls = Column(JSONB, default=list)
+    environment_sheet_urls = Column(JSONB, default=list)
+
+    # Director process log
+    process_log = Column(JSONB, default=list)      # [{timestamp, agent, action, outcome}]
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 class ProductionJob(Base):
     __tablename__ = 'production_jobs'
@@ -76,6 +103,11 @@ class ProductionJob(Base):
     file_size_bytes = Column(BigInteger)
     error_message = Column(Text)
     celery_task_id = Column(String(255))
+    progress_log = Column(JSONB, default=list)
+    # Audio reference for Seedance beat-sync and ffmpeg assembly
+    music_url = Column(Text)              # Supabase public URL of uploaded audio/video
+    music_filename = Column(Text)         # Original filename (e.g. 'beat.mp4', 'track.mp3')
+    beat_sync_enabled = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     published_at = Column(DateTime(timezone=True))
 
@@ -112,9 +144,10 @@ class ProductionScene(Base):
     target_duration_sec = Column(Numeric)
     animation_method = Column(String(30), default='kling')  # kling | ken_burns | ken_burns_fallback
 
-    # Kling model selection (set by Claude in creative direction)
-    kling_model = Column(String(30), default='kling-v3')
-    kling_mode = Column(String(10), default='std')  # std | pro
+    # Animation model selection (set by ModelRouter / Claude creative direction)
+    animation_model = Column(String(50), default='kling-v2-master')
+    animation_decision = Column(JSONB)
+    kling_mode = Column(String(10), default='std')  # std | pro (Kling-specific)
     image_tail_scene_id = Column(UUID(as_uuid=True), ForeignKey('production_scenes.id'), nullable=True)
 
     # Image generation
@@ -128,19 +161,25 @@ class ProductionScene(Base):
     motion_prompt = Column(Text)
     negative_prompt = Column(Text)
     kling_request_dur = Column(Integer)
-    kling_task_id = Column(String(255))
-    kling_status = Column(String(20), default='pending')  # pending | submitted | processing | succeed | failed
+    cometapi_task_id = Column(String(255))
+    animation_status = Column(String(20), default='pending')  # pending | submitted | processing | succeed | failed
     raw_video_url = Column(Text)
     raw_video_path = Column(Text)
     local_video_path = Column(Text)
 
-    # Beat-matched timing
+    # Beat-matched timing (Stage-2 schema alignment, migration 7f4bf2748828)
     beat_start_sec = Column(Numeric)
     beat_end_sec = Column(Numeric)
     beat_duration_sec = Column(Numeric)
     beat_drift_ms = Column(Numeric)
 
     error_message = Column(Text)
+
+    # Pre-production bible linkage + QA (migration 8425016f02a6)
+    bible_character = Column(String(200), nullable=True)
+    bible_environment = Column(String(200), nullable=True)
+    qa_status = Column(String(20), default='pending')
+    qa_notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     __table_args__ = (UniqueConstraint('job_id', 'scene_number'),)
 
@@ -151,3 +190,86 @@ class SystemConfig(Base):
     description = Column(Text)
     is_secret = Column(Boolean, default=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class VideoProductionSkill(Base):
+    """
+    A tool-agnostic, reusable production skill synthesized from tutorial analysis.
+    Stored both here (for querying) and as a SKILL.md file on disk (for Git tracking).
+    """
+    __tablename__ = 'video_production_skills'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Slug is the unique filesystem-safe identifier, e.g. "multi-shot-camera-coverage"
+    slug = Column(String(200), unique=True, nullable=False)
+    name = Column(String(200), nullable=False)
+
+    # SKILL.md frontmatter fields
+    description = Column(Text)           # triggering description — what + when to use
+    skill_body = Column(Text)            # full SKILL.md markdown body
+
+    # Categorisation
+    category = Column(String(30))        # music_video | product_brand | asmr | general
+    applicable_video_types = Column(JSONB)  # e.g. ["music_video", "product_brand"]
+    tags = Column(JSONB)                 # e.g. ["consistency", "camera-angles", "storyboard"]
+
+    # Core reusable content
+    prompt_template = Column(Text)       # template with {placeholder} syntax
+    example_prompts = Column(JSONB)      # list of verbatim example prompts
+    workflow_steps = Column(JSONB)       # ordered step-by-step instructions
+
+    # Tool info kept separate so skill body stays tool-agnostic
+    tools_tested_with = Column(JSONB)    # tools where this has been verified
+
+    difficulty = Column(String(20))      # beginner | intermediate | advanced
+
+    # Provenance
+    source_video_url = Column(Text)
+    source_knowledge_entry_id = Column(UUID(as_uuid=True), ForeignKey('tutorial_knowledge.id'))
+
+    # Quality and usage
+    confidence_score = Column(Numeric)   # 0.0–1.0
+    usage_count = Column(Integer, default=0)
+
+    # Path to the SKILL.md file written to skills/ on disk
+    skill_file_path = Column(Text)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class TutorialKnowledgeEntry(Base):
+    """
+    One row per ingested tutorial video or external resource (Notion page, etc).
+    Stores the full Gemini analysis plus mined resources from comments/descriptions.
+    """
+    __tablename__ = 'tutorial_knowledge'
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    youtube_url = Column(Text, nullable=False)
+    video_id = Column(String(50))
+    # music_video | product_brand | asmr | general
+    category = Column(String(30), default='general')
+    status = Column(String(20), default='pending')  # pending | analyzing | completed | failed
+
+    # Gemini video analysis output
+    gemini_analysis = Column(JSONB)           # full structured JSON from Gemini
+    standout_tip = Column(Text)
+    exact_prompts = Column(JSONB)             # list of verbatim prompts extracted
+    tool_names = Column(JSONB)               # list of AI tools mentioned
+    workflow_steps = Column(JSONB)           # ordered workflow sequence
+    key_settings = Column(JSONB)             # model params / settings found
+    category_specific = Column(JSONB)        # category-focused extraction fields
+    full_technique_summary = Column(Text)    # 2-3 para narrative summary
+
+    # Comment + description resource mining
+    description_resources = Column(JSONB)    # extracted from video description
+    comment_resources = Column(JSONB)        # top resource-bearing comments
+    aggregated_resources = Column(JSONB)     # de-duped URL list across both
+
+    # External resource content fetched and parsed (Notion pages, etc.)
+    external_resources = Column(JSONB)       # {url: {page_title, prompt_library, ...}}
+
+    error_message = Column(Text)
+    gemini_model_used = Column(String(100))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    completed_at = Column(DateTime(timezone=True))

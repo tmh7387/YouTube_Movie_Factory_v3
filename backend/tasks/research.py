@@ -1,22 +1,94 @@
 import asyncio
+import json
 from typing import List, Optional
-from celery.utils.log import get_task_logger
-from tasks.celery_app import celery_app
+import logging
 from app.services.youtube_service import youtube_service
 from app.services.ai_service import ai_service
+from app.services.intake_normalizer import normalize_to_research_context
 from app.db.session import AsyncSessionLocal
 from app.models import ResearchJob, ResearchVideo
 from sqlalchemy import select, update
 
-logger = get_task_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 async def _orchestrate_research(
-    job_id: str, topic: str, research_brief: Optional[dict] = None
+    job_id: str,
+    topic: str,
+    research_brief: Optional[dict] = None,
+    source_type: str = "youtube_search",
+    source_data: Optional[dict] = None,
 ):
     async with AsyncSessionLocal() as session:
         try:
-            logger.info(f"Starting research job {job_id} for topic: {topic}")
+            logger.info(f"Starting research job {job_id} for topic: {topic} (source_type={source_type})")
+
+            # ── Non-YouTube source types ──────────────────────────────
+            if source_type and source_type != "youtube_search":
+                await session.execute(
+                    update(ResearchJob)
+                    .where(ResearchJob.id == job_id)
+                    .values(status="analyzing")
+                )
+                await session.commit()
+
+                # Normalize to unified context
+                context = await normalize_to_research_context(
+                    source_type=source_type,
+                    source_data=source_data or {},
+                    topic=topic,
+                )
+
+                # Run AI analysis based on source type
+                if source_type == "single_video":
+                    analysis_result = await ai_service.analyze_single_video(
+                        topic=topic,
+                        video_analysis=context.get("video_analysis"),
+                        text_content=context.get("text_content", ""),
+                    )
+                elif source_type == "youtube_channel":
+                    analysis_result = await ai_service.analyze_channel_dna(
+                        topic=topic,
+                        text_content=context.get("text_content", ""),
+                        video_analysis=context.get("video_analysis"),
+                    )
+                else:
+                    analysis_result = await ai_service.analyze_content(
+                        topic=topic,
+                        text_content=context.get("text_content", ""),
+                        source_type=source_type,
+                    )
+
+                if "error" in analysis_result:
+                    await session.execute(
+                        update(ResearchJob)
+                        .where(ResearchJob.id == job_id)
+                        .values(
+                            status="failed",
+                            research_summary=f"AI analysis error: {analysis_result['error']}",
+                        )
+                    )
+                else:
+                    update_values = {
+                        "status": "completed",
+                        "research_summary": analysis_result.get(
+                            "raw_analysis", "Analysis failed"
+                        ),
+                    }
+                    # Store structured DNA in research_brief if present
+                    if "research_brief" in analysis_result:
+                        update_values["research_brief"] = analysis_result["research_brief"]
+
+                    await session.execute(
+                        update(ResearchJob)
+                        .where(ResearchJob.id == job_id)
+                        .values(**update_values)
+                    )
+                await session.commit()
+                logger.info(f"Research job {job_id} completed (source_type={source_type})")
+                return
+
+            # ── YouTube search pipeline (existing logic) ──────────────
 
             # 1. Update job status to 'searching'
             await session.execute(
@@ -27,8 +99,6 @@ async def _orchestrate_research(
             await session.commit()
 
             # 2. Determine search queries
-            # If research_brief provides youtube_search_queries, use them
-            # Otherwise fall back to the raw topic string
             search_queries: List[str] = []
             if (
                 research_brief
@@ -149,23 +219,3 @@ async def _orchestrate_research(
                 .values(status="failed", research_summary=str(e))
             )
             await session.commit()
-
-
-@celery_app.task(name="tasks.research.start_research_job")
-def start_research_job(
-    job_id: str, topic: str, research_brief: Optional[dict] = None
-):
-    """Entry point for Celery to start the async orchestration."""
-    try:
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-
-        return loop.run_until_complete(
-            _orchestrate_research(job_id, topic, research_brief)
-        )
-    except Exception as e:
-        logger.error(f"Failed to run async task: {e}")
-        raise

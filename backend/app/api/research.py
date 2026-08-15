@@ -30,6 +30,8 @@ class ResearchCreate(BaseModel):
     topic: str
     research_depth: str = "standard"
     research_brief: Optional[dict] = None
+    source_type: str = "youtube_search"
+    source_data: Optional[dict] = None
 
 
 class ResearchVideoSchema(BaseModel):
@@ -53,6 +55,9 @@ class ResearchJobSchema(BaseModel):
     status: str
     genre_topic: str
     research_summary: str | None = None
+    research_brief: dict | None = None
+    source_type: str | None = None
+    source_data: dict | None = None
     created_at: datetime
 
     class Config:
@@ -144,6 +149,8 @@ async def start_research(
         genre_topic=data.topic,
         status="pending",
         research_brief=data.research_brief,
+        source_type=data.source_type,
+        source_data=data.source_data or {},
     )
     db.add(job)
     await db.commit()
@@ -151,7 +158,12 @@ async def start_research(
 
     # Trigger Background task
     background_tasks.add_task(
-        _orchestrate_research, str(job.id), data.topic, data.research_brief
+        _orchestrate_research,
+        str(job.id),
+        data.topic,
+        data.research_brief,
+        data.source_type,
+        data.source_data,
     )
 
     return job

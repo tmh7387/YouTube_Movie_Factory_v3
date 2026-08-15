@@ -1,10 +1,15 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, ClipboardCheck } from 'lucide-react';
+import { Settings as SettingsIcon, Search, LayoutDashboard, Clapperboard, ClipboardCheck, BookOpen, Zap, BookMarked, Layers, Library } from 'lucide-react';
 import Research from './pages/Research';
 import Curation from './pages/Curation';
 import Production from './pages/Production';
 import Settings from './pages/Settings';
+import Knowledge from './pages/Knowledge';
+import Skills from './pages/Skills';
+import BibleWorkspace from './pages/BibleWorkspace';
+import StoryboardBoards from './pages/StoryboardBoards';
+import PromptLibrary from './pages/PromptLibrary';
 
 const queryClient = new QueryClient();
 
@@ -15,7 +20,12 @@ function Navigation() {
         { path: '/', label: 'Overview', icon: LayoutDashboard },
         { path: '/research', label: 'Research', icon: Search },
         { path: '/curation', label: 'Curation', icon: ClipboardCheck },
+        { path: '/storyboard', label: 'Storyboard', icon: Layers },
         { path: '/production', label: 'Production', icon: Clapperboard },
+        { path: '/knowledge', label: 'Knowledge', icon: BookOpen },
+        { path: '/bible', label: 'Bible', icon: BookMarked },
+        { path: '/skills', label: 'Skills', icon: Zap },
+        { path: '/prompts', label: 'Prompt Library', icon: Library },
         { path: '/settings', label: 'Settings', icon: SettingsIcon },
     ];
 
@@ -26,7 +36,7 @@ function Navigation() {
                 <p className="text-[10px] uppercase tracking-widest text-gray-500 mt-1 font-bold">Autonomous Video Engine</p>
             </div>
 
-            <div className="flex-1 flex flex-col gap-2 px-4">
+            <div className="flex-1 flex flex-col gap-1 px-4">
                 {navItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path ||
@@ -36,22 +46,27 @@ function Navigation() {
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex items - center gap - 3 px - 4 py - 3 rounded - xl transition - all duration - 200 ${isActive
-                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
-                                } `}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                                isActive
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                    : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'
+                            }`}
                         >
-                            <Icon className={`w - 5 h - 5 ${isActive ? 'text-white' : 'text-gray-500'} `} />
+                            <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500'}`} />
                             <span className="font-semibold text-sm">{item.label}</span>
                         </Link>
                     );
                 })}
             </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-white/5 mt-4">
+                <p className="text-[10px] text-gray-600 text-center">v3.0.0 · BackgroundTasks</p>
+            </div>
         </nav>
     );
 }
 
-// Placeholder pages for early routing
 const Placeholder = ({ title }: { title: string }) => (
     <div className="flex items-center justify-center h-full text-gray-400">
         <p>Module under construction: {title}</p>
@@ -70,7 +85,12 @@ function App() {
                             <Route path="/" element={<Placeholder title="Dashboard Overview" />} />
                             <Route path="/research/*" element={<Research />} />
                             <Route path="/curation/*" element={<Curation />} />
+                            <Route path="/storyboard" element={<StoryboardBoards />} />
                             <Route path="/production/*" element={<Production />} />
+                            <Route path="/knowledge" element={<Knowledge />} />
+                            <Route path="/bible" element={<BibleWorkspace />} />
+                            <Route path="/skills" element={<Skills />} />
+                            <Route path="/prompts" element={<PromptLibrary />} />
                             <Route path="/settings" element={<Settings />} />
                         </Routes>
                     </main>
