@@ -316,10 +316,34 @@ async def check_higgsfield_params(_ctx: Context) -> Result:
         if "error" in described:
             lines.append(f"{model}: {described['error'][:120]}")
             continue
-        parsed = described.get("parsed")
-        names = sorted(parsed.keys()) if isinstance(parsed, dict) else None
-        lines.append(f"{model}: {names if names else described['raw'][:300]}")
+        lines.append(f"{model}: {_param_names(described)}")
     return Result(OK, " || ".join(lines))
+
+
+def _param_names(described: dict) -> str:
+    """
+    The parameter names live under `params`, not at the top level of the model record.
+
+    `higgsfield model get` returns {display_name, job_set_type, params, type}; printing
+    those four keys says nothing about which flags a model accepts, which is the whole
+    question. `params` may be a mapping of name -> spec or a list of specs, so handle
+    both and fall back to the raw text.
+    """
+    parsed = described.get("parsed")
+    if not isinstance(parsed, dict):
+        return described.get("raw", "")[:300]
+
+    params = parsed.get("params")
+    if isinstance(params, dict):
+        return ", ".join(sorted(params.keys())) or "(no params declared)"
+    if isinstance(params, list):
+        names = [
+            item.get("name") or item.get("key") or str(item)
+            for item in params
+            if isinstance(item, (dict, str))
+        ]
+        return ", ".join(str(n) for n in names) or "(empty params list)"
+    return f"params was {type(params).__name__}: {str(params)[:250]}"
 
 
 async def check_higgsfield_image(ctx: Context) -> Result:
