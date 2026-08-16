@@ -253,6 +253,65 @@ async def check_supabase(_ctx: Context) -> Result:
     return Result(OK, "uploaded and publicly readable")
 
 
+async def check_higgsfield_cli(_ctx: Context) -> Result:
+    """
+    Installed, signed in, and pointed at models this account can reach.
+
+    A wrong model id here is the likeliest failure: Higgsfield's ids use underscores
+    (seedance_2_5) and are not the CometAPI names (doubao-seedance-2-5).
+    """
+    from app.core.config import settings
+    from app.services.higgsfield_service import higgsfield_service
+
+    if not settings.HIGGSFIELD_ENABLED:
+        return Result(SKIP, "HIGGSFIELD_ENABLED is false — CometAPI is doing all the work")
+    if not higgsfield_service.binary():
+        return Result(FAIL, "CLI not on PATH — run: npm i -g @higgsfield/cli")
+    if not await higgsfield_service.is_authenticated():
+        return Result(FAIL, "not signed in — run: higgsfield auth login")
+
+    problems = []
+    for kind, configured in (
+        ("video", settings.HIGGSFIELD_VIDEO_MODEL),
+        ("image", settings.HIGGSFIELD_IMAGE_MODEL),
+        ("image", settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL),
+    ):
+        listing = await higgsfield_service.list_models(kind)
+        if "error" in listing:
+            return Result(FAIL, listing["error"][:200])
+        if configured not in listing["models"]:
+            close = [m for m in listing["models"] if configured.split("_")[0] in m][:4]
+            problems.append(f"{configured} is not a {kind} model this account has" +
+                            (f" (did you mean {', '.join(close)}?)" if close else ""))
+
+    if problems:
+        return Result(FAIL, " | ".join(problems))
+    return Result(OK, "signed in, all three configured models available")
+
+
+async def check_higgsfield_image(ctx: Context) -> Result:
+    """The primary still generator, with a reference picture attached."""
+    from app.core.config import settings
+    from app.services.higgsfield_service import higgsfield_service
+
+    if not await higgsfield_service.available():
+        return Result(SKIP, "Higgsfield unavailable — see the higgsfield_cli line")
+
+    ref_dir = BACKEND_ROOT / "env" / "tmp" / "live_check_refs"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+    ref = ref_dir / "hf_ref.png"
+    ref.write_bytes(_tiny_png(colour=(180, 120, 60)))
+
+    result = await higgsfield_service.generate_image(
+        prompt="the same round object on a plain background, three-quarter view",
+        reference_paths=[str(ref)],
+    )
+    if "error" in result:
+        return Result(FAIL, result["error"][:250])
+    ctx.image_url = result["url"]
+    return Result(OK, f"{result['model']}, {result['ref_count']} ref -> {result['url'][:60]}")
+
+
 async def check_cometapi_image(ctx: Context) -> Result:
     from app.core.config import settings
     from app.services.media_gen_service import media_gen_service
@@ -383,7 +442,9 @@ CHECKS: list[Check] = [
     Check("gemini", "the configured Gemini model is visible to this key", check_gemini),
     Check("youtube", "search returns results", check_youtube),
     Check("supabase", "upload succeeds and the URL is publicly readable", check_supabase),
-    Check("cometapi_image", "still image generation", check_cometapi_image),
+    Check("higgsfield_cli", "CLI installed, signed in, configured models exist", check_higgsfield_cli),
+    Check("higgsfield_image", "primary still generation with a reference", check_higgsfield_image, slow=True),
+    Check("cometapi_image", "fallback still image generation", check_cometapi_image),
     Check("openai_generate", "plain OpenAI image generation", check_openai_generate),
     Check("openai_edit", "reference-anchored generation with 2 references", check_openai_edit),
     Check("cometapi_video", "animate a still (slow, the expensive one)", check_cometapi_video, slow=True),

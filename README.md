@@ -15,6 +15,28 @@ See `docs/YouTube_Movie_Factory_v3.docx` for the full technical specifications.
 6. Run server: `uvicorn app.main:app --reload`
 7. Run worker: `celery -A tasks.celery_app worker --loglevel=info`
 
+### Generation suppliers
+
+Higgsfield is the primary generator for stills and clips. CometAPI is the fallback:
+when Higgsfield is switched off, not installed, not signed in, or a call fails, the
+pipeline changes supplier rather than stopping.
+
+Higgsfield publishes no HTTP API, so the app drives its CLI — the same way it already
+drives ffmpeg and yt-dlp. Set it up once per machine that runs the backend:
+
+```
+npm i -g @higgsfield/cli
+higgsfield auth login       # opens a browser
+```
+
+Sign-in is a browser flow, so a person has to do it once. The CLI stores and refreshes
+the token afterwards, so the worker runs unattended from then on.
+
+Higgsfield model ids use underscores and are **not** the CometAPI names — `seedance_2_5`,
+not `doubao-seedance-2-5`. `higgsfield model list --video --json` lists what your
+account can reach, and `make live-check` fails with a suggestion when a configured id
+is not among them.
+
 ### Running the background worker
 
 A production run is an hour of waiting on external services. By default the pipeline

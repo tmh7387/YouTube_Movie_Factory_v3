@@ -26,6 +26,7 @@ from app.services.audio_analysis import (
     audio_analysis_service,
 )
 from app.services.gpt_image_service import gpt_image_service
+from app.services.higgsfield_service import higgsfield_service
 from app.services.memory_service import memory_service
 from app.services.qa_service import qa_service
 from app.services.skill_loader_service import skill_loader_service
@@ -651,6 +652,36 @@ async def _generate_scene_image(scene_id: str):
         ref_urls, character = _collect_reference_urls(bible, scene)
         ref_paths = await _download_references(scene_id, ref_urls) if ref_urls else []
 
+        # --- Primary: Higgsfield -------------------------------------------
+        # It takes reference pictures as local file paths and uploads them itself, so
+        # the same call covers both the anchored and the plain case.
+        if await higgsfield_service.available():
+            res = await higgsfield_service.generate_image(
+                prompt=scene.image_prompt,
+                reference_paths=ref_paths or None,
+            )
+            if "error" not in res:
+                scene.image_url = res["url"]
+                scene.reference_inputs = {
+                    "mode": "reference" if ref_paths else "text",
+                    "refs": ref_urls,
+                    "service": "higgsfield",
+                    "model": res["model"],
+                }
+                ok = await _download_image(res["url"], local_path)
+                if ok:
+                    scene.local_image_path = str(local_path)
+                logger.info(
+                    f"Scene {scene_id} image from Higgsfield ({res['model']}, "
+                    f"{res['ref_count']} reference(s))"
+                )
+                await db.commit()
+                return
+            logger.warning(
+                f"Scene {scene_id}: Higgsfield image failed ({res['error']}) — falling back"
+            )
+
+        # --- Fallback 1: OpenAI, only when references resolved --------------
         if ref_paths and settings.OPENAI_API_KEY:
             res = await gpt_image_service.generate_with_character(
                 prompt=scene.image_prompt,
@@ -815,6 +846,7 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
             motion_prompt = skill_loader_service.build_motion_prompt_default(video_model)
 
         clip_duration = _resolve_clip_duration(scene)
+        used_service = "cometapi"
         if scene.beat_duration_sec is not None:
             logger.info(
                 f"Scene {scene_id}: beat window {float(scene.beat_duration_sec):.2f}s "
@@ -822,14 +854,33 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
                 f"{float(scene.beat_drift_ms or 0):.0f}ms, corrected at assembly)"
             )
 
-        res = await media_gen_service.animate_image(
-            image_url=image_source,
-            prompt=motion_prompt,
-            model=video_model,
-            duration=clip_duration,
-            mode=mode,
-            **extra_kwargs,
-        )
+        # --- Primary: Higgsfield -------------------------------------------
+        # It wants a local file for the start frame, which the image phase already
+        # cached — no pre-signed URL to expire between generating and animating.
+        res: dict = {"error": "higgsfield not attempted"}
+        if local_path.exists() and await higgsfield_service.available():
+            res = await higgsfield_service.animate_image(
+                image_path=str(local_path),
+                prompt=motion_prompt,
+                duration=clip_duration,
+            )
+            if "error" in res:
+                logger.warning(
+                    f"Scene {scene_id}: Higgsfield animation failed ({res['error']}) — falling back"
+                )
+            else:
+                used_service = "higgsfield"
+                video_model = res["model"]
+
+        if "error" in res:
+            res = await media_gen_service.animate_image(
+                image_url=image_source,
+                prompt=motion_prompt,
+                model=video_model,
+                duration=clip_duration,
+                mode=mode,
+                **extra_kwargs,
+            )
 
         if "error" in res:
             logger.error(f"Animation failed for scene {scene_id}: {res['error']}")
@@ -838,7 +889,10 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
             scene.local_video_path = res.get("url", "")
             scene.cometapi_task_id = res.get("task_id", "")
             scene.animation_status = "completed"
-            logger.info(f"Scene {scene_id} animated: {res.get('url', '')}")
+            logger.info(
+                f"Scene {scene_id} animated by {used_service} ({video_model}): "
+                f"{res.get('url', '')}"
+            )
 
         await db.commit()
 

@@ -36,6 +36,24 @@ class Settings(BaseSettings):
     STEM_SEPARATION_ENABLED: bool = False    # requires demucs + GPU
     UPSCALING_ENABLED: bool = False          # requires realesrgan binary
 
+    # --- Higgsfield: the primary generator ---
+    # Driven through the CLI (npm i -g @higgsfield/cli), because Higgsfield publishes
+    # no HTTP API. A human runs `higgsfield auth login` once per machine; the CLI
+    # refreshes the token itself after that. When it is unavailable or a call fails,
+    # generation falls back to CometAPI — nothing stops, it just changes supplier.
+    HIGGSFIELD_ENABLED: bool = True
+    HIGGSFIELD_CLI: str = "higgsfield"
+    # Model ids are Higgsfield's own (underscores), NOT the CometAPI names.
+    HIGGSFIELD_IMAGE_MODEL: str = "seedream_v5_pro"
+    # Reference-anchored stills. Nano Banana Pro is the reference/character model.
+    HIGGSFIELD_REFERENCE_IMAGE_MODEL: str = "nano_banana_2"
+    HIGGSFIELD_VIDEO_MODEL: str = "seedance_2_5"
+    HIGGSFIELD_MAX_REFERENCES: int = 3
+    # Passed to the CLI's --wait-timeout. Its own format, e.g. "20m".
+    HIGGSFIELD_WAIT_TIMEOUT: str = "20m"
+    # Our own ceiling on the subprocess, in seconds. Must exceed the wait timeout.
+    HIGGSFIELD_TIMEOUT_SECONDS: float = 1500.0
+
     # --- Application Settings ---
     CLAUDE_CREATIVE_MODEL: str = "claude-opus-4-6"
     CLAUDE_FAST_MODEL: str = "claude-sonnet-4-6"
