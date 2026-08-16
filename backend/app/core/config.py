@@ -23,7 +23,11 @@ class Settings(BaseSettings):
     KLING_SECRET_KEY: str = ""
 
     # --- Ported from neural-frames review: optional feature services ---
-    OPENAI_API_KEY: str = ""                 # GPT-Image-2 generation
+    OPENAI_API_KEY: str = ""                 # reference-anchored image generation
+    # Model id for the OpenAI images endpoints. Settable because the gpt-image family
+    # has moved names more than once; a wrong id here should be a config change, not a
+    # code change.
+    OPENAI_IMAGE_MODEL: str = "gpt-image-1"
     STEM_SEPARATION_ENABLED: bool = False    # requires demucs + GPU
     UPSCALING_ENABLED: bool = False          # requires realesrgan binary
 

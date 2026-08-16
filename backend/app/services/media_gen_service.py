@@ -50,10 +50,20 @@ class MediaGenService:
                 )
                 response.raise_for_status()
                 data = response.json()
+
+                # Do not index blindly. A shape change here used to raise KeyError out
+                # of a function whose whole contract is "return {'error': ...}", which
+                # crashed the caller instead of failing the scene.
+                items = data.get("data")
+                item = items[0] if isinstance(items, list) and items else None
+                if not isinstance(item, dict) or not item.get("url"):
+                    logger.error(f"Unexpected image response shape ({model}): {str(data)[:300]}")
+                    return {"error": f"No image URL in response: {str(data)[:200]}"}
+
                 return {
-                    "url": data["data"][0]["url"],
+                    "url": item["url"],
                     "model": model,
-                    "revised_prompt": data["data"][0].get("revised_prompt", prompt),
+                    "revised_prompt": item.get("revised_prompt", prompt),
                 }
         except httpx.HTTPStatusError as e:
             logger.error(f"Image generation HTTP error ({model}): {e.response.status_code} {e.response.text[:300]}")

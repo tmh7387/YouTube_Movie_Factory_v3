@@ -28,6 +28,30 @@ make gates      # just the four acceptance gates
 make smoke      # just the end-to-end run
 ```
 
+### Checking the real services
+
+Everything under `make verify` replaces the external vendors with stand-ins. That
+proves the wiring executes; it cannot prove the vendors answer the way the code
+expects. `make live-check` is the only thing that talks to them for real:
+
+```
+make live-check       # everything except video generation — a few cents
+make live-check-all   # adds one video generation — slower, the expensive one
+```
+
+It needs `env/.env` populated, and reports one line per service:
+
+```
+PASS  anthropic_vision     2.1s  strict JSON honoured, classified pass
+PASS  openai_edit          8.4s  2 references accepted, 1841204 b64 chars
+SKIP  supabase             0.1s  SUPABASE_URL / SUPABASE_SERVICE_KEY not set
+```
+
+Missing credentials skip rather than fail, so you can see exactly what is not covered.
+Run this after any change to a vendor integration, and before trusting a deployment —
+several failure modes here (a bucket that is not publicly readable, a model the key
+cannot see, a rejected request parameter) are invisible to the test suite by design.
+
 Four gates guard the wiring, because a green `tsc`, `npm run build` and `compileall`
 execute no code path — which is how an unresolvable import and six orphaned services
 once shipped:
