@@ -409,7 +409,15 @@ async def check_higgsfield_image(ctx: Context) -> Result:
         # that list IS the answer, and cutting it throws the answer away.
         return Result(FAIL, result["error"])
     ctx.image_url = result["url"]
-    return Result(OK, f"{result['model']}, {result['ref_count']} ref -> {result['url'][:60]}")
+    # Name the flag and element shape that worked. The service searches for them on
+    # first use and forgets at process end; printing them is how the search gets
+    # replaced by the answer in ARRAY_ELEMENT_SHAPES.
+    settled = higgsfield_service._media_flag.get(settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL)
+    how = f" via {settled[0]} {settled[2]}" if settled else ""
+    return Result(
+        OK,
+        f"{result['model']}, {result['ref_count']} ref{how} -> {result['url'][:60]}",
+    )
 
 
 async def check_cometapi_image(ctx: Context) -> Result:
