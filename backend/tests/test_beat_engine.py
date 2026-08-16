@@ -6,6 +6,8 @@ beat_* columns existed with zero writers, and audio_analysis.py — a working be
 tracker — had zero importers.
 """
 import math
+import shutil
+import subprocess
 import uuid
 from types import SimpleNamespace
 
@@ -287,3 +289,47 @@ def test_a_job_with_no_music_never_reaches_beat_mapping(backend_root):
     guard_at = source.index("if music_url:")
     call_at = source.index("_map_beats_to_scenes(job_id", guard_at)
     assert 0 < call_at - guard_at < 400, "Phase 1.5 call is no longer under the music guard"
+
+
+# --- the trim actually trims -------------------------------------------------
+
+@pytest.mark.skipif(
+    not (shutil.which("ffmpeg") and shutil.which("ffprobe")),
+    reason="ffmpeg/ffprobe not on PATH",
+)
+async def test_outpoint_really_trims_clips_to_their_beat_windows(tmp_path, monkeypatch):
+    """
+    The beat-window trim rides on the concat demuxer's `outpoint` directive, chosen
+    from the docs. This runs real ffmpeg over real MP4s with windows deliberately
+    shorter than the clips, so a directive that silently does nothing fails here.
+    """
+    from app.services.assembly_service import assembly_service
+
+    sources = []
+    for i in range(3):
+        dest = tmp_path / f"src_{i}.mp4"
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "lavfi", "-i", "testsrc=size=320x180:rate=24:duration=6",
+             "-f", "lavfi", "-i", "sine=frequency=440:duration=6",
+             "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest",
+             str(dest), "-loglevel", "error"],
+            check=True, capture_output=True, timeout=120,
+        )
+        sources.append(dest)
+
+    async def _copy(url, dest):
+        shutil.copyfile(url, dest)
+        return None
+
+    monkeypatch.setattr(assembly_service, "jobs_dir", tmp_path / "jobs")
+    monkeypatch.setattr(assembly_service, "_download_file", _copy)
+
+    result = await assembly_service.assemble_video(
+        job_id="trim-check",
+        clip_urls=[str(p) for p in sources],
+        clip_windows=[3.5, 2.0, None],   # third clip runs full length
+    )
+
+    assert "error" not in result, result
+    # 3.5 + 2.0 + 6.0 = 11.5s. Untrimmed concatenation would be 18s.
+    assert abs(result["duration"] - 11.5) < 0.6, result["duration"]

@@ -12,6 +12,7 @@ network edges — CometAPI, Anthropic, OpenAI, Supabase, YouTube, ffmpeg — are
 """
 import json
 import shutil
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -255,6 +256,71 @@ def stub_external_apis(monkeypatch, tmp_path):
     monkeypatch.setattr(memory_module, "PROJECT_LOG_DIR", memory_copy / "PROJECT_LOG")
 
     return captured
+
+
+@pytest.fixture
+def real_ffmpeg(stub_external_apis, monkeypatch, tmp_path):
+    """
+    Un-stub the two legs that shell out to ffmpeg.
+
+    The stubbed run proves the wiring executes; it cannot prove the ffmpeg invocations
+    are correct. In particular the beat-window trim rides on the concat demuxer's
+    `outpoint` directive, which was chosen from the docs and never executed. This
+    fixture hands the pipeline real MP4s and lets assembly and QA frame extraction run
+    for real, so a wrong flag fails the gate instead of shipping.
+    """
+    if not (shutil.which("ffmpeg") and shutil.which("ffprobe")):
+        pytest.skip("ffmpeg/ffprobe not on PATH — cannot run the real-media smoke leg")
+
+    from app.services.assembly_service import assembly_service
+    from app.services.media_gen_service import media_gen_service
+    from app.services.qa_service import qa_service
+
+    clips_dir = tmp_path / "real_clips"
+    clips_dir.mkdir(parents=True, exist_ok=True)
+
+    def _make_clip(index: int, seconds: int) -> Path:
+        dest = clips_dir / f"clip_{index}.mp4"
+        subprocess.run(
+            ["ffmpeg", "-y", "-f", "lavfi", "-i", f"testsrc=size=320x180:rate=24:duration={seconds}",
+             "-f", "lavfi", "-i", f"sine=frequency={220 * (index + 1)}:duration={seconds}",
+             "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest",
+             str(dest), "-loglevel", "error"],
+            check=True, capture_output=True, timeout=120,
+        )
+        return dest
+
+    # The generator returns a real file on disk instead of a CDN URL, so QA's ffprobe
+    # and frame extraction have something to actually read.
+    async def _animate_image(image_url, prompt, model, duration, mode, **_kw):
+        stub_external_apis.setdefault("durations", []).append(duration)
+        index = len(stub_external_apis["durations"]) - 1
+        return {"url": str(_make_clip(index, duration)), "task_id": "t"}
+
+    # Still the network edge: assembly "downloads" by copying from disk. The music URL
+    # is the one input with no local original, so it resolves to a real click track —
+    # which means ffmpeg's audio mix runs for real too.
+    music_file = tmp_path / "real_music.wav"
+    _click_track(music_file)
+
+    async def _download_file(url, dest: Path):
+        source = Path(url)
+        shutil.copyfile(source if source.is_file() else music_file, dest)
+        return None
+
+    monkeypatch.setattr(media_gen_service, "animate_image", _animate_image)
+    monkeypatch.setattr(assembly_service, "_download_file", _download_file)
+
+    # Put the real implementations back over the stubs installed above.
+    for target, name in (
+        (assembly_service, "_ffmpeg_available"),
+        (assembly_service, "_run_ffmpeg"),
+        (qa_service, "capture_midpoint_frame"),
+    ):
+        original = getattr(type(target), name)
+        monkeypatch.setattr(target, name, original.__get__(target))
+
+    return stub_external_apis
 
 
 @pytest.fixture
@@ -522,3 +588,34 @@ async def test_migrations_produced_the_columns_this_pass_added(clean_database):
 
     assert {"scene_id", "job_id", "model", "prompt", "reference_mode",
             "beat_aligned", "qa_pass", "qa_scores", "user_approved"} <= outcome_columns
+
+
+# --- real media: the ffmpeg legs, un-stubbed ---------------------------------
+
+async def test_the_real_pipeline_produces_a_playable_video(api, real_ffmpeg):
+    """
+    Same drive as above, but assembly and QA frame extraction shell out to real ffmpeg
+    against real MP4s. This is the leg that proves the invocations are right, not just
+    that the code reaches them.
+    """
+    detail = await _drive_pipeline(api)
+    job = detail["job"]
+
+    assert job["status"] == "completed", job["error_message"]
+    output = Path(job["assembled_video_path"])
+    assert output.is_file() and output.stat().st_size > 10_000, "no real video was written"
+
+    probe = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "default=noprint_wrappers=1:nokey=1", str(output)],
+        capture_output=True, text=True, timeout=60,
+    )
+    duration = float(probe.stdout.strip())
+
+    # Four 6s beat windows over a 24s track.
+    expected = sum(s["beat_end_sec"] - s["beat_start_sec"] for s in detail["scenes"])
+    assert abs(duration - expected) < 1.0, f"assembled {duration:.2f}s, expected ~{expected:.2f}s"
+
+    # QA read a real frame out of each real clip rather than being handed a stub.
+    assert len(real_ffmpeg["qa_prompts"]) == len(detail["scenes"])
+    assert all(s["qa_status"] == "pass" for s in detail["scenes"])
