@@ -16,6 +16,7 @@ import pytest
 import tasks.production as production
 from app.core.config import settings
 from app.services.higgsfield_service import (
+    ARRAY_ELEMENT_SHAPES,
     IMAGE_REFERENCE_FLAGS,
     HiggsfieldService,
     higgsfield_service,
@@ -64,15 +65,18 @@ async def test_a_reference_uses_the_reference_model_and_passes_the_file(cli, ref
     assert result["url"] == "https://cdn.hf/x.png"
     assert result["character_consistent"] is True
 
-    # The file is uploaded first, then referenced by id — input_images is an array
-    # parameter and refuses a bare path.
+    # The file is uploaded first, then referenced as a media OBJECT — input_images is an
+    # array of objects. A bare path is refused ("should be array"), and so is a bare id
+    # ("params.input_images.0: Input should be a valid object").
     upload_argv, generate_argv = calls[0], calls[-1]
     assert upload_argv[1:3] == ["upload", "create"]
     assert reference in upload_argv
 
     assert generate_argv[1:4] == ["generate", "create", settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL]
     flag = IMAGE_REFERENCE_FLAGS[0][0]
-    assert generate_argv[generate_argv.index(flag) + 1] == json.dumps(["media-123"])
+    sent = json.loads(generate_argv[generate_argv.index(flag) + 1])
+    assert sent == [ARRAY_ELEMENT_SHAPES[0][2]({"id": "media-123", "url": ""})]
+    assert isinstance(sent[0], dict), "elements must be objects, not bare ids"
     assert "--json" in generate_argv and "--wait" in generate_argv
 
 
@@ -362,10 +366,56 @@ async def test_a_rejected_media_flag_is_retried_with_the_next_name(monkeypatch, 
 
     assert result["url"] == "https://cdn.hf/x.png"
     generates = [c for c in calls if "generate" in c]
-    assert len(generates) == 2, "should have stopped at the first flag that worked"
+    # The first candidate is exhausted (one call per element shape), then the second
+    # works and the search stops there — nothing is tried after it.
+    assert IMAGE_REFERENCE_FLAGS[1][0] in generates[-1]
+    assert sum(1 for c in generates if IMAGE_REFERENCE_FLAGS[1][0] in c) == 1
+    assert not any(IMAGE_REFERENCE_FLAGS[2][0] in c for c in generates)
     # And it is remembered, so the next scene does not repeat the search.
-    assert higgsfield_service._media_flag[settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL] == \
-        IMAGE_REFERENCE_FLAGS[1]
+    remembered = higgsfield_service._media_flag[settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL]
+    assert remembered[:2] == IMAGE_REFERENCE_FLAGS[1]
+
+
+async def test_a_rejected_element_shape_is_retried_with_the_next_shape(monkeypatch, reference):
+    """
+    The flag name being right is not enough. nano_banana_2 accepts `--input_images` and
+    accepts an array, then rejects the elements: "params.input_images.0: Input should be
+    a valid object". So the element shape is searched too, and the winner remembered.
+    """
+    wanted = ARRAY_ELEMENT_SHAPES[2]          # not the first one tried
+    calls = []
+
+    def _run(argv, **_kwargs):
+        calls.append(list(argv))
+        if "upload" in argv:
+            return SimpleNamespace(
+                returncode=0, stdout=json.dumps({"id": "media-123"}), stderr=""
+            )
+        flag = IMAGE_REFERENCE_FLAGS[0][0]
+        if flag in argv:
+            sent = json.loads(argv[argv.index(flag) + 1])
+            if sent == [wanted[2]({"id": "media-123", "url": ""})]:
+                return SimpleNamespace(
+                    returncode=0, stdout='{"url": "https://cdn.hf/x.png"}', stderr=""
+                )
+        return SimpleNamespace(
+            returncode=1, stdout="",
+            stderr="Error: params.input_images.0: Input should be a valid object",
+        )
+
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
+
+    assert result["url"] == "https://cdn.hf/x.png"
+    # The picture is uploaded once, not once per shape tried.
+    assert sum(1 for c in calls if "upload" in c) == 1
+    remembered = higgsfield_service._media_flag[settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL]
+    assert remembered == (IMAGE_REFERENCE_FLAGS[0][0], "array", wanted[0])
 
 
 async def test_a_real_failure_is_not_retried_as_a_flag_problem(monkeypatch, reference):

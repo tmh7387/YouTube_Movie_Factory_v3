@@ -346,6 +346,47 @@ def _param_names(described: dict) -> str:
     return f"params was {type(params).__name__}: {str(params)[:250]}"
 
 
+async def check_higgsfield_schema(_ctx: Context) -> Result:
+    """
+    Print the FULL spec of each model's media parameter, not just its name.
+
+    The name alone is not enough. `input_images` is an array of objects, and the object
+    shape is not documented: an array of ids answers "params.input_images.0: Input
+    should be a valid object". The service searches candidate shapes at runtime; this
+    check prints the authoritative spec so the search can be replaced by the answer.
+    """
+    from app.core.config import settings
+    from app.services.higgsfield_service import higgsfield_service
+
+    if not await higgsfield_service.available():
+        return Result(SKIP, f"Higgsfield unavailable: {higgsfield_service.last_auth_error}")
+
+    media_names = ("input_images", "medias", "image", "images", "reference_images")
+    lines = []
+    for model in (settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL, settings.HIGGSFIELD_VIDEO_MODEL):
+        described = await higgsfield_service.describe_model(model)
+        parsed = described.get("parsed")
+        if not isinstance(parsed, dict):
+            lines.append(f"{model}: {described.get('raw', described.get('error', ''))[:300]}")
+            continue
+
+        params = parsed.get("params")
+        specs = {}
+        if isinstance(params, dict):
+            specs = {k: v for k, v in params.items() if k in media_names}
+        elif isinstance(params, list):
+            specs = {
+                item.get("name"): item
+                for item in params
+                if isinstance(item, dict) and item.get("name") in media_names
+            }
+        if not specs:
+            lines.append(f"{model}: no media parameter among {', '.join(media_names)}")
+            continue
+        lines.append(f"{model}: {json.dumps(specs)[:800]}")
+    return Result(OK, " || ".join(lines))
+
+
 async def check_higgsfield_image(ctx: Context) -> Result:
     """The primary still generator, with a reference picture attached."""
     from app.core.config import settings
@@ -505,6 +546,7 @@ CHECKS: list[Check] = [
     Check("supabase", "upload succeeds and the URL is publicly readable", check_supabase),
     Check("higgsfield_cli", "CLI installed, signed in, configured models exist", check_higgsfield_cli),
     Check("higgsfield_params", "show each model's real parameter names", check_higgsfield_params),
+    Check("higgsfield_schema", "show the media parameter's full spec", check_higgsfield_schema),
     Check("higgsfield_image", "primary still generation with a reference", check_higgsfield_image, slow=True),
     Check("cometapi_image", "fallback still image generation", check_cometapi_image),
     Check("openai_generate", "plain OpenAI image generation", check_openai_generate),

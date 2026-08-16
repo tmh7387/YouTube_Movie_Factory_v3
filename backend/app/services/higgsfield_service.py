@@ -64,10 +64,42 @@ START_IMAGE_FLAGS = (
     ("--image", "repeat"),
 )
 
-# The CLI says this when a flag is not in a model's parameter list.
+# Markers that mean "the flag or its value shape was wrong", as opposed to a real
+# failure. Only these are worth retrying with the next candidate.
+#   "unknown params"            — the flag is not in this model's parameter list
+#   "invalid types"             — right name, wrong value type (string where array goes)
+#   "should be a valid"         — right type, wrong element shape. nano_banana_2 answers
+#                                 "params.input_images.0: Input should be a valid object"
+#                                 to an array of plain id strings.
+#   "input should be" / "validation error" — the same class of reply, other wordings
 UNKNOWN_PARAM_MARKER = "unknown params"
-# ...and this when the name is right but the value is not shaped the way it wants.
 WRONG_TYPE_MARKER = "invalid types"
+RETRY_MARKERS = (
+    UNKNOWN_PARAM_MARKER,
+    WRONG_TYPE_MARKER,
+    "should be a valid",
+    "input should be",
+    "validation error",
+)
+
+# How one uploaded picture is written into an array-typed parameter. The element is an
+# object, not a bare id, but which object is not documented, so the shapes are tried in
+# order and the winner is remembered per model. Shapes that need a URL are skipped when
+# the upload reply carried none.
+#
+# Each entry is (name, needs_url, builder).
+#
+# "value/role" leads because that is the media object Higgsfield's own platform uses
+# elsewhere: {"value": "<media uuid>", "role": "image"}. A bare id string is not in the
+# list at all — it is the shape that produced the error above, so trying it wastes a call.
+ARRAY_ELEMENT_SHAPES = (
+    ("value/role", False, lambda m: {"value": m["id"], "role": "image"}),
+    ("image_url block", True, lambda m: {"type": "image_url", "image_url": m["url"]}),
+    ("typed id", False, lambda m: {"type": "image", "id": m["id"]}),
+    ("id object", False, lambda m: {"id": m["id"]}),
+    ("url object", True, lambda m: {"url": m["url"]}),
+    ("value object", False, lambda m: {"value": m["id"]}),
+)
 
 
 class HiggsfieldService:
@@ -107,20 +139,22 @@ class HiggsfieldService:
 
     async def upload_media(self, path: str) -> Dict[str, Any]:
         """
-        Upload one local file and return {"id": ...}.
+        Upload one local file and return {"id": ..., "url": ...}.
 
         Needed for array-typed parameters: the CLI's media sugar uploads for you, but a
-        raw model parameter such as input_images wants ids, not paths.
+        raw model parameter such as input_images wants the uploaded media, not a path.
+        The URL may be absent; the element shapes that need it are skipped when it is.
         """
         result = await self._run(
             ["upload", "create", str(Path(path).resolve()), "--json"], timeout=300
         )
         if "error" in result:
             return result
-        media_id = self._extract_id(self.parse_json(result["stdout"]))
+        payload = self.parse_json(result["stdout"])
+        media_id = self._extract_id(payload)
         if not media_id:
             return {"error": f"no media id in upload reply: {result['stdout'][:200]}"}
-        return {"id": media_id}
+        return {"id": media_id, "url": self.extract_url(payload) or ""}
 
     async def _run_with_media_flag(
         self,
@@ -133,12 +167,14 @@ class HiggsfieldService:
         """
         Run the generate command, finding the media flag AND value shape this model wants.
 
-        Two things vary per model and neither is in the CLI's help:
+        Three things vary per model and none of them is in the CLI's help:
           - the parameter name ("Unknown params: image-references")
           - the value type ("Invalid types: input_images should be array, got string")
+          - the element shape ("params.input_images.0: Input should be a valid object")
 
-        Candidates carry both. What works is remembered, so the search costs a few cheap
-        failures once per model per process rather than once per scene.
+        Candidates carry the first two, ARRAY_ELEMENT_SHAPES the third. What works is
+        remembered, so the search costs a few cheap failures once per model per process
+        rather than once per scene.
         """
         if not media_paths:
             return await self._run(base_args, timeout)
@@ -146,51 +182,75 @@ class HiggsfieldService:
         known = self._media_flag.get(model)
         order = list(candidates)
         if known:
-            order.sort(key=lambda pair: pair != known)
+            order.sort(key=lambda pair: pair != known[:2])
+
+        # Uploaded once and reused: the same media serves every flag and shape.
+        uploaded: Optional[List[Dict[str, Any]]] = None
+        upload_error: Optional[Dict[str, Any]] = None
+
+        async def media() -> Optional[List[Dict[str, Any]]]:
+            nonlocal uploaded, upload_error
+            if uploaded is None and upload_error is None:
+                items = []
+                for path in media_paths:
+                    reply = await self.upload_media(path)
+                    if "error" in reply:
+                        upload_error = reply
+                        return None
+                    items.append(reply)
+                uploaded = items
+            return uploaded
+
+        def attempts(flag: str, style: str) -> List[tuple]:
+            """(shape name, args) pairs to try for one candidate flag."""
+            if style != "array":
+                args = list(base_args)
+                for path in media_paths:
+                    args += [flag, path]
+                return [("path", args)]
+            items = uploaded or []
+            out = []
+            shapes = list(ARRAY_ELEMENT_SHAPES)
+            if known and known[0] == flag:
+                shapes.sort(key=lambda s: s[0] != known[2])
+            for name, needs_url, build in shapes:
+                if needs_url and not all(item.get("url") for item in items):
+                    continue
+                out.append((name, list(base_args) + [flag, json.dumps([build(i) for i in items])]))
+            return out
 
         last: Dict[str, Any] = {"error": "no media flag attempted"}
         for flag, style in order:
-            args = list(base_args)
+            if style == "array" and await media() is None:
+                # Treat a failed upload as this candidate failing, not as the end of the
+                # road: another candidate may not need uploads.
+                last = upload_error or last
+                logger.debug(f"Higgsfield: upload for {flag} failed, trying the next")
+                continue
 
-            if style == "array":
-                ids = []
-                failed = None
-                for path in media_paths:
-                    uploaded = await self.upload_media(path)
-                    if "error" in uploaded:
-                        # Treat a failed upload as this candidate failing, not as the
-                        # end of the road: another candidate may not need uploads.
-                        failed = uploaded
-                        break
-                    ids.append(uploaded["id"])
-                if failed:
-                    last = failed
-                    logger.debug(f"Higgsfield: upload for {flag} failed, trying the next")
-                    continue
-                args += [flag, json.dumps(ids)]
-            else:
-                for path in media_paths:
-                    args += [flag, path]
+            for shape, args in attempts(flag, style):
+                result = await self._run(args, timeout)
 
-            result = await self._run(args, timeout)
+                if "error" not in result:
+                    if self._media_flag.get(model) != (flag, style, shape):
+                        logger.info(f"Higgsfield: {model} takes {flag} as {style}/{shape}")
+                        self._media_flag[model] = (flag, style, shape)
+                    return result
 
-            if "error" not in result:
-                if self._media_flag.get(model) != (flag, style):
-                    logger.info(f"Higgsfield: {model} takes {flag} as {style}")
-                    self._media_flag[model] = (flag, style)
-                return result
-
-            reason = result["error"].lower()
-            if UNKNOWN_PARAM_MARKER not in reason and WRONG_TYPE_MARKER not in reason:
-                # A real failure — the request was wrong, not the flag.
-                return result
-            last = result
-            logger.debug(f"Higgsfield: {model} refused {flag} as {style}, trying the next")
+                reason = result["error"].lower()
+                if not any(marker in reason for marker in RETRY_MARKERS):
+                    # A real failure — the request was wrong, not the flag.
+                    return result
+                last = result
+                logger.debug(
+                    f"Higgsfield: {model} refused {flag} as {style}/{shape}, trying the next"
+                )
 
         return {
             "error": (
                 f"{model} accepted none of "
-                f"{', '.join(f'{f} ({s})' for f, s in candidates)} for media inputs. "
+                f"{', '.join(f'{f} ({s})' for f, s in candidates)} for media inputs, "
+                f"in any of {len(ARRAY_ELEMENT_SHAPES)} element shapes. "
                 f"Run `higgsfield model get {model}` to see its parameters. "
                 f"Last reply: {last['error'][:200]}"
             )
