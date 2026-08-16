@@ -12,6 +12,11 @@ from app.db.session import AsyncSessionLocal as async_session_factory
 from app.models import ProductionJob, CurationJob, PreProductionBible, ProductionScene
 from app.services.media_gen_service import media_gen_service
 from app.services.assembly_service import assembly_service
+from app.services.audio_analysis import (
+    MAX_CLIP_SECONDS,
+    MIN_CLIP_SECONDS,
+    audio_analysis_service,
+)
 from app.services.gpt_image_service import gpt_image_service
 from app.services.skill_loader_service import skill_loader_service
 from app.core.config import settings
@@ -30,6 +35,13 @@ REFERENCE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # OpenAI's /images/edits accepts at most a handful of reference images per request.
 MAX_SCENE_REFERENCES = 3
+
+# Local cache dir for the uploaded music track (beat analysis needs a local file)
+MUSIC_CACHE_DIR = Path("env/tmp/music")
+MUSIC_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+# Fallback clip length when a job has no music and the brief gives no duration.
+DEFAULT_CLIP_SECONDS = 5
 
 
 async def _download_image(url: str, dest_path: Path) -> bool:
@@ -165,6 +177,10 @@ async def run_production_pipeline(
                 animation_status="pending",
                 bible_character=scene_data.get("bible_character"),
                 bible_environment=scene_data.get("bible_environment"),
+                # The brief's per-scene "duration" lands here so _animate_scene can
+                # reach it without re-reading the brief. Beat mapping overrides it.
+                target_duration_sec=scene_data.get("target_duration_sec")
+                or scene_data.get("duration"),
             )
             db.add(new_scene)
             scenes.append(new_scene)
@@ -177,6 +193,13 @@ async def run_production_pipeline(
         scene_ids = [str(s.id) for s in scenes]
 
     await _log(job_id, f"Phase 1 done — {len(scene_ids)} scenes initialized")
+
+    # Phase 1.5: Beat mapping — only when a music track was uploaded
+    if music_url:
+        await _update_status(job_id, "mapping_beats")
+        await _log(job_id, "Phase 1.5: Mapping scenes to the beat grid...")
+        summary = await _map_beats_to_scenes(job_id, scene_ids, music_url, music_filename)
+        await _log(job_id, f"Phase 1.5 done — {summary}")
 
     # Phase 2: Images
     await _update_status(job_id, "generating_images")
@@ -199,6 +222,127 @@ async def run_production_pipeline(
     await _update_status(job_id, "assembling")
     await _log(job_id, f"Phase 4: Assembling video{' + mixing audio' if music_url else ''}...")
     await _assemble_video(job_id, scene_ids, music_url)
+
+
+# ---------------------------------------------------------------------------
+# Phase 1.5 — Beat mapping
+# ---------------------------------------------------------------------------
+
+async def _download_music(job_id: str, music_url: str, music_filename: Optional[str]) -> Optional[Path]:
+    """Fetch the uploaded track to a local file — librosa cannot read a URL."""
+    ext = os.path.splitext(music_filename or "")[-1].lower() or ".mp3"
+    dest = MUSIC_CACHE_DIR / f"{job_id}{ext}"
+    if dest.exists() and dest.stat().st_size > 0:
+        return dest
+    try:
+        async with httpx.AsyncClient(timeout=180.0, follow_redirects=True) as client:
+            async with client.stream("GET", music_url) as resp:
+                resp.raise_for_status()
+                with open(dest, "wb") as fh:
+                    async for chunk in resp.aiter_bytes(chunk_size=65536):
+                        fh.write(chunk)
+        return dest
+    except Exception as e:
+        logger.warning(f"Music download failed for job {job_id}: {e}")
+        return None
+
+
+async def _map_beats_to_scenes(
+    job_id: str,
+    scene_ids: list,
+    music_url: str,
+    music_filename: Optional[str] = None,
+) -> str:
+    """
+    Analyse the uploaded track and write the beat grid onto the job and its scenes.
+
+    Every failure path is non-fatal: the beat_* columns simply stay null and the
+    pipeline falls back to target_duration_sec / DEFAULT_CLIP_SECONDS. A job with no
+    music never reaches this function at all.
+
+    Returns a short human-readable summary for the progress log.
+    """
+    music_path = await _download_music(job_id, music_url, music_filename)
+    if music_path is None:
+        return "music download failed — clip durations fall back to the brief"
+
+    # librosa is CPU-bound and blocking; keep it off the event loop.
+    analysis = await asyncio.to_thread(audio_analysis_service.analyze_beats, str(music_path))
+    if "error" in analysis:
+        logger.warning(f"Beat analysis failed for job {job_id}: {analysis['error']}")
+        return f"beat analysis failed ({analysis['error']}) — durations fall back to the brief"
+
+    beat_times = analysis.get("beat_intervals") or []
+    audio_duration = float(analysis.get("duration") or 0.0)
+    tempo = float(analysis.get("tempo") or 0.0)
+    interval = audio_analysis_service.mean_beat_interval(beat_times)
+
+    rows = audio_analysis_service.map_scenes_to_beats(
+        beat_times=beat_times,
+        scene_count=len(scene_ids),
+        audio_duration=audio_duration,
+    )
+
+    async with async_session_factory() as db:
+        await db.execute(
+            update(ProductionJob)
+            .where(ProductionJob.id == job_id)
+            .values(
+                tempo_bpm=tempo or None,
+                beat_timestamps=beat_times,
+                beat_interval_sec=interval,
+                audio_duration_sec=audio_duration or None,
+            )
+        )
+
+        for scene_id, row in zip(scene_ids, rows):
+            await db.execute(
+                update(ProductionScene)
+                .where(ProductionScene.id == scene_id)
+                .values(
+                    beat_start_sec=row["beat_start_sec"],
+                    beat_end_sec=row["beat_end_sec"],
+                    beat_duration_sec=row["beat_duration_sec"],
+                    beat_drift_ms=row["beat_drift_ms"],
+                )
+            )
+        await db.commit()
+
+    if not rows:
+        return f"{tempo:.1f} BPM, {len(beat_times)} beats — no scene windows derived"
+
+    worst = max(abs(r["beat_drift_ms"]) for r in rows)
+    return (
+        f"{tempo:.1f} BPM, {len(beat_times)} beats over {audio_duration:.1f}s — "
+        f"{len(rows)} scene windows, worst drift {worst:.0f}ms"
+    )
+
+
+def _resolve_clip_duration(scene: ProductionScene) -> int:
+    """
+    Integer clip length asked of the generator, in priority order:
+      beat_duration_sec (the beat-quantised window) -> target_duration_sec
+      (which carries the brief's per-scene duration) -> DEFAULT_CLIP_SECONDS.
+    Always clamped to the model's legal range.
+    """
+    for candidate in (scene.beat_duration_sec, scene.target_duration_sec):
+        if candidate is None:
+            continue
+        try:
+            value = float(candidate)
+        except (TypeError, ValueError):
+            continue
+        if value > 0:
+            return max(MIN_CLIP_SECONDS, min(MAX_CLIP_SECONDS, int(round(value))))
+    return max(MIN_CLIP_SECONDS, min(MAX_CLIP_SECONDS, DEFAULT_CLIP_SECONDS))
+
+
+def _scene_beat_window(scene: ProductionScene) -> Optional[float]:
+    """The scene's musical window in seconds, or None when it was never beat-mapped."""
+    if scene.beat_start_sec is None or scene.beat_end_sec is None:
+        return None
+    window = float(scene.beat_end_sec) - float(scene.beat_start_sec)
+    return window if window > 0 else None
 
 
 # ---------------------------------------------------------------------------
@@ -480,11 +624,19 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
         if not motion_prompt or motion_prompt.strip() == "":
             motion_prompt = skill_loader_service.build_motion_prompt_default(video_model)
 
+        clip_duration = _resolve_clip_duration(scene)
+        if scene.beat_duration_sec is not None:
+            logger.info(
+                f"Scene {scene_id}: beat window {float(scene.beat_duration_sec):.2f}s "
+                f"-> requesting {clip_duration}s (drift "
+                f"{float(scene.beat_drift_ms or 0):.0f}ms, corrected at assembly)"
+            )
+
         res = await media_gen_service.animate_image(
             image_url=image_source,
             prompt=motion_prompt,
             model=video_model,
-            duration=5,
+            duration=clip_duration,
             mode=mode,
             **extra_kwargs,
         )
@@ -537,7 +689,11 @@ async def _assemble_video(job_id: str, scene_ids: Optional[list] = None, music_u
                 .order_by(ProductionScene.scene_number)
             )
         scenes = result.scalars().all()
-        video_clips = [s.local_video_path for s in scenes if s.local_video_path]
+        playable = [s for s in scenes if s.local_video_path]
+        video_clips = [s.local_video_path for s in playable]
+        # Each clip is trimmed back to its musical window so the cut lands on the beat
+        # even though generation could only be asked for whole seconds.
+        clip_windows = [_scene_beat_window(s) for s in playable]
 
 
     if not video_clips:
@@ -549,6 +705,7 @@ async def _assemble_video(job_id: str, scene_ids: Optional[list] = None, music_u
         job_id=job_id,
         clip_urls=video_clips,
         music_url=music_url,
+        clip_windows=clip_windows,
     )
 
     if "error" in res:
