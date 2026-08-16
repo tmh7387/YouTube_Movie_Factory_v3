@@ -71,6 +71,9 @@ START_IMAGE_FLAGS = (
 #   "should be a valid"         — right type, wrong element shape. nano_banana_2 answers
 #                                 "params.input_images.0: Input should be a valid object"
 #                                 to an array of plain id strings.
+#   "field required"            — right container, wrong keys inside it. nano_banana_2
+#                                 answers "input_images.0.id: Field required;
+#                                 input_images.0.type: Field required" to {value, role}.
 #   "input should be" / "validation error" — the same class of reply, other wordings
 UNKNOWN_PARAM_MARKER = "unknown params"
 WRONG_TYPE_MARKER = "invalid types"
@@ -78,6 +81,7 @@ RETRY_MARKERS = (
     UNKNOWN_PARAM_MARKER,
     WRONG_TYPE_MARKER,
     "should be a valid",
+    "field required",
     "input should be",
     "validation error",
 )
@@ -89,16 +93,19 @@ RETRY_MARKERS = (
 #
 # Each entry is (name, needs_url, builder).
 #
-# "value/role" leads because that is the media object Higgsfield's own platform uses
-# elsewhere: {"value": "<media uuid>", "role": "image"}. A bare id string is not in the
-# list at all — it is the shape that produced the error above, so trying it wastes a call.
+# "id+type" leads because nano_banana_2 named those two keys itself:
+#   input_images.0.id: Field required; input_images.0.type: Field required
+# The value of `type` is not named in that reply, so the upload's own type is used when
+# it carries one, then "image" and "media" are tried. A wrong enum answers "Input should
+# be ...", which lists the values it does accept.
 ARRAY_ELEMENT_SHAPES = (
+    ("id+type", False, lambda m: {"id": m["id"], "type": m.get("type") or "image"}),
+    ("id+type=image", False, lambda m: {"id": m["id"], "type": "image"}),
+    ("id+type=media", False, lambda m: {"id": m["id"], "type": "media"}),
     ("value/role", False, lambda m: {"value": m["id"], "role": "image"}),
     ("image_url block", True, lambda m: {"type": "image_url", "image_url": m["url"]}),
-    ("typed id", False, lambda m: {"type": "image", "id": m["id"]}),
     ("id object", False, lambda m: {"id": m["id"]}),
     ("url object", True, lambda m: {"url": m["url"]}),
-    ("value object", False, lambda m: {"value": m["id"]}),
 )
 
 
@@ -154,7 +161,32 @@ class HiggsfieldService:
         media_id = self._extract_id(payload)
         if not media_id:
             return {"error": f"no media id in upload reply: {result['stdout'][:200]}"}
-        return {"id": media_id, "url": self.extract_url(payload) or ""}
+        return {
+            "id": media_id,
+            "url": self.extract_url(payload) or "",
+            # input_images elements need a `type`. If the upload reply names one, it is
+            # the model's own vocabulary and beats any guess of ours.
+            "type": self._extract_type(payload),
+        }
+
+    @staticmethod
+    def _extract_type(payload: Any) -> str:
+        """Find a media `type` in an upload reply. Empty string when it names none."""
+        if isinstance(payload, dict):
+            value = payload.get("type") or payload.get("media_type")
+            if isinstance(value, str) and value.strip():
+                return value
+            for nested in payload.values():
+                if isinstance(nested, (dict, list)):
+                    found = HiggsfieldService._extract_type(nested)
+                    if found:
+                        return found
+        elif isinstance(payload, list):
+            for item in payload:
+                found = HiggsfieldService._extract_type(item)
+                if found:
+                    return found
+        return ""
 
     async def _run_with_media_flag(
         self,

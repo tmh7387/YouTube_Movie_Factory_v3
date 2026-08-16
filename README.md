@@ -88,6 +88,7 @@ python -m pytest tests/test_gate_*.py   # same as: make gates
 python -m live_check                    # same as: make live-check
 python -m live_check --list             # list every check, run none
 python -m worker --once                 # one worker sweep
+python -m db_state                      # what the database really has (read-only)
 ```
 
 The frontend half of `make verify` is `npm ci` then `npx tsc --noEmit` in `frontend`.
