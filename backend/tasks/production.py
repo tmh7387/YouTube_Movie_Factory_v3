@@ -9,7 +9,7 @@ from typing import Optional
 import httpx
 from sqlalchemy import select, update
 from app.db.session import AsyncSessionLocal as async_session_factory
-from app.models import ProductionJob, CurationJob, ProductionScene, ProductionTrack
+from app.models import ProductionJob, CurationJob, ProductionScene
 from app.services.media_gen_service import media_gen_service
 from app.services.assembly_service import assembly_service
 from app.services.skill_loader_service import skill_loader_service
@@ -328,41 +328,14 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
 
 
 # ---------------------------------------------------------------------------
-# Phase 4 — Music generation
+# Phase 4 — ffmpeg assembly
 # ---------------------------------------------------------------------------
-
-async def _generate_music_track(track_id: str, mood: str) -> Optional[str]:
-    """Returns audio URL on success, None on failure."""
-    async with async_session_factory() as db:
-        result = await db.execute(select(ProductionTrack).where(ProductionTrack.id == track_id))
-        track = result.scalar_one_or_none()
-        if not track:
-            return None
-
-        track.suno_status = "generating"
-        await db.commit()
-
-        res = await suno_service.create_track(track.song_prompt, mood=mood)
-
-        if "error" in res:
-            logger.error(f"Music generation failed: {res['error']}")
-            track.suno_status = "failed"
-            track.error_message = res["error"]
-            await db.commit()
-            return None
-
-        audio_url = res.get("audio_url")
-        track.suno_task_id = res.get("id", "")
-        track.audio_url = audio_url
-        track.suno_status = "completed"
-        await db.commit()
-        logger.info(f"Music track ready: {audio_url}")
-        return audio_url
-
-
-# ---------------------------------------------------------------------------
-# Phase 5 — ffmpeg assembly
-# ---------------------------------------------------------------------------
+#
+# There is deliberately no music-generation phase. _generate_music_track() used to
+# live here calling suno_service.create_track() without ever importing the module —
+# unreachable, because api/production.py hardcodes num_tracks=0. Music is
+# user-upload-only (ProductionJob.music_url), so the dead function is gone rather
+# than half-wired.
 
 async def _assemble_video(job_id: str, scene_ids: Optional[list] = None, music_url: Optional[str] = None):
     async with async_session_factory() as db:
@@ -395,7 +368,7 @@ async def _assemble_video(job_id: str, scene_ids: Optional[list] = None, music_u
 
     if not video_clips:
         await _update_status(job_id, "failed", "No video clips generated to assemble")
-        await _log(job_id, "❌ Phase 5 failed — no clips available")
+        await _log(job_id, "❌ Phase 4 failed — no clips available")
         return
 
     res = await assembly_service.assemble_video(
@@ -406,7 +379,7 @@ async def _assemble_video(job_id: str, scene_ids: Optional[list] = None, music_u
 
     if "error" in res:
         await _update_status(job_id, "assembly_failed", res["error"])
-        await _log(job_id, f"❌ Phase 5 failed: {res['error']}")
+        await _log(job_id, f"❌ Phase 4 failed: {res['error']}")
     else:
         async with async_session_factory() as db2:
             await db2.execute(
@@ -420,4 +393,4 @@ async def _assemble_video(job_id: str, scene_ids: Optional[list] = None, music_u
                 )
             )
             await db2.commit()
-        await _log(job_id, f"✅ Phase 5 complete — {res.get('duration', 0):.1f}s video assembled")
+        await _log(job_id, f"✅ Phase 4 complete — {res.get('duration', 0):.1f}s video assembled")

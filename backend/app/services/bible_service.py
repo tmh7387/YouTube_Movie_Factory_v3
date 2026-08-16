@@ -141,33 +141,9 @@ Generate the Pre-Production Bible now."""
         return {"error": str(e)}
 
 
-async def build_bible_constraint_block(bible_id: str) -> str:
-    """
-    Phase 3 (NOT YET IMPLEMENTED) — Build a prompt constraint block from a
-    locked bible for injection into curation brief generation.
-
-    Future implementation will:
-    1. Load the locked PreProductionBible by ID
-    2. Format characters and environments as named, persistent entities
-    3. Return a structured text block for injection into the curation prompt
-       in tasks/curation.py, ensuring scene assignments reference known
-       characters and environments by name rather than inventing new ones
-
-    Example output block:
-        ESTABLISHED CHARACTERS:
-        - The Ritual Dancer: [physical], [wardrobe]
-        - The Elder: [physical], [wardrobe]
-
-        ESTABLISHED ENVIRONMENTS:
-        - The Dark Studio: [description], [lighting]
-        - Neon Corridor: [description], [mood]
-
-        STYLE LOCK: [color_grade], [visual_aesthetic]
-        CAMERA: [movement_style], [lens_feel]
-
-    Integration point: _orchestrate_curation() in tasks/curation.py
-    Trigger condition: CurationJob with non-null bible_id
-    """
-    raise NotImplementedError(
-        "Phase 3 — bible constraint injection not yet implemented"
-    )
+# build_bible_constraint_block() used to sit here raising NotImplementedError. The job it
+# described — formatting a locked bible's characters, environments, style lock and camera
+# specs into a constraint block for brief generation — is already done inline by
+# claude_service.generate_creative_brief(), which receives the bible dict assembled in
+# tasks/curation.py::_orchestrate_curation(). The stub is removed rather than left as a
+# second, divergent implementation waiting to be called by mistake.

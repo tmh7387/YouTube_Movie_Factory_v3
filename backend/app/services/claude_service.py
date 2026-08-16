@@ -43,6 +43,7 @@ class ClaudeService:
             chars = bible.get("characters", [])
             envs = bible.get("environments", [])
             style = bible.get("style_lock", {})
+            camera = bible.get("camera_specs") or {}
 
             char_lines = "\n".join(
                 f"- **{c.get('name', '?')}**: {c.get('physical', '')} | Wardrobe: {c.get('wardrobe', '')}"
@@ -58,6 +59,18 @@ class ClaudeService:
             neg = style.get("negative_prompt", "")
             palette = style.get("color_palette", [])
 
+            # camera_specs is loaded into the bible dict by tasks/curation.py and used to
+            # be dropped on the floor here, so camera direction never reached the brief.
+            camera_lines = "\n".join(
+                f"- {label}: {camera[key]}"
+                for key, label in (
+                    ("default_lens", "Default Lens"),
+                    ("default_movement", "Default Movement"),
+                    ("lighting_setup", "Lighting Setup"),
+                )
+                if camera.get(key)
+            )
+
             bible_block = f"""
 ## Pre-Production Bible — FOLLOW THESE RULES
 
@@ -71,6 +84,9 @@ class ClaudeService:
 - Color Palette: {', '.join(palette) if palette else 'Not specified'}
 - Visual Rules: {'; '.join(rules) if rules else 'None'}
 - Negative Prompt (add to every visual_prompt): {neg}
+
+### Camera Specs (apply to motion_prompt unless a scene demands otherwise)
+{camera_lines if camera_lines else 'Not specified'}
 
 CRITICAL: Every scene's visual_prompt MUST reference bible characters by name and
 apply the style_lock rules. Use the negative prompt to avoid unwanted artifacts.

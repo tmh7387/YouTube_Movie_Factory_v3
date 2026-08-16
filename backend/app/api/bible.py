@@ -409,10 +409,8 @@ async def apply_suggestions(
     return bible
 
 
-@router.post("/aggregate-inspiration")
-async def aggregate_inspiration_placeholder():
-    """Phase 2 placeholder — multi-source inspiration aggregation."""
-    raise HTTPException(
-        status_code=501,
-        detail="Multi-source aggregation is not yet implemented (Phase 2)"
-    )
+# POST /aggregate-inspiration used to be declared here, returning a hardcoded 501 and
+# backed by inspiration_aggregator_service.aggregate_inspiration(), which raised
+# NotImplementedError. Nothing called either one. Both are removed — a route that can
+# only fail is worse than no route, because it shows up in the OpenAPI schema as a
+# capability. Multi-source inspiration clustering can be reintroduced when it is built.
