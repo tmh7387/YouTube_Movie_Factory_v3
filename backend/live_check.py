@@ -136,7 +136,13 @@ async def check_binaries(_ctx: Context) -> Result:
 
 
 async def check_database(_ctx: Context) -> Result:
+    import logging
+
     from sqlalchemy import text
+
+    # The engine is built with echo on. Its SQL log prints between the check lines and
+    # pushes the report off the screen, which is the one thing this script must not do.
+    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
     from app.db.session import AsyncSessionLocal
 
@@ -409,6 +415,20 @@ async def check_higgsfield_image(ctx: Context) -> Result:
         # that list IS the answer, and cutting it throws the answer away.
         return Result(FAIL, result["error"])
     ctx.image_url = result["url"]
+
+    # Keep the generated still on disk so the animation check animates a real generated
+    # picture, which is what production does — not the tiny reference PNG.
+    try:
+        import httpx
+
+        async with httpx.AsyncClient(timeout=120.0, follow_redirects=True) as client:
+            payload = (await client.get(result["url"])).content
+        still = ref_dir / "hf_generated.png"
+        still.write_bytes(payload)
+        ctx.local_image = still
+    except Exception:                      # noqa: BLE001 - the still is a convenience
+        pass
+
     # Name the flag and element shape that worked. The service searches for them on
     # first use and forgets at process end; printing them is how the search gets
     # replaced by the answer in ARRAY_ELEMENT_SHAPES.
@@ -526,6 +546,39 @@ async def check_openai_edit(ctx: Context) -> Result:
     return Result(OK, f"{result['ref_count']} references accepted, {len(result['b64_json'])} b64 chars")
 
 
+async def check_higgsfield_video(ctx: Context) -> Result:
+    """
+    The primary animator. Never run for real until now — the check did not exist, which
+    is why `--only higgsfield_video` answered "unknown check".
+
+    It animates a LOCAL still, not a URL. That is the path production uses: the CLI
+    uploads the file itself, so there is no pre-signed URL to expire between generating
+    a still and animating it.
+    """
+    from app.core.config import settings
+    from app.services.higgsfield_service import higgsfield_service
+
+    if not await higgsfield_service.available():
+        return Result(SKIP, f"Higgsfield unavailable: {higgsfield_service.last_auth_error}")
+
+    still = ctx.local_image
+    if not still or not Path(still).is_file():
+        still = BACKEND_ROOT / "env" / "tmp" / "live_check_refs" / "hf_ref.png"
+        still.parent.mkdir(parents=True, exist_ok=True)
+        still.write_bytes(_tiny_png(colour=(180, 120, 60)))
+
+    result = await higgsfield_service.animate_image(
+        image_path=str(still),
+        prompt="slow push in, static subject",
+        duration=4,
+    )
+    if "error" in result:
+        return Result(FAIL, result["error"])
+    settled = higgsfield_service._media_flag.get(settings.HIGGSFIELD_VIDEO_MODEL)
+    how = f" via {settled[0]} {settled[2]}" if settled else ""
+    return Result(OK, f"{settings.HIGGSFIELD_VIDEO_MODEL}{how} -> {result['url'][:60]}")
+
+
 async def check_cometapi_video(ctx: Context) -> Result:
     from app.core.config import settings
     from app.services.media_gen_service import media_gen_service
@@ -561,7 +614,8 @@ CHECKS: list[Check] = [
     Check("cometapi_image", "fallback still image generation", check_cometapi_image),
     Check("openai_generate", "plain OpenAI image generation", check_openai_generate),
     Check("openai_edit", "reference-anchored generation with 2 references", check_openai_edit),
-    Check("cometapi_video", "animate a still (slow, the expensive one)", check_cometapi_video, slow=True),
+    Check("higgsfield_video", "primary animation (slow, the expensive one)", check_higgsfield_video, slow=True),
+    Check("cometapi_video", "fallback animation (slow, the expensive one)", check_cometapi_video, slow=True),
 ]
 
 
