@@ -405,7 +405,9 @@ async def check_higgsfield_image(ctx: Context) -> Result:
         reference_paths=[str(ref)],
     )
     if "error" in result:
-        return Result(FAIL, result["error"][:250])
+        # Not truncated. When the CLI answers with the list of values it accepts,
+        # that list IS the answer, and cutting it throws the answer away.
+        return Result(FAIL, result["error"])
     ctx.image_url = result["url"]
     return Result(OK, f"{result['model']}, {result['ref_count']} ref -> {result['url'][:60]}")
 

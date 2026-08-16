@@ -418,6 +418,79 @@ async def test_a_rejected_element_shape_is_retried_with_the_next_shape(monkeypat
     assert remembered == (IMAGE_REFERENCE_FLAGS[0][0], "array", wanted[0])
 
 
+async def test_the_reply_names_the_accepted_type_and_that_type_is_used(monkeypatch, reference):
+    """
+    A rejected enum lists what it does accept:
+
+        Input should be 'media', 'headshot_job', 'soul_cast_job', 'wan2_7_job'
+
+    That list is the answer. It is read out of the reply and tried, instead of guessing
+    a sixth shape the model has already ruled out. Non-job kinds go first: an uploaded
+    file is not the output of a job.
+    """
+    calls = []
+
+    def _run(argv, **_kwargs):
+        calls.append(list(argv))
+        if "upload" in argv:
+            return SimpleNamespace(
+                returncode=0, stdout=json.dumps({"id": "media-123"}), stderr=""
+            )
+        flag = IMAGE_REFERENCE_FLAGS[0][0]
+        if flag in argv:
+            sent = json.loads(argv[argv.index(flag) + 1])
+            if sent == [{"id": "media-123", "type": "media"}]:
+                return SimpleNamespace(
+                    returncode=0, stdout='{"url": "https://cdn.hf/x.png"}', stderr=""
+                )
+        return SimpleNamespace(
+            returncode=1, stdout="",
+            stderr=(
+                "Error: input_images.0.type: Input should be 'headshot_job', "
+                "'media', 'soul_cast_job', 'wan2_7_job'"
+            ),
+        )
+
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
+
+    assert result["url"] == "https://cdn.hf/x.png"
+    remembered = higgsfield_service._media_flag[settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL]
+    assert remembered[2] == "id+type=media"
+
+
+def test_a_long_cli_reply_keeps_its_front_not_its_tail(monkeypatch, tmp_path):
+    """
+    The field that was wrong is named at the FRONT of a CLI reply, and the list of
+    accepted values that follows can run for hundreds of characters. Keeping the tail
+    threw the field name away and left an unreadable fragment.
+    """
+    monkeypatch.setattr(settings, "JOB_FILES_DIR", str(tmp_path))
+    message = "input_images.0.type: Input should be " + ", ".join(
+        f"'kind_{i}_job'" for i in range(300)
+    )
+
+    kept = HiggsfieldService._record(message)
+
+    assert kept.startswith("input_images.0.type: Input should be")
+    assert "full reply in" in kept, "a truncated reply must say where the whole one is"
+    assert (tmp_path / "higgsfield_last_error.txt").read_text(encoding="utf-8") == message
+
+
+def test_accepted_values_are_read_out_of_a_reply_with_plain_kinds_first():
+    values = HiggsfieldService._types_from_reply(
+        "input_images.0.type: Input should be 'headshot_job', 'media', 'soul_cast_job'"
+    )
+    assert values == ["media", "headshot_job", "soul_cast_job"]
+    # No enum, nothing to read — the caller falls back to its own shape list.
+    assert HiggsfieldService._types_from_reply("Error: insufficient credits") == []
+
+
 async def test_a_real_failure_is_not_retried_as_a_flag_problem(monkeypatch, reference):
     """Only "Unknown params" means the flag was wrong. Everything else stops at once."""
     calls = []

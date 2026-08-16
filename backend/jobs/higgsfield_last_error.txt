@@ -1,0 +1,1 @@
+Error: Invalid types: input_images should be array, got string

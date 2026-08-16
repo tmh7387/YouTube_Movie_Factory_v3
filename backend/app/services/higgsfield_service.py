@@ -21,6 +21,7 @@ than raising, so the caller can fall through without a try/except around each ca
 import asyncio
 import json
 import logging
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -107,6 +108,15 @@ ARRAY_ELEMENT_SHAPES = (
     ("id object", False, lambda m: {"id": m["id"]}),
     ("url object", True, lambda m: {"url": m["url"]}),
 )
+
+# A failed CLI reply is written here in full, under JOB_FILES_DIR. Error strings get
+# truncated by every layer above; the file does not.
+ERROR_LOG_NAME = "higgsfield_last_error.txt"
+ERROR_HEAD_CHARS = 2000
+# Quoted values in a reply such as "Input should be 'media', 'headshot_job', ...".
+ENUM_VALUE = re.compile(r"'([A-Za-z0-9_.\-]+)'")
+# Ceiling on how many values from such a list are worth trying.
+MAX_DISCOVERED_TYPES = 4
 
 
 class HiggsfieldService:
@@ -260,7 +270,10 @@ class HiggsfieldService:
                 logger.debug(f"Higgsfield: upload for {flag} failed, trying the next")
                 continue
 
-            for shape, args in attempts(flag, style):
+            queue = attempts(flag, style)
+            discovered: List[str] = []
+            while queue:
+                shape, args = queue.pop(0)
                 result = await self._run(args, timeout)
 
                 if "error" not in result:
@@ -277,6 +290,20 @@ class HiggsfieldService:
                 logger.debug(
                     f"Higgsfield: {model} refused {flag} as {style}/{shape}, trying the next"
                 )
+
+                # A rejected enum names the values it does accept. Queue them rather
+                # than fall through to a shape the model has already ruled out.
+                if style == "array" and uploaded:
+                    for value in self._types_from_reply(result["error"]):
+                        if value in discovered or len(discovered) >= MAX_DISCOVERED_TYPES:
+                            continue
+                        discovered.append(value)
+                        queue.append((
+                            f"id+type={value}",
+                            list(base_args) + [flag, json.dumps(
+                                [{"id": item["id"], "type": value} for item in uploaded]
+                            )],
+                        ))
 
         return {
             "error": (
@@ -301,6 +328,40 @@ class HiggsfieldService:
                 or ""
             )
         return self._binary or None
+
+    @staticmethod
+    def _record(message: str) -> str:
+        """
+        Keep the whole CLI reply on disk; return a head of it for the caller.
+
+        The old code kept the last 400 characters. That threw away the front, which is
+        where the CLI names the field that was wrong — and when the reply is a list of
+        accepted values, the front is the only part that says which field they belong to.
+        """
+        head = message if len(message) <= ERROR_HEAD_CHARS else message[:ERROR_HEAD_CHARS]
+        try:
+            path = Path(settings.JOB_FILES_DIR) / ERROR_LOG_NAME
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(message, encoding="utf-8")
+        except OSError:
+            return head
+        return head if len(message) <= ERROR_HEAD_CHARS else f"{head} ... [full reply in {path}]"
+
+    @staticmethod
+    def _types_from_reply(message: str) -> List[str]:
+        """
+        The values a rejected enum listed, best first.
+
+        nano_banana_2 answers a wrong `type` with "Input should be 'x', 'y', 'z'".
+        That is the answer to the question, so it is read rather than guessed at again.
+        Kinds that do not end in _job come first: an uploaded file is not a job output.
+        """
+        marker = message.lower().find("input should be")
+        if marker < 0:
+            return []
+        values = ENUM_VALUE.findall(message[marker:])
+        return [v for v in values if not v.endswith("_job")] + \
+               [v for v in values if v.endswith("_job")]
 
     async def _run(self, args: List[str], timeout: float) -> Dict[str, Any]:
         """
@@ -340,7 +401,7 @@ class HiggsfieldService:
 
         if proc.returncode != 0:
             message = (proc.stderr or "").strip() or (proc.stdout or "").strip()
-            return {"error": f"higgsfield {' '.join(args[:2])} failed: {message[-400:]}"}
+            return {"error": f"higgsfield {' '.join(args[:2])} failed: {self._record(message)}"}
 
         return {"stdout": proc.stdout or ""}
 
