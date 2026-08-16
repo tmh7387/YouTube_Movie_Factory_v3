@@ -18,6 +18,7 @@ import yt_dlp
 from anthropic import AsyncAnthropic
 
 from app.core.config import settings
+from app.services.anthropic_response import response_text
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +223,7 @@ Rules:
             messages=[{"role": "user", "content": user_content}],
         )
 
-        raw = response.content[0].text.strip()
+        raw = response_text(response).strip()
 
         # Strip markdown fences if present
         if raw.startswith("```"):

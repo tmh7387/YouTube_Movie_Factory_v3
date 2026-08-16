@@ -17,6 +17,10 @@ VIDEO_STATUS_URL = f"{COMET_BASE}/videos"          # GET  — poll: /v1/videos/{
 TERMINAL_SUCCESS = {"succeeded", "completed", "done"}
 TERMINAL_FAILURE = {"failed", "error", "cancelled"}
 
+# gpt-image models accept only these three sizes. Routing one through CometAPI with the
+# usual 1280x720 gets the request refused.
+GPT_IMAGE_LANDSCAPE = "1536x1024"
+
 
 class MediaGenService:
     def __init__(self):
@@ -31,22 +35,40 @@ class MediaGenService:
         model: str = "doubao-seedream-4-0-250828",
         size: str = "1280x720",
     ) -> Dict[str, Any]:
-        """Generate a cinematic still using CometAPI (SeeDream/Flux models)."""
+        """
+        Generate a cinematic still through CometAPI.
+
+        CometAPI is a gateway in front of several vendors, so the request that suits
+        SeeDream is not the request that suits an OpenAI gpt-image model. Two things
+        differ and both fail hard:
+
+          - gpt-image rejects `response_format` outright, and returns base64 whatever
+            you ask for. SeeDream returns a URL only when asked.
+          - gpt-image accepts only 1024x1024, 1536x1024 and 1024x1536. A 1280x720
+            request is refused.
+
+        Returns {"url": ...} or {"b64_json": ...}; callers handle both.
+        """
+        is_gpt_image = "gpt-image" in model.lower() or "gpt_image" in model.lower()
+
+        payload: Dict[str, Any] = {
+            "model": model,
+            "prompt": prompt,
+            "n": 1,
+            "size": GPT_IMAGE_LANDSCAPE if is_gpt_image else size,
+        }
+        if not is_gpt_image:
+            payload["response_format"] = "url"
+
         try:
-            async with httpx.AsyncClient(timeout=120.0) as client:
+            async with httpx.AsyncClient(timeout=180.0) as client:
                 response = await client.post(
                     IMAGE_URL,
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
                     },
-                    json={
-                        "model": model,
-                        "prompt": prompt,
-                        "n": 1,
-                        "size": size,
-                        "response_format": "url",
-                    },
+                    json=payload,
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -56,15 +78,21 @@ class MediaGenService:
                 # crashed the caller instead of failing the scene.
                 items = data.get("data")
                 item = items[0] if isinstance(items, list) and items else None
-                if not isinstance(item, dict) or not item.get("url"):
+                if not isinstance(item, dict):
                     logger.error(f"Unexpected image response shape ({model}): {str(data)[:300]}")
-                    return {"error": f"No image URL in response: {str(data)[:200]}"}
+                    return {"error": f"No image in response: {str(data)[:200]}"}
 
-                return {
-                    "url": item["url"],
+                result = {
                     "model": model,
                     "revised_prompt": item.get("revised_prompt", prompt),
                 }
+                if item.get("url"):
+                    return {**result, "url": item["url"]}
+                if item.get("b64_json"):
+                    return {**result, "b64_json": item["b64_json"]}
+
+                logger.error(f"Image response carried neither url nor b64_json ({model}): {str(item)[:300]}")
+                return {"error": f"No image data in response: {str(item)[:200]}"}
         except httpx.HTTPStatusError as e:
             logger.error(f"Image generation HTTP error ({model}): {e.response.status_code} {e.response.text[:300]}")
             return {"error": f"HTTP {e.response.status_code}: {e.response.text[:200]}"}

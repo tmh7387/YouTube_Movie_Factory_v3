@@ -26,8 +26,13 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""                 # reference-anchored image generation
     # Model id for the OpenAI images endpoints. Settable because the gpt-image family
     # has moved names more than once; a wrong id here should be a config change, not a
-    # code change.
-    OPENAI_IMAGE_MODEL: str = "gpt-image-1"
+    # code change. gpt-image-2 confirmed working against a live account 2026-08-16.
+    OPENAI_IMAGE_MODEL: str = "gpt-image-2"
+    # low | medium | high | auto. Measured on a live account: "high" took 112s for one
+    # picture, so a 20-scene job would spend over half an hour on stills alone.
+    # "medium" is the default because scene stills are only the input to animation —
+    # the video model resamples them anyway.
+    OPENAI_IMAGE_QUALITY: str = "medium"
     STEM_SEPARATION_ENABLED: bool = False    # requires demucs + GPU
     UPSCALING_ENABLED: bool = False          # requires realesrgan binary
 

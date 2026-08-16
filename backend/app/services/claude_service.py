@@ -4,6 +4,7 @@ from typing import Dict, Any, Optional
 from anthropic import AsyncAnthropic
 from app.core.config import settings
 from app.services.skill_loader_service import skill_loader_service
+from app.services.anthropic_response import response_text
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +146,7 @@ Focus on creating "wow" visual prompts that are descriptive and cinematic."""
                 ]
             )
             
-            content = response.content[0].text.strip()
+            content = response_text(response).strip()
 
             # Strip markdown code fences Claude sometimes wraps around JSON
             if content.startswith("```"):

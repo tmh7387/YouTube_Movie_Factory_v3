@@ -691,17 +691,29 @@ async def _generate_scene_image(scene_id: str):
             scene.animation_status = "image_failed"
             scene.reference_inputs = {"mode": "text", "refs": [], "service": "cometapi"}
         else:
-            remote_url = res["url"]
-            scene.image_url = remote_url
             scene.reference_inputs = {"mode": "text", "refs": [], "service": "cometapi"}
 
-            # Download and cache locally to survive pre-signed URL expiry
-            ok = await _download_image(remote_url, local_path)
-            if ok:
-                scene.local_image_path = str(local_path)
-                logger.info(f"Scene {scene_id} image cached: {local_path}")
+            if res.get("b64_json"):
+                # gpt-image models return base64, never a URL, whichever gateway you
+                # reach them through. There is nothing to download.
+                saved = await gpt_image_service.save_b64_to_file(res["b64_json"], str(local_path))
+                if saved:
+                    scene.local_image_path = saved
+                    logger.info(f"Scene {scene_id} image written from base64: {saved}")
+                else:
+                    logger.error(f"Scene {scene_id}: could not write base64 image")
+                    scene.animation_status = "image_failed"
             else:
-                logger.warning(f"Scene {scene_id} image cache failed — will use remote URL")
+                remote_url = res["url"]
+                scene.image_url = remote_url
+
+                # Download and cache locally to survive pre-signed URL expiry
+                ok = await _download_image(remote_url, local_path)
+                if ok:
+                    scene.local_image_path = str(local_path)
+                    logger.info(f"Scene {scene_id} image cached: {local_path}")
+                else:
+                    logger.warning(f"Scene {scene_id} image cache failed — will use remote URL")
 
         await db.commit()
 
@@ -768,11 +780,18 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
                         model=regen_scene.image_model or settings.DEFAULT_IMAGE_MODEL,
                     )
                     if "error" not in regen_res:
-                        image_source = regen_res["url"]
-                        regen_scene.image_url = image_source
-                        # Cache locally for future use
-                        ok = await _download_image(image_source, local_path)
-                        if ok:
+                        cached = False
+                        if regen_res.get("b64_json"):
+                            # gpt-image models never return a URL.
+                            cached = bool(await gpt_image_service.save_b64_to_file(
+                                regen_res["b64_json"], str(local_path)
+                            ))
+                        else:
+                            image_source = regen_res["url"]
+                            regen_scene.image_url = image_source
+                            cached = await _download_image(image_source, local_path)
+
+                        if cached:
                             regen_scene.local_image_path = str(local_path)
                             img_bytes = local_path.read_bytes()
                             b64 = base64.b64encode(img_bytes).decode()

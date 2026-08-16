@@ -156,6 +156,7 @@ async def check_anthropic_text(_ctx: Context) -> Result:
     from anthropic import AsyncAnthropic
 
     from app.core.config import settings
+    from app.services.anthropic_response import response_text
 
     client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
     response = await client.messages.create(
@@ -163,7 +164,7 @@ async def check_anthropic_text(_ctx: Context) -> Result:
         max_tokens=16,
         messages=[{"role": "user", "content": "Reply with the single word: ready"}],
     )
-    return Result(OK, f"{settings.CLAUDE_FAST_MODEL} -> {response.content[0].text.strip()[:40]!r}")
+    return Result(OK, f"{settings.CLAUDE_FAST_MODEL} -> {response_text(response).strip()[:40]!r}")
 
 
 async def check_anthropic_vision(_ctx: Context) -> Result:
@@ -233,9 +234,12 @@ async def check_supabase(_ctx: Context) -> Result:
     if not (settings.SUPABASE_URL and settings.SUPABASE_SERVICE_KEY):
         return Result(SKIP, "SUPABASE_URL / SUPABASE_SERVICE_KEY not set")
 
-    payload = f"live_check {time.time()}".encode()
+    # A PNG, not a text file: the bucket restricts mime types, and images are what the
+    # reference-sheet feature actually uploads. Testing with text/plain proved nothing
+    # about the path the app uses and failed on a correctly configured bucket.
     upload = await supabase_storage.upload_file(
-        file_bytes=payload, filename="live_check.txt", folder="live_check"
+        file_bytes=_tiny_png(), filename=f"live_check_{int(time.time())}.png",
+        folder="live_check",
     )
     if "error" in upload:
         return Result(FAIL, upload["error"][:200])
@@ -259,9 +263,45 @@ async def check_cometapi_image(ctx: Context) -> Result:
         size="1280x720",
     )
     if "error" in result:
-        return Result(FAIL, result["error"][:200])
+        # "model_not_found" is a settings problem, not a broken integration. Say which
+        # models the key can actually reach, so the fix is one line in env/.env.
+        hint = ""
+        if "model_not_found" in result["error"] or "no available channel" in result["error"]:
+            available = await _cometapi_models()
+            hint = (
+                f" | DEFAULT_IMAGE_MODEL={settings.DEFAULT_IMAGE_MODEL} is not served to "
+                f"this key. Image models this key can reach: {available}"
+            )
+        return Result(FAIL, result["error"][:160] + hint)
     ctx.image_url = result["url"]
     return Result(OK, f"{settings.DEFAULT_IMAGE_MODEL} -> {result['url'][:70]}")
+
+
+async def _cometapi_models(limit: int = 12) -> str:
+    """Ask CometAPI which models this key can use. Best effort — never raises."""
+    import httpx
+
+    from app.core.config import settings
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(
+                "https://api.cometapi.com/v1/models",
+                headers={"Authorization": f"Bearer {settings.COMETAPI_API_KEY}"},
+            )
+        if response.status_code != 200:
+            return f"(could not list models: HTTP {response.status_code})"
+        ids = [m.get("id", "") for m in response.json().get("data", [])]
+    except Exception as e:
+        return f"(could not list models: {e})"
+
+    picture = [
+        i for i in ids
+        if any(k in i.lower() for k in ("image", "seedream", "flux", "banana", "dall"))
+    ]
+    shown = sorted(picture)[:limit]
+    more = f" (+{len(picture) - len(shown)} more)" if len(picture) > len(shown) else ""
+    return ", ".join(shown) + more if shown else f"none matched, {len(ids)} models total"
 
 
 async def check_openai_generate(_ctx: Context) -> Result:
