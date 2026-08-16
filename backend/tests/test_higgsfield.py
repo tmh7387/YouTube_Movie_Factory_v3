@@ -30,6 +30,12 @@ def cli(monkeypatch, tmp_path):
     def _install(stdout="", returncode=0, stderr=""):
         def _run(argv, **_kwargs):
             calls.append(list(argv))
+            # An array-style parameter uploads first; answer that leg with a media id
+            # so the test exercises the generate call it is actually about.
+            if "upload" in argv:
+                return SimpleNamespace(
+                    returncode=0, stdout=json.dumps({"id": "media-123"}), stderr=""
+                )
             return SimpleNamespace(returncode=returncode, stdout=stdout, stderr=stderr)
 
         monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
@@ -57,11 +63,17 @@ async def test_a_reference_uses_the_reference_model_and_passes_the_file(cli, ref
 
     assert result["url"] == "https://cdn.hf/x.png"
     assert result["character_consistent"] is True
-    argv = calls[0]
-    assert argv[1:4] == ["generate", "create", settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL]
-    assert IMAGE_REFERENCE_FLAGS[0] in argv
-    assert reference in argv
-    assert "--json" in argv and "--wait" in argv
+
+    # The file is uploaded first, then referenced by id — input_images is an array
+    # parameter and refuses a bare path.
+    upload_argv, generate_argv = calls[0], calls[-1]
+    assert upload_argv[1:3] == ["upload", "create"]
+    assert reference in upload_argv
+
+    assert generate_argv[1:4] == ["generate", "create", settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL]
+    flag = IMAGE_REFERENCE_FLAGS[0][0]
+    assert generate_argv[generate_argv.index(flag) + 1] == json.dumps(["media-123"])
+    assert "--json" in generate_argv and "--wait" in generate_argv
 
 
 async def test_no_reference_uses_the_plain_image_model(cli):
@@ -71,7 +83,7 @@ async def test_no_reference_uses_the_plain_image_model(cli):
 
     assert result["character_consistent"] is False
     assert calls[0][3] == settings.HIGGSFIELD_IMAGE_MODEL
-    assert not any(f in calls[0] for f in IMAGE_REFERENCE_FLAGS)
+    assert not any(f in calls[0] for f, _ in IMAGE_REFERENCE_FLAGS)
 
 
 async def test_references_are_capped(cli, tmp_path):
@@ -83,14 +95,17 @@ async def test_references_are_capped(cli, tmp_path):
     calls = cli(stdout=json.dumps({"url": "https://cdn.hf/x.png"}))
 
     await higgsfield_service.generate_image("a diver", reference_paths=paths)
-    assert calls[0].count(IMAGE_REFERENCE_FLAGS[0]) == settings.HIGGSFIELD_MAX_REFERENCES
+    generate_argv = calls[-1]
+    flag = IMAGE_REFERENCE_FLAGS[0][0]
+    sent = json.loads(generate_argv[generate_argv.index(flag) + 1])
+    assert len(sent) == settings.HIGGSFIELD_MAX_REFERENCES
 
 
 async def test_a_missing_reference_file_is_dropped_not_sent(cli):
     calls = cli(stdout=json.dumps({"url": "https://cdn.hf/x.png"}))
     result = await higgsfield_service.generate_image("a diver", reference_paths=["/nope.png"])
 
-    assert IMAGE_REFERENCE_FLAGS[0] not in calls[0]
+    assert IMAGE_REFERENCE_FLAGS[0][0] not in calls[0]
     assert result["character_consistent"] is False
 
 
@@ -327,8 +342,10 @@ async def test_a_rejected_media_flag_is_retried_with_the_next_name(monkeypatch, 
 
     def _run(argv, **_kwargs):
         calls.append(list(argv))
+        if "upload" in argv:
+            return SimpleNamespace(returncode=0, stdout=json.dumps({"id": "media-123"}), stderr="")
         # Reject everything except the second candidate.
-        if IMAGE_REFERENCE_FLAGS[1] in argv:
+        if IMAGE_REFERENCE_FLAGS[1][0] in argv:
             return SimpleNamespace(returncode=0, stdout='{"url": "https://cdn.hf/x.png"}', stderr="")
         return SimpleNamespace(
             returncode=1, stdout="",
@@ -344,7 +361,8 @@ async def test_a_rejected_media_flag_is_retried_with_the_next_name(monkeypatch, 
     result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
 
     assert result["url"] == "https://cdn.hf/x.png"
-    assert len(calls) == 2, "should have stopped at the first flag that worked"
+    generates = [c for c in calls if "generate" in c]
+    assert len(generates) == 2, "should have stopped at the first flag that worked"
     # And it is remembered, so the next scene does not repeat the search.
     assert higgsfield_service._media_flag[settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL] == \
         IMAGE_REFERENCE_FLAGS[1]
@@ -367,13 +385,16 @@ async def test_a_real_failure_is_not_retried_as_a_flag_problem(monkeypatch, refe
     result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
 
     assert "insufficient credits" in result["error"]
-    assert len(calls) == 1, "retried a failure that had nothing to do with the flag name"
+    generates = [c for c in calls if "generate" in c]
+    assert len(generates) == 1, "retried a failure that had nothing to do with the flag name"
 
 
 async def test_exhausting_every_flag_names_the_command_that_would_answer(
     monkeypatch, reference
 ):
-    def _run(_argv, **_kwargs):
+    def _run(argv, **_kwargs):
+        if "upload" in argv:
+            return SimpleNamespace(returncode=0, stdout=json.dumps({"id": "media-123"}), stderr="")
         return SimpleNamespace(returncode=1, stdout="", stderr="Error: Unknown params: image")
 
     monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
@@ -459,8 +480,75 @@ def test_the_leading_flags_match_what_the_models_actually_declare():
     """
     from app.services.higgsfield_service import START_IMAGE_FLAGS
 
-    assert IMAGE_REFERENCE_FLAGS[0] == "--input_images"
-    assert START_IMAGE_FLAGS[0] == "--start-image"
+    assert IMAGE_REFERENCE_FLAGS[0] == ("--input_images", "array")
+    assert START_IMAGE_FLAGS[0] == ("--start-image", "repeat")
     # The discredited name is kept as a fallback, never as the first try.
-    assert "--image-references" in IMAGE_REFERENCE_FLAGS
-    assert IMAGE_REFERENCE_FLAGS.index("--image-references") > 0
+    names = [flag for flag, _ in IMAGE_REFERENCE_FLAGS]
+    assert "--image-references" in names
+    assert names.index("--image-references") > 0
+
+
+# --- array-typed parameters --------------------------------------------------
+
+@pytest.mark.parametrize(
+    "payload, expected",
+    [
+        ({"id": "a"}, "a"),
+        ({"media_id": "b"}, "b"),
+        ({"data": {"id": "c"}}, "c"),
+        ([{"upload_id": "d"}], "d"),
+    ],
+)
+async def test_an_upload_reply_yields_a_media_id_whatever_the_key(
+    monkeypatch, payload, expected
+):
+    monkeypatch.setattr(
+        "app.services.higgsfield_service.subprocess.run",
+        lambda *_a, **_kw: SimpleNamespace(returncode=0, stdout=json.dumps(payload), stderr=""),
+    )
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+
+    result = await higgsfield_service.upload_media(__file__)
+    assert result["id"] == expected
+
+
+async def test_an_upload_reply_with_no_id_is_an_error(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.higgsfield_service.subprocess.run",
+        lambda *_a, **_kw: SimpleNamespace(
+            returncode=0, stdout=json.dumps({"status": "queued"}), stderr=""
+        ),
+    )
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+
+    result = await higgsfield_service.upload_media(__file__)
+    assert "error" in result
+
+
+async def test_a_wrong_value_type_moves_to_the_next_candidate(monkeypatch, reference):
+    """
+    "Invalid types: input_images should be array, got string" means the name was right
+    and the shape was wrong. That is a candidate failure, not a hard stop — same as an
+    unknown parameter name.
+    """
+    calls = []
+
+    def _run(argv, **_kwargs):
+        calls.append(list(argv))
+        if "upload" in argv:
+            return SimpleNamespace(returncode=0, stdout=json.dumps({"id": "m1"}), stderr="")
+        if IMAGE_REFERENCE_FLAGS[1][0] in argv:
+            return SimpleNamespace(returncode=0, stdout='{"url": "https://cdn.hf/x.png"}', stderr="")
+        return SimpleNamespace(
+            returncode=1, stdout="",
+            stderr="Error: Invalid types: input_images should be array, got string",
+        )
+
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
+    assert result["url"] == "https://cdn.hf/x.png"
