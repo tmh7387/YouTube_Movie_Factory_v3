@@ -28,21 +28,11 @@ def cli(monkeypatch, tmp_path):
     calls = []
 
     def _install(stdout="", returncode=0, stderr=""):
-        class _Process:
-            def __init__(self, out, err, code):
-                self._out, self._err = out, err
-                self.returncode = code
+        def _run(argv, **_kwargs):
+            calls.append(list(argv))
+            return SimpleNamespace(returncode=returncode, stdout=stdout, stderr=stderr)
 
-            async def communicate(self):
-                return self._out, self._err
-
-        async def _exec(binary, *args, **_kwargs):
-            calls.append([binary, *args])
-            return _Process(stdout.encode(), stderr.encode(), returncode)
-
-        monkeypatch.setattr(
-            "app.services.higgsfield_service.asyncio.create_subprocess_exec", _exec
-        )
+        monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
         monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
         monkeypatch.setattr(higgsfield_service, "_authenticated", True)
         monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
@@ -335,21 +325,17 @@ async def test_a_rejected_media_flag_is_retried_with_the_next_name(monkeypatch, 
     """
     calls = []
 
-    class _Process:
-        def __init__(self, out, code):
-            self._out, self.returncode = out, code
-
-        async def communicate(self):
-            return self._out, b"Error: Unknown params: image\nHint: Run: higgsfield model get x"
-
-    async def _exec(binary, *args, **_kwargs):
-        calls.append(list(args))
+    def _run(argv, **_kwargs):
+        calls.append(list(argv))
         # Reject everything except the second candidate.
-        if IMAGE_REFERENCE_FLAGS[1] in args:
-            return _Process(b'{"url": "https://cdn.hf/x.png"}', 0)
-        return _Process(b"", 1)
+        if IMAGE_REFERENCE_FLAGS[1] in argv:
+            return SimpleNamespace(returncode=0, stdout='{"url": "https://cdn.hf/x.png"}', stderr="")
+        return SimpleNamespace(
+            returncode=1, stdout="",
+            stderr="Error: Unknown params: image\nHint: Run: higgsfield model get x",
+        )
 
-    monkeypatch.setattr("app.services.higgsfield_service.asyncio.create_subprocess_exec", _exec)
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
     monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
     monkeypatch.setattr(higgsfield_service, "_authenticated", True)
     monkeypatch.setattr(higgsfield_service, "_media_flag", {})
@@ -368,17 +354,11 @@ async def test_a_real_failure_is_not_retried_as_a_flag_problem(monkeypatch, refe
     """Only "Unknown params" means the flag was wrong. Everything else stops at once."""
     calls = []
 
-    class _Process:
-        returncode = 1
+    def _run(argv, **_kwargs):
+        calls.append(list(argv))
+        return SimpleNamespace(returncode=1, stdout="", stderr="Error: insufficient credits")
 
-        async def communicate(self):
-            return b"", b"Error: insufficient credits"
-
-    async def _exec(_binary, *args, **_kwargs):
-        calls.append(list(args))
-        return _Process()
-
-    monkeypatch.setattr("app.services.higgsfield_service.asyncio.create_subprocess_exec", _exec)
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
     monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
     monkeypatch.setattr(higgsfield_service, "_authenticated", True)
     monkeypatch.setattr(higgsfield_service, "_media_flag", {})
@@ -393,16 +373,10 @@ async def test_a_real_failure_is_not_retried_as_a_flag_problem(monkeypatch, refe
 async def test_exhausting_every_flag_names_the_command_that_would_answer(
     monkeypatch, reference
 ):
-    class _Process:
-        returncode = 1
+    def _run(_argv, **_kwargs):
+        return SimpleNamespace(returncode=1, stdout="", stderr="Error: Unknown params: image")
 
-        async def communicate(self):
-            return b"", b"Error: Unknown params: image"
-
-    async def _exec(_binary, *_args, **_kwargs):
-        return _Process()
-
-    monkeypatch.setattr("app.services.higgsfield_service.asyncio.create_subprocess_exec", _exec)
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
     monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
     monkeypatch.setattr(higgsfield_service, "_authenticated", True)
     monkeypatch.setattr(higgsfield_service, "_media_flag", {})
@@ -410,3 +384,61 @@ async def test_exhausting_every_flag_names_the_command_that_would_answer(
 
     result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
     assert "higgsfield model get" in result["error"]
+
+
+# --- the Windows event loop trap ---------------------------------------------
+
+def test_the_cli_is_not_spawned_through_the_asyncio_subprocess_api(backend_root):
+    """
+    On Windows psycopg forces the Selector event loop, and asyncio subprocesses are
+    not supported there — they raise NotImplementedError. The app needs the database
+    and this CLI in the same loop, so the async subprocess API is unavailable to it.
+
+    Using it made every Higgsfield call fail on Windows, and the failure surfaced as
+    "not signed in" because is_authenticated could not tell the two apart. Blocking
+    subprocess.run in a thread works on every loop, and is what assembly_service and
+    qa_service already do.
+    """
+    import ast
+
+    source = (backend_root / "app" / "services" / "higgsfield_service.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+
+    # Walk the AST rather than grepping: the docstring explains the trap by name.
+    called = {
+        node.func.attr
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+    }
+    assert "create_subprocess_exec" not in called
+    assert "to_thread" in called
+
+
+async def test_a_launch_failure_is_reported_as_itself_not_as_signed_out(monkeypatch):
+    def _explode(*_a, **_kw):
+        raise NotImplementedError("subprocess not supported on this event loop")
+
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _explode)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", None)
+    monkeypatch.setattr(higgsfield_service, "_auth_error", "")
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    assert await higgsfield_service.is_authenticated() is False
+    assert "NotImplementedError" in higgsfield_service.last_auth_error
+    assert "not signed in" not in higgsfield_service.last_auth_error
+
+
+async def test_a_genuinely_signed_out_cli_still_says_so(monkeypatch):
+    from types import SimpleNamespace
+
+    monkeypatch.setattr(
+        "app.services.higgsfield_service.subprocess.run",
+        lambda *_a, **_kw: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", None)
+    monkeypatch.setattr(higgsfield_service, "_auth_error", "")
+
+    assert await higgsfield_service.is_authenticated() is False
+    assert higgsfield_service.last_auth_error == "no token stored"

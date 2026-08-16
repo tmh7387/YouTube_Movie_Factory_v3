@@ -274,7 +274,8 @@ async def check_higgsfield_cli(_ctx: Context) -> Result:
     if not higgsfield_service.binary():
         return Result(FAIL, "CLI not on PATH — run: npm i -g @higgsfield/cli")
     if not await higgsfield_service.is_authenticated():
-        return Result(FAIL, "not signed in — run: higgsfield auth login")
+        return Result(FAIL, higgsfield_service.last_auth_error or
+                      "not signed in — run: higgsfield auth login")
 
     problems = []
     for kind, configured in (
@@ -307,7 +308,7 @@ async def check_higgsfield_params(_ctx: Context) -> Result:
     from app.services.higgsfield_service import higgsfield_service
 
     if not await higgsfield_service.available():
-        return Result(SKIP, "Higgsfield unavailable")
+        return Result(SKIP, f"Higgsfield unavailable: {higgsfield_service.last_auth_error}")
 
     lines = []
     for model in (settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL, settings.HIGGSFIELD_VIDEO_MODEL):
@@ -327,7 +328,7 @@ async def check_higgsfield_image(ctx: Context) -> Result:
     from app.services.higgsfield_service import higgsfield_service
 
     if not await higgsfield_service.available():
-        return Result(SKIP, "Higgsfield unavailable — see the higgsfield_cli line")
+        return Result(SKIP, f"Higgsfield unavailable: {higgsfield_service.last_auth_error}")
 
     ref_dir = BACKEND_ROOT / "env" / "tmp" / "live_check_refs"
     ref_dir.mkdir(parents=True, exist_ok=True)

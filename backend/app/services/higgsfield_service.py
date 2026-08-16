@@ -22,6 +22,7 @@ import asyncio
 import json
 import logging
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -50,6 +51,7 @@ class HiggsfieldService:
     def __init__(self):
         self._binary: Optional[str] = None
         self._authenticated: Optional[bool] = None
+        self._auth_error: str = ""
         # model id -> the media flag that model accepted, learned on first use.
         self._media_flag: Dict[str, str] = {}
 
@@ -116,44 +118,81 @@ class HiggsfieldService:
         return self._binary or None
 
     async def _run(self, args: List[str], timeout: float) -> Dict[str, Any]:
-        """Run the CLI and return {"stdout": str} or {"error": str}."""
+        """
+        Run the CLI and return {"stdout": str} or {"error": str}.
+
+        Blocking subprocess.run in a worker thread, NOT asyncio.create_subprocess_exec.
+        On Windows those two requirements collide:
+
+          - psycopg refuses to run async on the Proactor loop, so app/main.py and
+            app/db/session.py select WindowsSelectorEventLoopPolicy.
+          - asyncio subprocesses are not supported on the Selector loop and raise
+            NotImplementedError.
+
+        The app needs the database and this CLI in the same loop, so the async
+        subprocess API is simply unavailable to it. Running the blocking call in a
+        thread works on every loop and matches assembly_service and qa_service, which
+        already shell out to ffmpeg this way.
+        """
         binary = self.binary()
         if not binary:
             return {"error": "higgsfield CLI not found on PATH (npm i -g @higgsfield/cli)"}
 
-        try:
-            process = await asyncio.create_subprocess_exec(
-                binary, *args,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+        def _invoke() -> subprocess.CompletedProcess:
+            return subprocess.run(
+                [binary, *args],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
             )
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
-        except asyncio.TimeoutError:
-            return {"error": f"higgsfield {args[0]} timed out after {timeout:.0f}s"}
-        except Exception as e:
-            return {"error": f"could not run higgsfield: {e}"}
 
-        if process.returncode != 0:
-            message = (stderr or b"").decode(errors="replace").strip()
+        try:
+            proc = await asyncio.to_thread(_invoke)
+        except subprocess.TimeoutExpired:
+            return {"error": f"higgsfield {' '.join(args[:2])} timed out after {timeout:.0f}s"}
+        except Exception as e:
+            return {"error": f"could not run higgsfield: {type(e).__name__}: {e}"}
+
+        if proc.returncode != 0:
+            message = (proc.stderr or "").strip() or (proc.stdout or "").strip()
             return {"error": f"higgsfield {' '.join(args[:2])} failed: {message[-400:]}"}
 
-        return {"stdout": (stdout or b"").decode(errors="replace")}
+        return {"stdout": proc.stdout or ""}
 
     async def is_authenticated(self) -> bool:
         """
         True when a token is stored. A human runs `higgsfield auth login` once per
         machine; the CLI refreshes the token itself from then on.
+
+        The reason for a failure is reported, not collapsed into "not signed in" —
+        that message sent someone re-running `auth login` when the real fault was the
+        event loop refusing to spawn a subprocess at all.
         """
         if self._authenticated is not None:
             return self._authenticated
+
         result = await self._run(["auth", "token"], timeout=30)
-        self._authenticated = "error" not in result and bool(result["stdout"].strip())
-        if not self._authenticated:
+        if "error" in result:
+            self._auth_error = result["error"]
+            self._authenticated = False
             logger.warning(
-                "Higgsfield is not signed in — run `higgsfield auth login` on this machine. "
-                "Generation will fall back to CometAPI."
+                f"Higgsfield unusable: {result['error']} — falling back to CometAPI"
+            )
+            return False
+
+        self._authenticated = bool(result["stdout"].strip())
+        if not self._authenticated:
+            self._auth_error = "no token stored"
+            logger.warning(
+                "Higgsfield is not signed in — run `higgsfield auth login` on this "
+                "machine. Generation will fall back to CometAPI."
             )
         return self._authenticated
+
+    @property
+    def last_auth_error(self) -> str:
+        """Why availability failed, for a caller that wants to report it."""
+        return getattr(self, "_auth_error", "") or ""
 
     async def available(self) -> bool:
         """Enabled by settings, installed, and signed in."""
