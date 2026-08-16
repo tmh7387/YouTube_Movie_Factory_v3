@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Plus, Lock, Trash2, Palette, Users, MapPin, Camera, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { BookOpen, Plus, Lock, Trash2, Palette, Users, MapPin, Camera, Sparkles, ChevronDown, ChevronUp, ImagePlus, X, ImageOff } from 'lucide-react';
 import { bibleService } from '../services/bible';
 import type { BibleCreatePayload } from '../services/bible';
 
@@ -30,6 +30,32 @@ export default function BibleWorkspace() {
     const deleteMutation = useMutation({
         mutationFn: (id: string) => bibleService.delete(id),
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['bibles'] }); setSelectedBibleId(null); },
+    });
+
+    // Reference sheets are the single biggest lever on character consistency: with one
+    // attached, scene generation anchors to the picture instead of re-describing the
+    // character in prose every shot.
+    const [refError, setRefError] = useState<string | null>(null);
+
+    const setReferenceMutation = useMutation({
+        mutationFn: ({ entity, index, file }: { entity: 'characters' | 'environments'; index: number; file: File }) =>
+            bibleService.setEntityReference(selectedBibleId!, entity, index, file),
+        onSuccess: () => { setRefError(null); queryClient.invalidateQueries({ queryKey: ['bibles'] }); },
+        onError: (e: any) => setRefError(e?.response?.data?.detail ?? 'Upload failed'),
+    });
+
+    const clearReferenceMutation = useMutation({
+        mutationFn: ({ entity, index }: { entity: 'characters' | 'environments'; index: number }) =>
+            bibleService.clearEntityReference(selectedBibleId!, entity, index),
+        onSuccess: () => { setRefError(null); queryClient.invalidateQueries({ queryKey: ['bibles'] }); },
+        onError: (e: any) => setRefError(e?.response?.data?.detail ?? 'Could not remove reference'),
+    });
+
+    const sharedSheetMutation = useMutation({
+        mutationFn: ({ sheetType, file }: { sheetType: 'character' | 'environment'; file: File }) =>
+            bibleService.uploadSharedSheet(selectedBibleId!, sheetType, file),
+        onSuccess: () => { setRefError(null); queryClient.invalidateQueries({ queryKey: ['bibles'] }); },
+        onError: (e: any) => setRefError(e?.response?.data?.detail ?? 'Upload failed'),
     });
 
     const toggleSection = (key: string) => setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
@@ -107,21 +133,45 @@ export default function BibleWorkspace() {
                             </div>
                         </div>
 
+                        {refError && (
+                            <div className="text-sm text-red-400 bg-red-900/20 border border-red-500/30 rounded-lg px-4 py-2">
+                                {refError}
+                            </div>
+                        )}
+
                         {/* Characters Section */}
                         <CollapsibleSection title="Characters" icon={Users} count={selectedBible.characters?.length || 0}
                             expanded={expandedSections.characters} onToggle={() => toggleSection('characters')}>
                             <div className="grid gap-3">
                                 {(selectedBible.characters || []).map((char, i) => (
-                                    <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-white/5">
-                                        <h4 className="font-semibold text-white">{char.name} <span className="text-xs text-gray-500 ml-2">{char.role}</span></h4>
-                                        <p className="text-sm text-gray-400 mt-1">{char.physical}</p>
-                                        {char.wardrobe && <p className="text-xs text-gray-500 mt-1">👗 {char.wardrobe}</p>}
-                                        {char.expressions && <p className="text-xs text-gray-500 mt-1">😊 {char.expressions.join(', ')}</p>}
+                                    <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-white/5 flex gap-4">
+                                        <ReferenceSlot
+                                            url={char.ref_sheet_url}
+                                            label={char.name}
+                                            locked={selectedBible.status === 'locked'}
+                                            busy={setReferenceMutation.isPending || clearReferenceMutation.isPending}
+                                            onSelect={file => setReferenceMutation.mutate({ entity: 'characters', index: i, file })}
+                                            onClear={() => clearReferenceMutation.mutate({ entity: 'characters', index: i })}
+                                        />
+                                        <div className="min-w-0">
+                                            <h4 className="font-semibold text-white">{char.name} <span className="text-xs text-gray-500 ml-2">{char.role}</span></h4>
+                                            <p className="text-sm text-gray-400 mt-1">{char.physical}</p>
+                                            {char.wardrobe && <p className="text-xs text-gray-500 mt-1">👗 {char.wardrobe}</p>}
+                                            {char.expressions && <p className="text-xs text-gray-500 mt-1">😊 {char.expressions.join(', ')}</p>}
+                                        </div>
                                     </div>
                                 ))}
                                 {(!selectedBible.characters || selectedBible.characters.length === 0) && (
                                     <p className="text-gray-600 text-sm">No characters defined yet</p>
                                 )}
+                                <SharedSheetPile
+                                    label="Fallback character sheets"
+                                    hint="Used for any character with no reference of its own."
+                                    urls={selectedBible.character_sheet_urls}
+                                    locked={selectedBible.status === 'locked'}
+                                    busy={sharedSheetMutation.isPending}
+                                    onSelect={file => sharedSheetMutation.mutate({ sheetType: 'character', file })}
+                                />
                             </div>
                         </CollapsibleSection>
 
@@ -130,16 +180,37 @@ export default function BibleWorkspace() {
                             expanded={expandedSections.environments} onToggle={() => toggleSection('environments')}>
                             <div className="grid gap-3">
                                 {(selectedBible.environments || []).map((env, i) => (
-                                    <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-white/5">
-                                        <h4 className="font-semibold text-white">{env.name}</h4>
-                                        <p className="text-sm text-gray-400 mt-1">{env.description}</p>
-                                        <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                                            {env.lighting && <span>💡 {env.lighting}</span>}
-                                            {env.mood && <span>🎭 {env.mood}</span>}
-                                            {env.time_of_day && <span>🕐 {env.time_of_day}</span>}
+                                    <div key={i} className="bg-gray-800/50 rounded-xl p-4 border border-white/5 flex gap-4">
+                                        <ReferenceSlot
+                                            url={env.ref_sheet_url}
+                                            label={env.name}
+                                            locked={selectedBible.status === 'locked'}
+                                            busy={setReferenceMutation.isPending || clearReferenceMutation.isPending}
+                                            onSelect={file => setReferenceMutation.mutate({ entity: 'environments', index: i, file })}
+                                            onClear={() => clearReferenceMutation.mutate({ entity: 'environments', index: i })}
+                                        />
+                                        <div className="min-w-0">
+                                            <h4 className="font-semibold text-white">{env.name}</h4>
+                                            <p className="text-sm text-gray-400 mt-1">{env.description}</p>
+                                            <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                                                {env.lighting && <span>💡 {env.lighting}</span>}
+                                                {env.mood && <span>🎭 {env.mood}</span>}
+                                                {env.time_of_day && <span>🕐 {env.time_of_day}</span>}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
+                                {(!selectedBible.environments || selectedBible.environments.length === 0) && (
+                                    <p className="text-gray-600 text-sm">No environments defined yet</p>
+                                )}
+                                <SharedSheetPile
+                                    label="Fallback environment sheets"
+                                    hint="Used for any environment with no reference of its own."
+                                    urls={selectedBible.environment_sheet_urls}
+                                    locked={selectedBible.status === 'locked'}
+                                    busy={sharedSheetMutation.isPending}
+                                    onSelect={file => sharedSheetMutation.mutate({ sheetType: 'environment', file })}
+                                />
                             </div>
                         </CollapsibleSection>
 
@@ -246,6 +317,131 @@ function CollapsibleSection({ title, icon: Icon, count, expanded, onToggle, chil
                 {expanded ? <ChevronUp className="w-4 h-4 text-gray-500" /> : <ChevronDown className="w-4 h-4 text-gray-500" />}
             </button>
             {expanded && <div className="px-5 pb-4">{children}</div>}
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Reference sheet controls
+// ---------------------------------------------------------------------------
+
+/**
+ * The reference picture for one character or environment.
+ *
+ * Scene generation matches a scene's tagged character against these entries by name
+ * and posts the resolved picture to the image model. Without one it falls back to
+ * describing the character in words each shot, which is what makes faces drift.
+ */
+function ReferenceSlot({ url, label, locked, busy, onSelect, onClear }: {
+    url?: string | null;
+    label: string;
+    locked: boolean;
+    busy: boolean;
+    onSelect: (file: File) => void;
+    onClear: () => void;
+}) {
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    return (
+        <div className="shrink-0 w-24">
+            <input
+                ref={inputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) onSelect(file);
+                    e.target.value = '';
+                }}
+            />
+            <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-white/10 bg-black/40">
+                {url ? (
+                    <img src={url} alt={`${label} reference`} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-1 text-gray-600">
+                        <ImageOff className="w-5 h-5" />
+                        <span className="text-[9px] uppercase tracking-wide">No reference</span>
+                    </div>
+                )}
+                {url && !locked && (
+                    <button
+                        onClick={onClear}
+                        disabled={busy}
+                        title="Remove reference"
+                        className="absolute top-1 right-1 p-0.5 rounded bg-black/70 hover:bg-red-600/80 text-white disabled:opacity-40"
+                    >
+                        <X className="w-3 h-3" />
+                    </button>
+                )}
+            </div>
+            {!locked && (
+                <button
+                    onClick={() => inputRef.current?.click()}
+                    disabled={busy}
+                    className="mt-1.5 w-full flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/30 text-blue-300 transition-colors disabled:opacity-40"
+                >
+                    <ImagePlus className="w-3 h-3" /> {url ? 'Replace' : 'Add'}
+                </button>
+            )}
+        </div>
+    );
+}
+
+/**
+ * The bible-level pile, used only for entities with no reference of their own. Kept
+ * visible because it is a real fallback — a scene can end up anchored to one of these
+ * rather than to its own character's sheet.
+ */
+function SharedSheetPile({ label, hint, urls, locked, busy, onSelect }: {
+    label: string;
+    hint: string;
+    urls?: string[];
+    locked: boolean;
+    busy: boolean;
+    onSelect: (file: File) => void;
+}) {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const items = urls ?? [];
+
+    return (
+        <div className="border border-dashed border-white/10 rounded-xl p-3">
+            <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                    <p className="text-xs font-semibold text-gray-400">{label} <span className="text-gray-600">({items.length})</span></p>
+                    <p className="text-[11px] text-gray-600 mt-0.5">{hint}</p>
+                </div>
+                {!locked && (
+                    <>
+                        <input
+                            ref={inputRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (file) onSelect(file);
+                                e.target.value = '';
+                            }}
+                        />
+                        <button
+                            onClick={() => inputRef.current?.click()}
+                            disabled={busy}
+                            className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-800 hover:bg-gray-700 border border-white/10 text-gray-300 transition-colors disabled:opacity-40"
+                        >
+                            <ImagePlus className="w-3 h-3" /> Add
+                        </button>
+                    </>
+                )}
+            </div>
+            {items.length > 0 && (
+                <div className="flex gap-2 mt-2 overflow-x-auto">
+                    {items.map((u, i) => (
+                        <img key={i} src={u} alt={`${label} ${i + 1}`}
+                            className="w-14 h-14 rounded object-cover border border-white/10 shrink-0" />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

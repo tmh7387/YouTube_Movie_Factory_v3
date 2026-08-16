@@ -55,3 +55,66 @@ def repo_root() -> Path:
 @pytest.fixture(scope="session")
 def backend_root() -> Path:
     return BACKEND_ROOT
+
+
+# ---------------------------------------------------------------------------
+# Real-database fixtures, shared by every test marked `smoke`.
+#
+# The cluster is session-scoped because migrations are slow; `clean_database` truncates
+# between tests so each one starts from an empty schema. `api` boots the real FastAPI
+# app over an in-process transport — modules that also need the vendors stubbed
+# override `api` locally.
+# ---------------------------------------------------------------------------
+
+@pytest.fixture(scope="session")
+def smoke_database(backend_root):
+    from scratch_postgres import (
+        ScratchPostgres,
+        _drop_privileges_to,
+        apply_baseline,
+        run_migrations,
+    )
+
+    cluster = ScratchPostgres()
+    if not cluster.available:
+        pytest.skip("postgres binaries not found — cannot run against a real database")
+    try:
+        url = cluster.start()
+    except Exception as exc:  # pragma: no cover - environment dependent
+        cluster.stop()
+        pytest.skip(f"could not start a scratch postgres cluster: {exc}")
+
+    try:
+        # The chain cannot build a database from nothing — see schema_baseline.sql.
+        apply_baseline(backend_root, _drop_privileges_to())
+        run_migrations(backend_root, url)
+        yield url
+    finally:
+        cluster.stop()
+
+
+@pytest.fixture
+async def clean_database(smoke_database):
+    from sqlalchemy import text
+
+    from app.db.session import AsyncSessionLocal
+
+    async with AsyncSessionLocal() as session:
+        await session.execute(text(
+            "TRUNCATE generation_outcome, production_scenes, production_tracks, "
+            "production_jobs, curation_jobs, pre_production_bibles, research_videos, "
+            "research_jobs RESTART IDENTITY CASCADE"
+        ))
+        await session.commit()
+    return smoke_database
+
+
+@pytest.fixture
+async def api(clean_database):
+    import httpx
+
+    from app.main import app
+
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://smoke") as client:
+        yield client

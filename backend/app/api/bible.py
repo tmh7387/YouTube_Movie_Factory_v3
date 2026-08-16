@@ -293,6 +293,137 @@ async def upload_reference_sheet(
     return {"public_url": url, "sheet_type": sheet_type}
 
 
+# ── Per-entity reference sheets ────────────────────────────────────
+#
+# The bible-level character_sheet_urls / environment_sheet_urls lists are a fallback
+# pile: every scene that resolves no per-entity sheet falls back to them, so a scene
+# tagged with one character can end up anchored to a different one's sheet.
+# ProductionScene generation prefers the entity's own ref_sheet_url, which is what
+# these endpoints set. Until now nothing wrote that field.
+
+ENTITY_FIELDS = {
+    "characters": "characters",
+    "environments": "environments",
+}
+
+
+def _entity_list(bible: PreProductionBible, entity: str) -> list:
+    if entity not in ENTITY_FIELDS:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Unknown entity '{entity}'. Use 'characters' or 'environments'.",
+        )
+    return list(getattr(bible, ENTITY_FIELDS[entity]) or [])
+
+
+def _write_entity_list(bible: PreProductionBible, entity: str, entries: list) -> None:
+    # Reassign rather than mutate in place: SQLAlchemy does not see an in-place edit
+    # of a JSONB list, so the change would be silently dropped on commit.
+    setattr(bible, ENTITY_FIELDS[entity], entries)
+
+
+async def _load_editable_bible(bible_id: UUID, db: AsyncSession) -> PreProductionBible:
+    result = await db.execute(
+        select(PreProductionBible).where(PreProductionBible.id == bible_id)
+    )
+    bible = result.scalar_one_or_none()
+    if not bible:
+        raise HTTPException(status_code=404, detail="Bible not found")
+    if bible.status == "locked":
+        raise HTTPException(
+            status_code=409,
+            detail="Bible is locked. Reference sheets cannot be changed after locking.",
+        )
+    return bible
+
+
+@router.post("/{bible_id}/{entity}/{index}/reference", response_model=BibleResponse)
+async def set_entity_reference_sheet(
+    bible_id: UUID,
+    entity: str,
+    index: int,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Attach a reference image to one specific character or environment.
+
+    This is what makes reference-anchored generation actually fire: scene image
+    generation matches ProductionScene.bible_character against these entries by name
+    and posts the resolved sheet to the image model, instead of re-describing the
+    character in prose every scene.
+    """
+    bible = await _load_editable_bible(bible_id, db)
+    entries = _entity_list(bible, entity)
+
+    if not 0 <= index < len(entries):
+        raise HTTPException(
+            status_code=404,
+            detail=f"No {entity[:-1]} at index {index} — bible has {len(entries)}.",
+        )
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=422, detail="Uploaded file is empty")
+
+    upload_result = await supabase_storage.upload_file(
+        file_bytes=file_bytes,
+        filename=file.filename or "reference.png",
+        folder=f"bibles/{bible_id}/{entity}/{index}",
+    )
+    if "error" in upload_result:
+        raise HTTPException(status_code=502, detail=upload_result["error"])
+
+    entry = dict(entries[index])
+    entry["ref_sheet_url"] = upload_result["public_url"]
+    entries[index] = entry
+    _write_entity_list(bible, entity, entries)
+
+    log = list(bible.process_log or [])
+    log.append({
+        "timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat(),
+        "agent": "user",
+        "action": f"Reference sheet attached to {entry.get('name', entity[:-1])}",
+        "outcome": file.filename or "",
+    })
+    bible.process_log = log
+
+    await db.commit()
+    await db.refresh(bible)
+    logger.info(
+        f"Reference sheet set on bible {bible_id} {entity}[{index}] "
+        f"({entry.get('name', '?')}): {upload_result['public_url']}"
+    )
+    return bible
+
+
+@router.delete("/{bible_id}/{entity}/{index}/reference", response_model=BibleResponse)
+async def clear_entity_reference_sheet(
+    bible_id: UUID,
+    entity: str,
+    index: int,
+    db: AsyncSession = Depends(get_db),
+):
+    """Detach the reference image. The stored file is left in place."""
+    bible = await _load_editable_bible(bible_id, db)
+    entries = _entity_list(bible, entity)
+
+    if not 0 <= index < len(entries):
+        raise HTTPException(
+            status_code=404,
+            detail=f"No {entity[:-1]} at index {index} — bible has {len(entries)}.",
+        )
+
+    entry = dict(entries[index])
+    entry["ref_sheet_url"] = None
+    entries[index] = entry
+    _write_entity_list(bible, entity, entries)
+
+    await db.commit()
+    await db.refresh(bible)
+    return bible
+
+
 # ── Inspiration Extraction Endpoints ───────────────────────────────
 
 @router.post("/extract-inspiration")

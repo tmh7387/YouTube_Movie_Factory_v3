@@ -25,12 +25,6 @@ from sqlalchemy import select, text
 import tasks.production as production
 from app.db.session import AsyncSessionLocal
 from app.models import GenerationOutcome
-from scratch_postgres import (
-    ScratchPostgres,
-    _drop_privileges_to,
-    apply_baseline,
-    run_migrations,
-)
 
 pytestmark = pytest.mark.smoke
 
@@ -112,39 +106,6 @@ class _FakeAnthropic:
 
 
 # --- infrastructure ----------------------------------------------------------
-
-@pytest.fixture(scope="session")
-def smoke_database(backend_root):
-    cluster = ScratchPostgres()
-    if not cluster.available:
-        pytest.skip("postgres binaries not found — cannot run the smoke gate")
-    try:
-        url = cluster.start()
-    except Exception as exc:  # pragma: no cover - environment dependent
-        cluster.stop()
-        pytest.skip(f"could not start a scratch postgres cluster: {exc}")
-
-    try:
-        # The chain cannot build a database from nothing — see schema_baseline.sql.
-        apply_baseline(backend_root, _drop_privileges_to())
-        run_migrations(backend_root, url)
-        yield url
-    finally:
-        cluster.stop()
-
-
-@pytest.fixture
-async def clean_database(smoke_database):
-    """Truncate between runs so each smoke test starts from an empty schema."""
-    async with AsyncSessionLocal() as session:
-        await session.execute(text(
-            "TRUNCATE generation_outcome, production_scenes, production_tracks, "
-            "production_jobs, curation_jobs, pre_production_bibles, research_videos, "
-            "research_jobs RESTART IDENTITY CASCADE"
-        ))
-        await session.commit()
-    return smoke_database
-
 
 def _click_track(path: Path, bpm=120.0, seconds=24.0, sr=22050):
     interval = 60.0 / bpm
