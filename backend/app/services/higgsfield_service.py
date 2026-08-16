@@ -126,8 +126,10 @@ class HiggsfieldService:
         self._binary: Optional[str] = None
         self._authenticated: Optional[bool] = None
         self._auth_error: str = ""
-        # model id -> the (flag, style) pair that model accepted, learned on first use.
+        # model id -> the (flag, style, shape) that model accepted, learned on first use.
         self._media_flag: Dict[str, tuple] = {}
+        # model id -> the parameter names it declares. One CLI call per model, cached.
+        self._params: Dict[str, set] = {}
 
     @staticmethod
     def _extract_id(payload: Any) -> Optional[str]:
@@ -594,8 +596,21 @@ class HiggsfieldService:
                 "--wait-timeout", settings.HIGGSFIELD_WAIT_TIMEOUT]
         if prompt:
             args += ["--prompt", prompt]
-        if duration:
+
+        declared = await self.declared_params(chosen)
+
+        def takes(name: str) -> bool:
+            """True when the model declares this parameter, or we could not find out."""
+            return not declared or name in declared
+
+        if duration and takes("duration"):
             args += ["--duration", str(duration)]
+        # seedance_2_5 requires these two and says so only after a failed call. Sending
+        # them to a model that has no such parameters would be a different failure, so
+        # they go out only when the model declares both.
+        if takes("width") and takes("height"):
+            args += ["--width", str(settings.HIGGSFIELD_VIDEO_WIDTH),
+                     "--height", str(settings.HIGGSFIELD_VIDEO_HEIGHT)]
 
         result = await self._run_with_media_flag(
             chosen, args, [str(source.resolve())], START_IMAGE_FLAGS,
@@ -621,6 +636,40 @@ class HiggsfieldService:
         if not isinstance(payload, list):
             return {"error": f"unexpected model list shape: {str(payload)[:200]}"}
         return {"models": [m.get("job_set_type") for m in payload if isinstance(m, dict)]}
+
+    async def declared_params(self, model: str) -> set:
+        """
+        The parameter names a model declares, or an empty set when we could not ask.
+
+        Models disagree about what is mandatory. seedance_2_5 refuses a request with no
+        width and height ("Missing required params: height, width"); nano_banana_2 has
+        no such parameters and would answer "Unknown params: width" if sent them. So
+        optional arguments are offered only to models that declare them, and an empty
+        set means "we do not know" — the caller sends its arguments and lets the CLI
+        judge, which is the old behaviour.
+        """
+        if model in self._params:
+            return self._params[model]
+
+        described = await self.describe_model(model)
+        parsed = described.get("parsed")
+        names: set = set()
+        if isinstance(parsed, dict):
+            params = parsed.get("params")
+            if isinstance(params, dict):
+                names = set(params.keys())
+            elif isinstance(params, list):
+                names = {
+                    item.get("name")
+                    for item in params
+                    if isinstance(item, dict) and item.get("name")
+                }
+
+        # Only a real answer is cached. A failed lookup is retried next time rather than
+        # remembered as "this model has no parameters".
+        if names:
+            self._params[model] = names
+        return names
 
     async def describe_model(self, model: str) -> Dict[str, Any]:
         """`higgsfield model get <model>` — the definitive parameter list for a model."""

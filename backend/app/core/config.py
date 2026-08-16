@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     # Reference-anchored stills. Nano Banana Pro is the reference/character model.
     HIGGSFIELD_REFERENCE_IMAGE_MODEL: str = "nano_banana_2"
     HIGGSFIELD_VIDEO_MODEL: str = "seedance_2_5"
+    # seedance_2_5 declares width and height as required and refuses without them
+    # ("Missing required params: height, width"). 1280x720 is 16:9, the aspect the
+    # assembly step expects. They are sent only to models that declare them.
+    HIGGSFIELD_VIDEO_WIDTH: int = 1280
+    HIGGSFIELD_VIDEO_HEIGHT: int = 720
     HIGGSFIELD_MAX_REFERENCES: int = 3
     # Passed to the CLI's --wait-timeout. Its own format, e.g. "20m".
     HIGGSFIELD_WAIT_TIMEOUT: str = "20m"

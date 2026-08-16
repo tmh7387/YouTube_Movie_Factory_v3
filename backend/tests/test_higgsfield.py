@@ -42,6 +42,7 @@ def cli(monkeypatch, tmp_path):
         monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
         monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
         monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+        monkeypatch.setattr(higgsfield_service, "_params", {})
         monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
         return calls
 
@@ -119,7 +120,9 @@ async def test_animation_sends_the_local_start_frame_and_duration(cli, reference
     result = await higgsfield_service.animate_image(reference, prompt="slow dolly", duration=6)
 
     assert result["url"] == "https://cdn.hf/clip.mp4"
-    argv = calls[0]
+    # Not calls[0]: the model's parameter list is read first, to decide which
+    # optional arguments this model will accept.
+    argv = next(c for c in calls if "generate" in c)
     assert argv[3] == settings.HIGGSFIELD_VIDEO_MODEL
     assert "--start-image" in argv
     assert argv[argv.index("--duration") + 1] == "6"
@@ -334,6 +337,105 @@ def test_the_configured_model_ids_are_higgsfield_style(backend_root):
 
 
 # --- the media flag differs per model ----------------------------------------
+
+async def test_animation_sends_the_size_a_model_that_declares_it_requires(monkeypatch, reference):
+    """
+    seedance_2_5 answers "Missing required params: height, width" and says so only after
+    a failed call. Its parameter list is read once and the size is sent.
+    """
+    calls = []
+
+    def _run(argv, **_kwargs):
+        calls.append(list(argv))
+        if argv[1:3] == ["model", "get"]:
+            return SimpleNamespace(
+                returncode=0,
+                stdout=json.dumps({"params": {
+                    "prompt": {}, "duration": {}, "medias": {}, "width": {}, "height": {},
+                }}),
+                stderr="",
+            )
+        return SimpleNamespace(returncode=0, stdout='{"url": "https://cdn.hf/c.mp4"}', stderr="")
+
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(higgsfield_service, "_params", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+    monkeypatch.setattr(settings, "HIGGSFIELD_VIDEO_WIDTH", 1280)
+    monkeypatch.setattr(settings, "HIGGSFIELD_VIDEO_HEIGHT", 720)
+
+    result = await higgsfield_service.animate_image(reference, prompt="slow dolly", duration=6)
+
+    assert result["url"] == "https://cdn.hf/c.mp4"
+    argv = [c for c in calls if "generate" in c][0]
+    assert argv[argv.index("--width") + 1] == "1280"
+    assert argv[argv.index("--height") + 1] == "720"
+
+    # The parameter list is read once, not once per scene.
+    await higgsfield_service.animate_image(reference, prompt="slow dolly", duration=6)
+    assert sum(1 for c in calls if c[1:3] == ["model", "get"]) == 1
+
+
+async def test_animation_withholds_size_from_a_model_that_declares_none(monkeypatch, reference):
+    """
+    The other half of the same rule. A model with no width parameter answers "Unknown
+    params: width" — sending it unconditionally trades one failure for another.
+    """
+    calls = []
+
+    def _run(argv, **_kwargs):
+        calls.append(list(argv))
+        if argv[1:3] == ["model", "get"]:
+            return SimpleNamespace(
+                returncode=0,
+                stdout=json.dumps({"params": [{"name": "prompt"}, {"name": "medias"}]}),
+                stderr="",
+            )
+        return SimpleNamespace(returncode=0, stdout='{"url": "https://cdn.hf/c.mp4"}', stderr="")
+
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(higgsfield_service, "_params", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    await higgsfield_service.animate_image(reference, prompt="slow dolly", duration=6)
+
+    argv = [c for c in calls if "generate" in c][0]
+    assert "--width" not in argv and "--height" not in argv
+    assert "--duration" not in argv, "duration is not declared either"
+
+
+async def test_an_unreadable_parameter_list_does_not_silence_the_arguments(monkeypatch, reference):
+    """
+    "We could not ask" must not be read as "this model has nothing". Failing to describe
+    a model would otherwise strip every optional argument off every call it makes.
+    """
+    calls = []
+
+    def _run(argv, **_kwargs):
+        calls.append(list(argv))
+        if argv[1:3] == ["model", "get"]:
+            return SimpleNamespace(returncode=1, stdout="", stderr="Error: service unavailable")
+        return SimpleNamespace(returncode=0, stdout='{"url": "https://cdn.hf/c.mp4"}', stderr="")
+
+    monkeypatch.setattr("app.services.higgsfield_service.subprocess.run", _run)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(higgsfield_service, "_params", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    await higgsfield_service.animate_image(reference, prompt="slow dolly", duration=6)
+
+    argv = [c for c in calls if "generate" in c][0]
+    assert "--width" in argv and "--duration" in argv
+    # And the failed lookup is not cached as an answer.
+    assert higgsfield_service._params == {}
+
 
 async def test_a_rejected_media_flag_is_retried_with_the_next_name(monkeypatch, reference):
     """
