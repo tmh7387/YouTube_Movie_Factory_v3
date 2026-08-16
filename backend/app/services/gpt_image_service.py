@@ -81,7 +81,7 @@ class GPTImageService:
             "prompt": prompt,
             "n": 1,
             "size": size,
-            "quality": "high",
+            "quality": settings.OPENAI_IMAGE_QUALITY,
             # No response_format: gpt-image models reject it and return base64 anyway.
         }
 
@@ -152,6 +152,7 @@ class GPTImageService:
                     ("prompt", (None, enriched_prompt)),
                     ("n", (None, "1")),
                     ("size", (None, size)),
+                    ("quality", (None, settings.OPENAI_IMAGE_QUALITY)),
                 ]
                 for ref in valid_refs:
                     handle = stack.enter_context(open(ref, "rb"))

@@ -9,6 +9,7 @@ from anthropic import AsyncAnthropic
 
 from app.core.config import settings
 from app.schemas.research import ResearchBriefResponse
+from app.services.anthropic_response import response_text
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +161,6 @@ async def generate_research_brief(
         messages=[{"role": "user", "content": content}],
     )
 
-    raw_json = response.content[0].text
+    raw_json = response_text(response)
     brief_data = json.loads(raw_json)
     return ResearchBriefResponse(**brief_data)

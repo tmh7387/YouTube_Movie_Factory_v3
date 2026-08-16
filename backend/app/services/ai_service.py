@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any, List, Optional
 from anthropic import AsyncAnthropic
 from app.core.config import settings
+from app.services.anthropic_response import response_text
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +227,7 @@ class AIService:
                 messages=[{"role": "user", "content": user_prompt}],
             )
             return {
-                "raw_analysis": response.content[0].text,
+                "raw_analysis": response_text(response),
                 "model": response.model,
             }
         except Exception as e:
@@ -277,13 +278,14 @@ class AIService:
                 system=VIDEO_SCENE_DECONSTRUCTOR_PROMPT,
                 messages=[{"role": "user", "content": user_message}],
             )
+            analysis = response_text(response)
             logger.info(
                 f"Single video analysis complete: "
-                f"{len(response.content[0].text)} chars, "
+                f"{len(analysis)} chars, "
                 f"model={response.model}"
             )
             return {
-                "raw_analysis": response.content[0].text,
+                "raw_analysis": analysis,
                 "model": response.model,
                 "analysis_type": "video_scene_deconstruction",
             }
@@ -317,12 +319,13 @@ class AIService:
                 system=GENERAL_CONTENT_ANALYSIS_PROMPT,
                 messages=[{"role": "user", "content": user_message}],
             )
+            analysis = response_text(response)
             logger.info(
                 f"Content analysis complete ({source_type}): "
-                f"{len(response.content[0].text)} chars"
+                f"{len(analysis)} chars"
             )
             return {
-                "raw_analysis": response.content[0].text,
+                "raw_analysis": analysis,
                 "model": response.model,
                 "analysis_type": "general_content",
             }
@@ -375,7 +378,7 @@ class AIService:
                 messages=[{"role": "user", "content": user_message}],
             )
 
-            raw = response.content[0].text.strip()
+            raw = response_text(response).strip()
 
             # Strip markdown fences if present
             if raw.startswith("```"):
