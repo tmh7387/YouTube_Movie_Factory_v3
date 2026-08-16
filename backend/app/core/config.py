@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     DEFAULT_VIDEO_MODEL: str = "kling_video"
     SEEDANCE_VIDEO_MODEL: str = "doubao-seedance-2-0"
     
+    # --- QA gate on generated clips ---
+    QA_ENABLED: bool = True
+    # A character_match or style_match below this marks the scene a failure.
+    QA_FAIL_THRESHOLD: float = 0.6
+
     # Local storage for intermediate generation files
     JOB_FILES_DIR: str = "./jobs"
     

@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import json
 import logging
 import os
 from datetime import datetime, timezone
@@ -18,6 +19,7 @@ from app.services.audio_analysis import (
     audio_analysis_service,
 )
 from app.services.gpt_image_service import gpt_image_service
+from app.services.qa_service import qa_service
 from app.services.skill_loader_service import skill_loader_service
 from app.core.config import settings
 from app.services.model_router import recommend_model
@@ -91,6 +93,18 @@ async def _log(job_id: str, message: str):
                 .values(progress_log=current)
             )
             await db.commit()
+
+
+async def _count_qa_failures(job_id: str) -> int:
+    """Scenes this job failed QA on. Only "fail" counts — "skipped" is not a failure."""
+    async with async_session_factory() as db:
+        result = await db.execute(
+            select(ProductionScene).where(
+                ProductionScene.job_id == job_id,
+                ProductionScene.qa_status == "fail",
+            )
+        )
+        return len(result.scalars().all())
 
 
 async def _update_status(job_id: str, status: str, error: Optional[str] = None):
@@ -217,6 +231,17 @@ async def run_production_pipeline(
         await _animate_scene(sid, audio_reference_url=seedance_audio_ref)
         await _log(job_id, f"  Animation {i}/{len(scene_ids)} done")
     await _log(job_id, "Phase 3 done")
+
+    # Phase 3.5: QA gate — a failed clip stops the job rather than being assembled in.
+    failed = await _count_qa_failures(job_id)
+    if failed:
+        await _update_status(job_id, "qa_review")
+        await _log(
+            job_id,
+            f"⏸ QA gate: {failed} scene(s) failed review — job held at qa_review. "
+            f"POST /api/production/{job_id}/assemble-anyway to override.",
+        )
+        return
 
     # Phase 4: ffmpeg assembly
     await _update_status(job_id, "assembling")
@@ -651,6 +676,34 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
             logger.info(f"Scene {scene_id} animated: {res.get('url', '')}")
 
         await db.commit()
+
+        if scene.animation_status == "completed":
+            await _qa_review_scene(db, scene)
+            await db.commit()
+
+
+async def _qa_review_scene(db, scene: ProductionScene) -> str:
+    """
+    Judge one finished clip and record the verdict on the scene.
+
+    qa_status is always written — pass, fail or skipped — so no scene ever leaves the
+    pipeline with an unknown QA state. qa_notes carries the serialized verdict.
+    """
+    bible = await _load_scene_bible(db, scene)
+    character = _match_bible_entry(bible.characters, scene.bible_character) if bible else None
+    style_lock = (bible.style_lock if bible else None) or {}
+
+    result = await qa_service.review_scene(
+        video_source=scene.local_video_path,
+        image_prompt=scene.image_prompt or "",
+        style_lock=style_lock,
+        character=character,
+    )
+
+    scene.qa_status = result["status"]
+    scene.qa_notes = json.dumps(result.get("verdict") or {})
+    logger.info(f"Scene {scene.id} QA: {result['status']}")
+    return result["status"]
 
 
 # ---------------------------------------------------------------------------

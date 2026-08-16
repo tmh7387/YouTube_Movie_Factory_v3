@@ -287,26 +287,45 @@ async def retry_failed_scenes(
 # Trigger assembly
 # ---------------------------------------------------------------------------
 
+@router.post("/{job_id}/assemble-anyway")
 @router.post("/{job_id}/assemble")
-async def trigger_assembly(
+async def assemble_anyway(
     job_id: uuid.UUID,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Trigger the ffmpeg assembly phase for a job. All scenes should be 'completed'
-    before calling this, but it will proceed with whatever videos are available.
+    Assemble the job's clips regardless of QA verdicts — the explicit human override.
+
+    The pipeline stops at status 'qa_review' when any scene failed QA rather than
+    assembling a known-bad clip into the cut. This endpoint is how a human says "I
+    have looked at it, assemble anyway". It proceeds with whatever clips exist.
+
+    /assemble is kept as an alias so existing callers keep working; both paths run
+    the same override.
     """
     result = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Production job not found")
 
+    qa_res = await db.execute(
+        select(ProductionScene).where(
+            ProductionScene.job_id == job_id,
+            ProductionScene.qa_status == "fail",
+        )
+    )
+    overridden = len(qa_res.scalars().all())
+
     job.status = "assembling"
     await db.commit()
 
     background_tasks.add_task(_assemble_video, str(job_id))
-    return {"message": "Assembly started in background", "job_id": str(job_id)}
+    return {
+        "message": "Assembly started in background",
+        "job_id": str(job_id),
+        "qa_failures_overridden": overridden,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -328,6 +347,9 @@ def _job_to_dict(j) -> dict:
         "music_url": j.music_url,
         "music_filename": j.music_filename,
         "beat_sync_enabled": j.beat_sync_enabled or False,
+        "tempo_bpm": float(j.tempo_bpm) if j.tempo_bpm is not None else None,
+        "beat_interval_sec": float(j.beat_interval_sec) if j.beat_interval_sec is not None else None,
+        "audio_duration_sec": float(j.audio_duration_sec) if j.audio_duration_sec is not None else None,
         "created_at": j.created_at.isoformat() if j.created_at else None,
     }
 
@@ -339,6 +361,12 @@ def _scene_to_dict(s) -> dict:
         "image_url": s.image_url, "motion_prompt": s.motion_prompt,
         "animation_model": s.animation_model, "animation_status": s.animation_status,
         "local_video_path": s.local_video_path, "cometapi_task_id": s.cometapi_task_id,
+        "qa_status": s.qa_status, "qa_notes": s.qa_notes,
+        "reference_inputs": s.reference_inputs,
+        "beat_start_sec": float(s.beat_start_sec) if s.beat_start_sec is not None else None,
+        "beat_end_sec": float(s.beat_end_sec) if s.beat_end_sec is not None else None,
+        "beat_duration_sec": float(s.beat_duration_sec) if s.beat_duration_sec is not None else None,
+        "beat_drift_ms": float(s.beat_drift_ms) if s.beat_drift_ms is not None else None,
         "created_at": s.created_at.isoformat() if s.created_at else None,
     }
 
