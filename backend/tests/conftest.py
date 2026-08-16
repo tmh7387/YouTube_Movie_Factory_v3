@@ -16,10 +16,17 @@ REPO_ROOT = BACKEND_ROOT.parent
 # `tasks.` and `app.` are both top-level packages rooted at backend/
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
+if str(Path(__file__).resolve().parent) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from scratch_postgres import DATABASE_URL as SCRATCH_DATABASE_URL  # noqa: E402
+
+# app.db.session builds its engine at import time, so the URL is pinned here and the
+# smoke run brings a cluster up at exactly this address. Tests that never touch the
+# database simply fail to connect and handle it, which is the pre-existing behaviour.
 _TEST_ENV = {
-    "DATABASE_URL": "postgresql+psycopg://test:test@127.0.0.1:5432/ymf_test",
-    "DATABASE_URL_DIRECT": "postgresql+psycopg://test:test@127.0.0.1:5432/ymf_test",
+    "DATABASE_URL": SCRATCH_DATABASE_URL,
+    "DATABASE_URL_DIRECT": SCRATCH_DATABASE_URL,
     "COMETAPI_API_KEY": "test-cometapi-key",
     "ANTHROPIC_API_KEY": "test-anthropic-key",
     "GEMINI_API_KEY": "test-gemini-key",
