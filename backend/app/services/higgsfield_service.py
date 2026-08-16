@@ -36,12 +36,20 @@ logger = logging.getLogger(__name__)
 URL_KEYS = ("url", "result_url", "output_url", "video_url", "image_url", "download_url")
 NESTED_KEYS = ("results", "result", "outputs", "output", "jobs", "data", "items", "assets")
 
-# Which flag carries a reference picture depends on the model: the CLI's help lists
-# --image-references, but nano_banana_2 answers "Unknown params: image-references" and
-# points at `higgsfield model get <model>`. Rather than hardcode one name and break on
-# the next model, try them in order and remember which one the model accepted.
-IMAGE_REFERENCE_FLAGS = ("--image", "--image-references", "--reference-images", "--images")
-START_IMAGE_FLAGS = ("--start-image", "--image", "--start_image")
+# Which flag carries a picture depends on the model, and the CLI's help is not the
+# authority — `higgsfield model get <model>` is. Two live examples:
+#
+#   nano_banana_2 params: aspect_ratio, folder_id, input_images, prompt, resolution
+#   seedance_2_5  params: ..., duration, medias, mode, prompt, resolution, ...
+#
+# So the image model takes `input_images` directly, while the video model takes the
+# structured `medias` field that the CLI's --start-image sugar writes into. Neither
+# accepts --image-references, which the CLI's own help advertises.
+#
+# The real names lead, and the rest stay as fallbacks: a model that declares something
+# different should cost one wasted call, not an outage.
+IMAGE_REFERENCE_FLAGS = ("--input_images", "--image-references", "--image", "--images")
+START_IMAGE_FLAGS = ("--start-image", "--medias", "--image", "--start_image")
 
 # The CLI says this when a flag is not in a model's parameter list.
 UNKNOWN_PARAM_MARKER = "unknown params"

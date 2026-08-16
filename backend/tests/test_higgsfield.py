@@ -442,3 +442,25 @@ async def test_a_genuinely_signed_out_cli_still_says_so(monkeypatch):
 
     assert await higgsfield_service.is_authenticated() is False
     assert higgsfield_service.last_auth_error == "no token stored"
+
+
+# --- the real parameter names, read off the account --------------------------
+
+def test_the_leading_flags_match_what_the_models_actually_declare():
+    """
+    Taken from `higgsfield model get` against a live account:
+
+      nano_banana_2 -> aspect_ratio, folder_id, input_images, prompt, resolution
+      seedance_2_5  -> ..., duration, medias, mode, prompt, resolution, ...
+
+    Neither declares image-references, which the CLI's own help advertises. The first
+    candidate must be the one the model really takes, so the common path costs no
+    wasted calls.
+    """
+    from app.services.higgsfield_service import START_IMAGE_FLAGS
+
+    assert IMAGE_REFERENCE_FLAGS[0] == "--input_images"
+    assert START_IMAGE_FLAGS[0] == "--start-image"
+    # The discredited name is kept as a fallback, never as the first try.
+    assert "--image-references" in IMAGE_REFERENCE_FLAGS
+    assert IMAGE_REFERENCE_FLAGS.index("--image-references") > 0
