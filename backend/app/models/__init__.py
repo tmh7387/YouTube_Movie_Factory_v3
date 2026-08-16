@@ -108,6 +108,15 @@ class ProductionJob(Base):
     music_url = Column(Text)              # Supabase public URL of uploaded audio/video
     music_filename = Column(Text)         # Original filename (e.g. 'beat.mp4', 'track.mp3')
     beat_sync_enabled = Column(Boolean, default=False)
+
+    # Ownership and liveness (migration c8d9e0f1a2b3). A job is claimed by exactly one
+    # worker; heartbeat_at is refreshed as it progresses, so a job whose worker died
+    # can be told apart from one that is simply slow.
+    worker_id = Column(String(64), nullable=True)
+    claimed_at = Column(DateTime(timezone=True), nullable=True)
+    heartbeat_at = Column(DateTime(timezone=True), nullable=True)
+    attempt_count = Column(Integer, default=0)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     published_at = Column(DateTime(timezone=True))
 

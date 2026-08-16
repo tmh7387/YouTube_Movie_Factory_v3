@@ -23,6 +23,10 @@ def _python_files() -> list[Path]:
     files: list[Path] = []
     for directory in SCAN_DIRS:
         files.extend(sorted((BACKEND_ROOT / directory).rglob("*.py")))
+    # Top-level entry points (worker.py, live_check.py, run.py) import from app. and
+    # tasks. too, and are exactly the modules nothing else imports — so a broken import
+    # in one would otherwise only show up when someone ran it.
+    files.extend(sorted(BACKEND_ROOT.glob("*.py")))
     return files
 
 

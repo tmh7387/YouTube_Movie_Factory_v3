@@ -45,6 +45,18 @@ class Settings(BaseSettings):
     # A character_match or style_match below this marks the scene a failure.
     QA_FAIL_THRESHOLD: float = 0.6
 
+    # --- Job execution ---
+    # True keeps today's behaviour: /start runs the pipeline in the web process via
+    # BackgroundTasks. Set False in any deployment running `python -m worker`, so the
+    # web process only enqueues. Both are safe together — the job claim decides.
+    RUN_JOBS_INLINE: bool = True
+    # A claimed job whose heartbeat is older than this is treated as abandoned and may
+    # be taken over. Must exceed the longest gap between heartbeats, which is one
+    # scene animation (CometAPI polls for up to 10 minutes).
+    JOB_HEARTBEAT_STALE_SECONDS: int = 900
+    # How often the worker looks for claimable work.
+    WORKER_POLL_SECONDS: int = 10
+
     # Local storage for intermediate generation files
     JOB_FILES_DIR: str = "./jobs"
     

@@ -281,14 +281,32 @@ async def test_assembly_without_windows_is_unchanged(tmp_path, monkeypatch):
 
 def test_a_job_with_no_music_never_reaches_beat_mapping(backend_root):
     """
-    Phase 1.5 is guarded by `if music_url:` — a job with no music leaves every beat_*
-    column null and raises nothing.
+    Phase 1.5 sits under a `music_url` guard, so a job with no music leaves every
+    beat_* column null and raises nothing.
+
+    This is a structural check; the behavioural one runs the whole pipeline in
+    tests/test_gate_smoke.py::test_a_job_with_no_music_completes_with_null_beat_columns.
     """
+    import ast
+
     source = (backend_root / "tasks" / "production.py").read_text(encoding="utf-8")
-    assert "if music_url:" in source
-    guard_at = source.index("if music_url:")
-    call_at = source.index("_map_beats_to_scenes(job_id", guard_at)
-    assert 0 < call_at - guard_at < 400, "Phase 1.5 call is no longer under the music guard"
+    tree = ast.parse(source)
+
+    def _calls_beat_mapping(node) -> bool:
+        return any(
+            isinstance(sub, ast.Call)
+            and isinstance(sub.func, ast.Name)
+            and sub.func.id == "_map_beats_to_scenes"
+            for sub in ast.walk(node)
+        )
+
+    guarded = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.If)
+        and _calls_beat_mapping(node)
+        and "music_url" in ast.unparse(node.test)
+    ]
+    assert guarded, "the Phase 1.5 call is no longer under a music_url guard"
 
 
 # --- the trim actually trims -------------------------------------------------

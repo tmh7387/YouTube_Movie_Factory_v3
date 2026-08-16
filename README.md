@@ -15,6 +15,30 @@ See `docs/YouTube_Movie_Factory_v3.docx` for the full technical specifications.
 6. Run server: `uvicorn app.main:app --reload`
 7. Run worker: `celery -A tasks.celery_app worker --loglevel=info`
 
+### Running the background worker
+
+A production run is an hour of waiting on external services. By default the pipeline
+runs inside the HTTP request that started it, which is fine for local development but
+means a restart, deploy or crash loses the job.
+
+For anything longer-lived, run a worker alongside the API:
+
+```
+cd backend
+python -m worker            # poll forever
+python -m worker --once     # one sweep, then exit (cron, CI, manual recovery)
+```
+
+and set `RUN_JOBS_INLINE=false` so the web process only enqueues. Both together are
+also safe — a job is claimed atomically, so whoever gets there first does the work.
+
+The worker picks up queued jobs, and jobs left mid-run by a worker that stopped
+reporting for `JOB_HEARTBEAT_STALE_SECONDS` (default 900). Nothing is regenerated on
+resume: existing scene rows are reused, images and clips already produced are kept, and
+beat mapping is not repeated — recovery costs only the work that was actually lost.
+`POST /api/production/{job_id}/resume` forces the handover without waiting for the
+heartbeat to go stale.
+
 ### Running Frontend Stack (React 18, Vite, Tailwind)
 1. `cd frontend`
 2. `npm install`

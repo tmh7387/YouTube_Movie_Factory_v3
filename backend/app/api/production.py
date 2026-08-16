@@ -5,6 +5,7 @@ from sqlalchemy import select, update
 from typing import List, Dict, Any, Optional
 import uuid
 import os
+from app.core.config import settings
 from app.db.session import get_db
 from app.models import (
     CurationJob,
@@ -16,7 +17,13 @@ from app.models import (
 from app.services.supabase_storage_service import supabase_storage
 from pydantic import BaseModel
 from datetime import datetime
-from tasks.production import run_production_pipeline, _animate_scene, _assemble_video
+from tasks.production import (
+    RUNNING_STATUSES,
+    _animate_scene,
+    _assemble_video,
+    release_job,
+    run_production_pipeline,
+)
 
 router = APIRouter()
 
@@ -151,13 +158,19 @@ async def start_production(
     await db.commit()
     await db.refresh(new_job)
 
-    background_tasks.add_task(
-        run_production_pipeline,
-        str(new_job.id),
-        animation_mode=request.animation_mode,
-    )
+    # 'queued' is the worker's signal to pick this up. When RUN_JOBS_INLINE is set
+    # (the default, and today's behaviour) the web process also starts it immediately.
+    # Both together are safe: run_production_pipeline claims the job, so whichever gets
+    # there first does the work and the other returns.
     new_job.status = "queued"
     await db.commit()
+
+    if settings.RUN_JOBS_INLINE:
+        background_tasks.add_task(
+            run_production_pipeline,
+            str(new_job.id),
+            animation_mode=request.animation_mode,
+        )
     return new_job
 
 
@@ -290,6 +303,47 @@ async def retry_failed_scenes(
 
 
 # ---------------------------------------------------------------------------
+# Resume a stalled job
+# ---------------------------------------------------------------------------
+
+@router.post("/{job_id}/resume")
+async def resume_production(
+    job_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Pick a job back up after its worker died.
+
+    A worker reclaims stalled jobs on its own once the heartbeat goes stale; this is
+    the manual override for when you do not want to wait. Nothing is regenerated —
+    each phase skips work that is already done, so resuming costs only what was lost.
+    """
+    result = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Production job not found")
+    if job.status == "completed":
+        raise HTTPException(status_code=409, detail="Job is already completed")
+
+    previous_status = job.status
+    await release_job(str(job_id))
+    await db.refresh(job)
+    job.status = "queued"
+    await db.commit()
+
+    if settings.RUN_JOBS_INLINE:
+        background_tasks.add_task(run_production_pipeline, str(job_id))
+
+    return {
+        "job_id": str(job_id),
+        "resumed_from": previous_status,
+        "attempt_count": job.attempt_count or 0,
+        "runner": "inline" if settings.RUN_JOBS_INLINE else "worker",
+    }
+
+
+# ---------------------------------------------------------------------------
 # Scene approval
 # ---------------------------------------------------------------------------
 
@@ -402,6 +456,11 @@ def _job_to_dict(j) -> dict:
         "music_url": j.music_url,
         "music_filename": j.music_filename,
         "beat_sync_enabled": j.beat_sync_enabled or False,
+        "worker_id": j.worker_id,
+        "claimed_at": j.claimed_at.isoformat() if j.claimed_at else None,
+        "heartbeat_at": j.heartbeat_at.isoformat() if j.heartbeat_at else None,
+        "attempt_count": j.attempt_count or 0,
+        "is_running": j.status in RUNNING_STATUSES,
         "tempo_bpm": float(j.tempo_bpm) if j.tempo_bpm is not None else None,
         "beat_interval_sec": float(j.beat_interval_sec) if j.beat_interval_sec is not None else None,
         "audio_duration_sec": float(j.audio_duration_sec) if j.audio_duration_sec is not None else None,

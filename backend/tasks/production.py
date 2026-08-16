@@ -3,12 +3,13 @@ import base64
 import json
 import logging
 import os
-from datetime import datetime, timezone
+import socket
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
 import httpx
-from sqlalchemy import select, update
+from sqlalchemy import func, or_, select, update
 from app.db.session import AsyncSessionLocal as async_session_factory
 from app.models import (
     CurationJob,
@@ -51,6 +52,21 @@ MUSIC_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Fallback clip length when a job has no music and the brief gives no duration.
 DEFAULT_CLIP_SECONDS = 5
+
+# Statuses that mean "a worker should be actively pushing this along". A job sitting in
+# one of these with a stale heartbeat is abandoned, not slow.
+RUNNING_STATUSES = (
+    "queued",
+    "initializing",
+    "mapping_beats",
+    "generating_images",
+    "animating",
+    "assembling",
+)
+
+# Identifies this process in production_jobs.worker_id. Host plus pid is enough to tell
+# two workers apart and to recognise our own claim after a reconnect.
+WORKER_ID = f"{socket.gethostname()}:{os.getpid()}"[:64]
 
 
 async def _download_image(url: str, dest_path: Path) -> bool:
@@ -97,9 +113,82 @@ async def _log(job_id: str, message: str):
             await db.execute(
                 update(ProductionJob)
                 .where(ProductionJob.id == job_id)
-                .values(progress_log=current)
+                .values(progress_log=current, heartbeat_at=func.now())
             )
             await db.commit()
+
+
+def _stale_before() -> datetime:
+    return datetime.now(timezone.utc) - timedelta(
+        seconds=settings.JOB_HEARTBEAT_STALE_SECONDS
+    )
+
+
+async def claim_job(job_id: str, worker_id: str = WORKER_ID) -> bool:
+    """
+    Take ownership of a job, or report that someone else already has it.
+
+    One UPDATE ... WHERE ... RETURNING, so two workers racing for the same job cannot
+    both win — the loser sees no row. A job is claimable when nobody owns it, when we
+    already own it (reconnecting after a restart), or when its owner has stopped
+    reporting for JOB_HEARTBEAT_STALE_SECONDS.
+    """
+    async with async_session_factory() as db:
+        result = await db.execute(
+            update(ProductionJob)
+            .where(
+                ProductionJob.id == job_id,
+                or_(
+                    ProductionJob.worker_id.is_(None),
+                    ProductionJob.worker_id == worker_id,
+                    ProductionJob.heartbeat_at.is_(None),
+                    ProductionJob.heartbeat_at < _stale_before(),
+                ),
+            )
+            .values(
+                worker_id=worker_id,
+                claimed_at=func.now(),
+                heartbeat_at=func.now(),
+                attempt_count=func.coalesce(ProductionJob.attempt_count, 0) + 1,
+            )
+            .returning(ProductionJob.id)
+        )
+        claimed = result.scalar_one_or_none()
+        await db.commit()
+    return claimed is not None
+
+
+async def release_job(job_id: str) -> None:
+    """Drop our claim so the job can be picked up again without waiting for staleness."""
+    async with async_session_factory() as db:
+        await db.execute(
+            update(ProductionJob)
+            .where(ProductionJob.id == job_id)
+            .values(worker_id=None, heartbeat_at=None)
+        )
+        await db.commit()
+
+
+async def find_claimable_jobs(limit: int = 10) -> list:
+    """
+    Jobs a worker should pick up: anything queued, plus anything mid-run whose owner
+    has gone quiet. Terminal statuses (completed, failed, qa_review) are left alone.
+    """
+    async with async_session_factory() as db:
+        result = await db.execute(
+            select(ProductionJob.id)
+            .where(
+                ProductionJob.status.in_(RUNNING_STATUSES),
+                or_(
+                    ProductionJob.worker_id.is_(None),
+                    ProductionJob.heartbeat_at.is_(None),
+                    ProductionJob.heartbeat_at < _stale_before(),
+                ),
+            )
+            .order_by(ProductionJob.created_at)
+            .limit(limit)
+        )
+        return [str(row) for row in result.scalars().all()]
 
 
 async def _count_qa_failures(job_id: str) -> int:
@@ -116,7 +205,9 @@ async def _count_qa_failures(job_id: str) -> int:
 
 async def _update_status(job_id: str, status: str, error: Optional[str] = None):
     async with async_session_factory() as db:
-        vals = {"status": status}
+        # Every status write is also a sign of life. Piggybacking the heartbeat here
+        # and in _log means the job reports in on every scene without a separate timer.
+        vals = {"status": status, "heartbeat_at": func.now()}
         if error:
             vals["error_message"] = error
         await db.execute(update(ProductionJob).where(ProductionJob.id == job_id).values(**vals))
@@ -132,14 +223,25 @@ async def run_production_pipeline(
     animation_mode: str = "std",
 ):
     """
-    Full 5-phase production pipeline:
-      Phase 1 — Initialize scene rows
-      Phase 2 — Generate still images
-      Phase 3 — Animate each still (Kling Pro or Seedance 2.0)
-                 If beat_sync_enabled + .mp4 uploaded → passed as input_reference
-      Phase 4 — Assemble final video with ffmpeg (mixes music if music_url present)
+    Full production pipeline:
+      Phase 1   — Initialize scene rows
+      Phase 1.5 — Map scenes to the beat grid (only when music was uploaded)
+      Phase 2   — Generate still images
+      Phase 3   — Animate each still (Kling Pro or Seedance 2.0)
+                   If beat_sync_enabled + .mp4 uploaded → passed as input_reference
+      Phase 3.5 — QA gate; a failed scene holds the job at qa_review
+      Phase 4   — Assemble final video with ffmpeg (mixes music if music_url present)
+
+    Safe to call more than once for the same job. It claims the job first, so a second
+    caller returns immediately rather than running a duplicate; and every phase skips
+    work that is already done, so a job interrupted by a restart resumes from where it
+    stopped rather than regenerating (and re-paying for) everything.
     """
-    await _log(job_id, "Pipeline started")
+    if not await claim_job(job_id):
+        logger.info(f"Job {job_id} is owned by another worker — not starting a second run")
+        return
+
+    await _log(job_id, f"Pipeline started (worker {WORKER_ID})")
 
     async with async_session_factory() as db:
         result = await db.execute(
@@ -162,19 +264,43 @@ async def run_production_pipeline(
         is_video_reference = music_filename.lower().endswith(".mp4") if music_filename else False
         seedance_audio_ref: Optional[str] = music_url if (beat_sync_enabled and is_video_reference) else None
 
-        if not storyboard_data:
-            await _update_status(job_id, "failed", "No storyboard in brief")
-            await _log(job_id, "No storyboard found — aborting")
-            return
-
         # -----------------------------------------------------------------------
         # Phase 1: Initialize DB rows
         # -----------------------------------------------------------------------
         await _update_status(job_id, "initializing")
-        await _log(job_id, f"Phase 1: Creating {len(storyboard_data)} scene rows")
+
+        # Resuming: the rows are already there. Re-creating them would violate the
+        # (job_id, scene_number) unique constraint and throw away every image and clip
+        # the previous attempt paid for.
+        existing = await db.execute(
+            select(ProductionScene)
+            .where(ProductionScene.job_id == job.id)
+            .order_by(ProductionScene.scene_number)
+        )
+        existing_scenes = existing.scalars().all()
+
+        # The storyboard is only needed to create rows. A resumed job whose brief has
+        # since been edited or emptied must still finish the scenes it already has.
+        if not storyboard_data and not existing_scenes:
+            await _update_status(job_id, "failed", "No storyboard in brief")
+            await _log(job_id, "No storyboard found — aborting")
+            return
+
+        if existing_scenes:
+            scene_ids = [str(s.id) for s in existing_scenes]
+            done = sum(1 for s in existing_scenes if s.animation_status == "completed")
+            await _log(
+                job_id,
+                f"Phase 1 skipped — resuming {len(scene_ids)} existing scene rows "
+                f"({done} already animated)",
+            )
+            resumed = True
+        else:
+            resumed = False
+            await _log(job_id, f"Phase 1: Creating {len(storyboard_data)} scene rows")
 
         scenes = []
-        for scene_data in storyboard_data:
+        for scene_data in ([] if resumed else storyboard_data):
             scene_num = scene_data.get("scene_index") or scene_data.get("scene_number") or 0
             description = scene_data.get("narration") or scene_data.get("description", "")
 
@@ -207,20 +333,23 @@ async def run_production_pipeline(
             scenes.append(new_scene)
 
         # No music track rows needed — music comes from the user-uploaded file
-        await db.commit()
-        for s in scenes:
-            await db.refresh(s)
+        if not resumed:
+            await db.commit()
+            for s in scenes:
+                await db.refresh(s)
+            scene_ids = [str(s.id) for s in scenes]
+            await _log(job_id, f"Phase 1 done — {len(scene_ids)} scenes initialized")
 
-        scene_ids = [str(s.id) for s in scenes]
-
-    await _log(job_id, f"Phase 1 done — {len(scene_ids)} scenes initialized")
+        already_beat_mapped = job.tempo_bpm is not None
 
     # Phase 1.5: Beat mapping — only when a music track was uploaded
-    if music_url:
+    if music_url and not already_beat_mapped:
         await _update_status(job_id, "mapping_beats")
         await _log(job_id, "Phase 1.5: Mapping scenes to the beat grid...")
         summary = await _map_beats_to_scenes(job_id, scene_ids, music_url, music_filename)
         await _log(job_id, f"Phase 1.5 done — {summary}")
+    elif already_beat_mapped:
+        await _log(job_id, "Phase 1.5 skipped — beat grid already mapped")
 
     # Phase 2: Images
     await _update_status(job_id, "generating_images")
@@ -510,6 +639,13 @@ async def _generate_scene_image(scene_id: str):
             return
 
         local_path = IMAGE_CACHE_DIR / f"{scene_id}.jpg"
+
+        # Resuming: don't pay for an image this job already generated. A scene left in
+        # image_failed is the one case worth retrying.
+        cached = bool(scene.local_image_path) and Path(scene.local_image_path).is_file()
+        if (scene.image_url or cached) and scene.animation_status != "image_failed":
+            logger.info(f"Scene {scene_id} already has an image — skipping generation")
+            return
 
         bible = await _load_scene_bible(db, scene)
         ref_urls, character = _collect_reference_urls(bible, scene)
