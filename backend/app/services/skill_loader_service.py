@@ -1,8 +1,9 @@
 """
 SkillLoaderService — Bridge between on-disk production skills and runtime Claude calls.
 
-Reads .agent/skills/{slug}/SKILL.md files (hand-crafted) and VideoProductionSkill DB rows
-(tutorial-extracted), then builds compact prompt injection blocks for Claude's system prompt.
+Reads skills/{category}/{slug}/SKILL.md files (hand-crafted) and VideoProductionSkill DB
+rows (tutorial-extracted), then builds compact prompt injection blocks for Claude's system
+prompt.
 
 Disk skills take priority over DB skills when the same slug exists in both.
 """
@@ -18,8 +19,10 @@ from app.models import VideoProductionSkill
 
 logger = logging.getLogger(__name__)
 
-# .agent/skills/ directory — sibling to backend/
-AGENT_SKILLS_ROOT = Path(__file__).parent.parent.parent.parent / ".agent" / "skills"
+# skills/ directory — sibling to backend/, same root skill_synthesis_service writes into.
+# Layout is skills/{category}/{slug}/SKILL.md; some slugs carry a version suffix on the
+# directory name (e.g. seedance2-director -> seedance2-director-v2).
+AGENT_SKILLS_ROOT = Path(__file__).parent.parent.parent.parent / "skills"
 
 # Auto-selection rules: model keyword → skill slugs to inject
 MODEL_SKILL_MAP: dict[str, list[str]] = {
@@ -110,9 +113,40 @@ class SkillLoaderService:
             "source": "disk",
         }
 
+    @staticmethod
+    def resolve_skill_path(slug: str) -> Optional[Path]:
+        """
+        Resolve a skill slug to its SKILL.md on disk in three passes:
+
+        1. Flat layout — ROOT/{slug}/SKILL.md
+        2. Categorised layout — ROOT/*/{slug}/SKILL.md
+        3. Versioned directory — ROOT/*/{slug}*/SKILL.md, last sorted match wins,
+           so "seedance2-director" picks up "seedance2-director-v2".
+
+        Returns None when nothing matches.
+        """
+        if not slug:
+            return None
+
+        flat = AGENT_SKILLS_ROOT / slug / "SKILL.md"
+        if flat.is_file():
+            return flat
+
+        categorised = sorted(AGENT_SKILLS_ROOT.glob(f"*/{slug}/SKILL.md"))
+        if categorised:
+            return categorised[0]
+
+        versioned = sorted(AGENT_SKILLS_ROOT.glob(f"*/{slug}*/SKILL.md"))
+        if versioned:
+            return versioned[-1]
+
+        return None
+
     def load_disk_skill(self, slug: str) -> Optional[dict]:
-        """Load a single skill from .agent/skills/{slug}/SKILL.md."""
-        skill_path = AGENT_SKILLS_ROOT / slug / "SKILL.md"
+        """Load a single skill from skills/{category}/{slug}/SKILL.md."""
+        skill_path = self.resolve_skill_path(slug)
+        if skill_path is None:
+            return None
         return self._parse_skill_md(skill_path)
 
     def load_disk_skills(self, slugs: list[str]) -> list[dict]:
