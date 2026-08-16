@@ -574,9 +574,53 @@ async def check_higgsfield_video(ctx: Context) -> Result:
     )
     if "error" in result:
         return Result(FAIL, result["error"])
+
+    # A URL coming back is not proof a video came back. The reply carries several URLs,
+    # including the still we sent in, and picking the wrong one would look like a pass.
+    # ffprobe settles it: a real video has a video stream and a duration.
+    probed = await _probe(result["url"])
+    if "error" in probed:
+        return Result(FAIL, f"{result['url']} is not a playable video: {probed['error']}")
+
     settled = higgsfield_service._media_flag.get(settings.HIGGSFIELD_VIDEO_MODEL)
     how = f" via {settled[0]} {settled[2]}" if settled else ""
-    return Result(OK, f"{settings.HIGGSFIELD_VIDEO_MODEL}{how} -> {result['url'][:60]}")
+    return Result(
+        OK,
+        f"{settings.HIGGSFIELD_VIDEO_MODEL}{how} -> {probed['codec']} "
+        f"{probed['width']}x{probed['height']} {probed['duration']:.1f}s "
+        f"...{result['url'][-40:]}",
+    )
+
+
+async def _probe(url: str) -> dict:
+    """ffprobe a URL. Returns codec/width/height/duration, or {"error": ...}."""
+    argv = [
+        "ffprobe", "-v", "error",
+        "-select_streams", "v:0",
+        "-show_entries", "stream=codec_name,width,height",
+        "-show_entries", "format=duration",
+        "-of", "json", url,
+    ]
+    try:
+        proc = await asyncio.to_thread(
+            subprocess.run, argv, capture_output=True, text=True, timeout=300
+        )
+    except Exception as exc:                  # noqa: BLE001 - reported, not raised
+        return {"error": f"{type(exc).__name__}: {exc}"}
+    if proc.returncode != 0:
+        return {"error": (proc.stderr or "").strip()[:200] or "ffprobe exited non-zero"}
+
+    payload = json.loads(proc.stdout or "{}")
+    streams = payload.get("streams") or []
+    if not streams:
+        return {"error": "no video stream — this URL is probably the input still"}
+    stream = streams[0]
+    return {
+        "codec": stream.get("codec_name", "?"),
+        "width": stream.get("width", 0),
+        "height": stream.get("height", 0),
+        "duration": float(payload.get("format", {}).get("duration") or 0.0),
+    }
 
 
 async def check_cometapi_video(ctx: Context) -> Result:
