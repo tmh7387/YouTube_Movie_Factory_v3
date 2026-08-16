@@ -178,6 +178,9 @@ class ProductionScene(Base):
     # Pre-production bible linkage + QA (migration 8425016f02a6)
     bible_character = Column(String(200), nullable=True)
     bible_environment = Column(String(200), nullable=True)
+    # Which image path was taken (migration e5f6a7b8c9d0):
+    #   {"mode": "reference"|"text", "refs": [url, ...], "service": "gpt_image_2"|"cometapi"}
+    reference_inputs = Column(JSONB, nullable=True)
     qa_status = Column(String(20), default='pending')
     qa_notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

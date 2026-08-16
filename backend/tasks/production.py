@@ -9,9 +9,10 @@ from typing import Optional
 import httpx
 from sqlalchemy import select, update
 from app.db.session import AsyncSessionLocal as async_session_factory
-from app.models import ProductionJob, CurationJob, ProductionScene
+from app.models import ProductionJob, CurationJob, PreProductionBible, ProductionScene
 from app.services.media_gen_service import media_gen_service
 from app.services.assembly_service import assembly_service
+from app.services.gpt_image_service import gpt_image_service
 from app.services.skill_loader_service import skill_loader_service
 from app.core.config import settings
 from app.services.model_router import recommend_model
@@ -21,6 +22,14 @@ logger = logging.getLogger(__name__)
 # Local cache dir for scene images (prevents pre-signed URL expiry)
 IMAGE_CACHE_DIR = Path("env/tmp/scene_images")
 IMAGE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+# Local cache dir for bible reference sheets. gpt_image_service.generate_with_character
+# posts real image bytes as multipart, so it needs local paths — not URLs.
+REFERENCE_CACHE_DIR = Path("env/tmp/reference_images")
+REFERENCE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+# OpenAI's /images/edits accepts at most a handful of reference images per request.
+MAX_SCENE_REFERENCES = 3
 
 
 async def _download_image(url: str, dest_path: Path) -> bool:
@@ -195,6 +204,124 @@ async def run_production_pipeline(
 # ---------------------------------------------------------------------------
 # Phase 2 — Image generation
 # ---------------------------------------------------------------------------
+#
+# Two paths, recorded per scene in ProductionScene.reference_inputs:
+#
+#   "reference" — the scene is tagged with a bible character/environment that carries
+#                 a ref_sheet_url. The sheets are downloaded and posted as real image
+#                 bytes to GPT-Image-2's /images/edits endpoint, which anchors the
+#                 character's appearance instead of re-describing it in prose.
+#   "text"      — no reference resolved (or no OpenAI key). Prompt-only generation via
+#                 CometAPI, exactly as before.
+
+
+def _match_bible_entry(entries: Optional[list], name: Optional[str]) -> Optional[dict]:
+    """Match a scene's bible_character / bible_environment tag to a bible entry by name."""
+    if not name or not entries:
+        return None
+    target = str(name).strip().lower()
+    if not target:
+        return None
+
+    candidates = [e for e in entries if isinstance(e, dict)]
+    for entry in candidates:
+        if str(entry.get("name", "")).strip().lower() == target:
+            return entry
+    # Claude sometimes writes "The Diver (close-up)" where the bible says "The Diver".
+    for entry in candidates:
+        entry_name = str(entry.get("name", "")).strip().lower()
+        if entry_name and (entry_name in target or target in entry_name):
+            return entry
+    return None
+
+
+async def _load_scene_bible(db, scene: ProductionScene) -> Optional[PreProductionBible]:
+    """Walk ProductionScene -> ProductionJob -> CurationJob -> PreProductionBible."""
+    result = await db.execute(
+        select(CurationJob)
+        .join(ProductionJob, ProductionJob.curation_job_id == CurationJob.id)
+        .where(ProductionJob.id == scene.job_id)
+    )
+    curation = result.scalar_one_or_none()
+    if not curation:
+        return None
+
+    if curation.bible_id:
+        bible_res = await db.execute(
+            select(PreProductionBible).where(PreProductionBible.id == curation.bible_id)
+        )
+        bible = bible_res.scalar_one_or_none()
+        if bible:
+            return bible
+
+    # Bibles auto-generated during curation are linked the other way round.
+    fallback = await db.execute(
+        select(PreProductionBible).where(PreProductionBible.curation_job_id == curation.id)
+    )
+    return fallback.scalars().first()
+
+
+def _collect_reference_urls(
+    bible: Optional[PreProductionBible],
+    scene: ProductionScene,
+) -> tuple[list[str], Optional[dict]]:
+    """
+    Resolve up to MAX_SCENE_REFERENCES reference sheet URLs for a scene.
+
+    Character references come first — character identity is what drifts. Per-entity
+    ref_sheet_url wins; the bible-level character_sheet_urls / environment_sheet_urls
+    lists are the fallback when an entity carries no sheet of its own.
+
+    Returns (urls, matched_character_entry).
+    """
+    if bible is None:
+        return [], None
+
+    character = _match_bible_entry(bible.characters, scene.bible_character)
+    environment = _match_bible_entry(bible.environments, scene.bible_environment)
+
+    urls: list[str] = []
+
+    def _add(candidate) -> None:
+        if isinstance(candidate, str) and candidate.strip() and candidate not in urls:
+            urls.append(candidate.strip())
+
+    if character and character.get("ref_sheet_url"):
+        _add(character["ref_sheet_url"])
+    else:
+        for url in (bible.character_sheet_urls or [])[:MAX_SCENE_REFERENCES]:
+            _add(url)
+
+    if environment and environment.get("ref_sheet_url"):
+        _add(environment["ref_sheet_url"])
+    else:
+        for url in (bible.environment_sheet_urls or [])[:MAX_SCENE_REFERENCES]:
+            _add(url)
+
+    return urls[:MAX_SCENE_REFERENCES], character
+
+
+def _character_description(character: Optional[dict]) -> str:
+    if not character:
+        return ""
+    parts = [str(character.get("physical", "")).strip(), str(character.get("wardrobe", "")).strip()]
+    return " | ".join(p for p in parts if p)
+
+
+async def _download_references(scene_id: str, urls: list[str]) -> list[str]:
+    """Download reference sheets to local paths. generate_with_character needs files."""
+    paths: list[str] = []
+    for i, url in enumerate(urls):
+        dest = REFERENCE_CACHE_DIR / f"{scene_id}_ref{i}.png"
+        if dest.exists() and dest.stat().st_size > 0:
+            paths.append(str(dest))
+            continue
+        if await _download_image(url, dest):
+            paths.append(str(dest))
+        else:
+            logger.warning(f"Scene {scene_id}: reference download failed for {url[:80]}")
+    return paths
+
 
 async def _generate_scene_image(scene_id: str):
     async with async_session_factory() as db:
@@ -202,6 +329,42 @@ async def _generate_scene_image(scene_id: str):
         scene = result.scalar_one_or_none()
         if not scene:
             return
+
+        local_path = IMAGE_CACHE_DIR / f"{scene_id}.jpg"
+
+        bible = await _load_scene_bible(db, scene)
+        ref_urls, character = _collect_reference_urls(bible, scene)
+        ref_paths = await _download_references(scene_id, ref_urls) if ref_urls else []
+
+        if ref_paths and settings.OPENAI_API_KEY:
+            res = await gpt_image_service.generate_with_character(
+                prompt=scene.image_prompt,
+                character_description=_character_description(character),
+                reference_image_paths=ref_paths,
+            )
+            b64 = res.get("b64_json") if "error" not in res else None
+            if b64:
+                saved = await gpt_image_service.save_b64_to_file(b64, str(local_path))
+                if saved:
+                    # image_url stays null on this path — there is no remote URL. The
+                    # animation step reads local_image_path and base64-encodes it.
+                    scene.local_image_path = saved
+                    scene.reference_inputs = {
+                        "mode": "reference",
+                        "refs": ref_urls,
+                        "service": "gpt_image_2",
+                    }
+                    logger.info(
+                        f"Scene {scene_id} image generated from {len(ref_paths)} reference(s)"
+                    )
+                    await db.commit()
+                    return
+                logger.warning(f"Scene {scene_id}: could not write GPT-Image-2 output — falling back")
+            else:
+                logger.warning(
+                    f"Scene {scene_id}: reference generation failed "
+                    f"({res.get('error', 'no image returned')}) — falling back to text prompt"
+                )
 
         res = await media_gen_service.generate_image(
             scene.image_prompt,
@@ -211,12 +374,13 @@ async def _generate_scene_image(scene_id: str):
         if "error" in res:
             logger.error(f"Image gen failed for scene {scene_id}: {res['error']}")
             scene.animation_status = "image_failed"
+            scene.reference_inputs = {"mode": "text", "refs": [], "service": "cometapi"}
         else:
             remote_url = res["url"]
             scene.image_url = remote_url
+            scene.reference_inputs = {"mode": "text", "refs": [], "service": "cometapi"}
 
             # Download and cache locally to survive pre-signed URL expiry
-            local_path = IMAGE_CACHE_DIR / f"{scene_id}.jpg"
             ok = await _download_image(remote_url, local_path)
             if ok:
                 scene.local_image_path = str(local_path)
@@ -235,8 +399,10 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
     async with async_session_factory() as db:
         result = await db.execute(select(ProductionScene).where(ProductionScene.id == scene_id))
         scene = result.scalar_one_or_none()
-        if not scene or not scene.image_url:
-            logger.warning(f"Skipping animation for scene {scene_id} — no image URL")
+        # A reference-generated scene has no image_url — GPT-Image-2 returns base64,
+        # which is written to local_image_path. Either source is enough to animate.
+        if not scene or not (scene.image_url or scene.local_image_path):
+            logger.warning(f"Skipping animation for scene {scene_id} — no image available")
             return
 
         # Skip scenes that already have a video (idempotent retry safety)
@@ -300,6 +466,14 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
                         logger.info(f"Scene {scene_id}: image re-generated successfully")
                     else:
                         logger.error(f"Scene {scene_id}: image re-generation failed: {regen_res['error']}")
+
+        if not image_source:
+            # Reference path wrote local_image_path, but the file has since gone.
+            logger.error(f"Scene {scene_id}: no usable image source — marking failed")
+            scene.animation_status = "failed"
+            scene.error_message = "No usable image source at animation time"
+            await db.commit()
+            return
 
         # Use skill-aware default motion prompt instead of generic fallback
         motion_prompt = scene.motion_prompt or scene.description or ""
