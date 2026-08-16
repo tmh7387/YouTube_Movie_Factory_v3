@@ -183,8 +183,43 @@ class ProductionScene(Base):
     reference_inputs = Column(JSONB, nullable=True)
     qa_status = Column(String(20), default='pending')
     qa_notes = Column(Text, nullable=True)
+
+    # Human review (migration f6a7b8c9d0e1). null means "not reviewed" — distinct
+    # from False, which means a human looked and rejected it.
+    user_approved = Column(Boolean, nullable=True)
+    user_feedback = Column(Text, nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     __table_args__ = (UniqueConstraint('job_id', 'scene_number'),)
+
+
+class GenerationOutcome(Base):
+    """
+    One row per generated scene: what was asked for, what came back, and what both
+    the QA gate and the human thought of it.
+
+    This is the training signal the platform had no way of collecting. Skill
+    confidence and the project log are both derived from these rows.
+    """
+    __tablename__ = 'generation_outcome'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    scene_id = Column(UUID(as_uuid=True), ForeignKey('production_scenes.id'), nullable=False)
+    job_id = Column(UUID(as_uuid=True), ForeignKey('production_jobs.id'), nullable=False)
+
+    model = Column(String(50))
+    prompt = Column(Text)                 # the actual motion prompt sent to the generator
+    reference_mode = Column(String(20))   # "reference" | "text" — from reference_inputs
+    beat_aligned = Column(Boolean, default=False)
+
+    qa_pass = Column(Boolean)
+    qa_scores = Column(JSONB)
+    user_approved = Column(Boolean, nullable=True)
+
+    skill_slugs = Column(JSONB)           # skills injected into the brief that made this
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    __table_args__ = (UniqueConstraint('scene_id'),)
 
 class SystemConfig(Base):
     __tablename__ = 'system_config'

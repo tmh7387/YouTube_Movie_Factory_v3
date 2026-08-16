@@ -27,11 +27,14 @@ const STATUS_COLORS: Record<string, string> = {
     assembling: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
     queued: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
     initializing: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
+    mapping_beats: 'text-fuchsia-400 bg-fuchsia-500/10 border-fuchsia-500/30',
+    qa_review: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
     pending: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
 };
 const statusColor = (s: string) => STATUS_COLORS[s] ?? STATUS_COLORS.pending;
 
-const RUNNING = ['queued', 'initializing', 'generating_images', 'animating', 'generating_music', 'assembling'];
+// qa_review is deliberately absent: the job is held for a human, not progressing.
+const RUNNING = ['queued', 'initializing', 'mapping_beats', 'generating_images', 'animating', 'generating_music', 'assembling'];
 const isRunning = (s: string) => RUNNING.includes(s);
 
 // ---------------------------------------------------------------------------
@@ -185,6 +188,16 @@ function SceneCard({
                 </AnimatePresence>
 
                 <div className="flex items-center justify-between gap-2">
+                    {scene.qa_status === 'fail' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded border text-red-400 bg-red-500/10 border-red-500/30 mr-1">
+                            QA FAIL
+                        </span>
+                    )}
+                    {scene.reference_inputs?.mode === 'reference' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded border text-indigo-300 bg-indigo-500/10 border-indigo-500/30 mr-1">
+                            REF
+                        </span>
+                    )}
                     <span className={`text-[10px] px-1.5 py-0.5 rounded border ${statusColor(scene.animation_status)}`}>
                         {statusLabel[scene.animation_status] ?? scene.animation_status}
                     </span>
@@ -438,14 +451,17 @@ function Launcher({ prefillId, onStarted }: { prefillId?: string; onStarted: (jo
 // ---------------------------------------------------------------------------
 function JobMonitor({ jobId }: { jobId: string }) {
     const queryClient = useQueryClient();
-    const [approvedScenes, setApprovedScenes] = useState<Set<string>>(new Set());
+
+    // Approvals live on the server (ProductionScene.user_approved), not in local
+    // state — they have to survive a reload, and the learning loop reads them.
+    const approveMutation = useMutation({
+        mutationFn: ({ id, approved }: { id: string; approved: boolean }) =>
+            productionService.approveScene(id, approved),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['production_detail', jobId] }),
+    });
 
     const handleApprove = (id: string, val: boolean) => {
-        setApprovedScenes(prev => {
-            const next = new Set(prev);
-            if (val) next.add(id); else next.delete(id);
-            return next;
-        });
+        approveMutation.mutate({ id, approved: val });
     };
     const { data, isLoading } = useQuery<ProductionJobDetail>({
         queryKey: ['production_detail', jobId],
@@ -478,8 +494,10 @@ function JobMonitor({ jobId }: { jobId: string }) {
     const failedCount = scenes.filter(s => ['failed', 'image_failed'].includes(s.animation_status)).length;
     const allDone = done === total && total > 0;
     const completedScenes = scenes.filter(s => s.animation_status === 'completed');
-    const allApproved = completedScenes.length > 0 && completedScenes.every(s => approvedScenes.has(s.id));
-    const canAssemble = allDone && allApproved && !['completed', 'assembling'].includes(job.status);
+    const allApproved = completedScenes.length > 0 && completedScenes.every(s => s.user_approved === true);
+    const qaFailures = scenes.filter(s => s.qa_status === 'fail');
+    const heldForQA = job.status === 'qa_review';
+    const canAssemble = (allDone && allApproved && !['completed', 'assembling'].includes(job.status)) || heldForQA;
     const canRetry = failedCount > 0 && !['assembling', 'completed'].includes(job.status);
 
     return (
@@ -531,7 +549,7 @@ function JobMonitor({ jobId }: { jobId: string }) {
                         >
                             {assembleMutation.isPending
                                 ? <><RefreshCcw className="w-4 h-4 animate-spin" /> Starting…</>
-                                : <><Clapperboard className="w-4 h-4" /> Assemble Video</>}
+                                : <><Clapperboard className="w-4 h-4" /> {heldForQA ? 'Assemble Anyway' : 'Assemble Video'}</>}
                         </button>
                     )}
                     {retryMutation.isSuccess && !retryMutation.isPending && (
@@ -600,14 +618,22 @@ function JobMonitor({ jobId }: { jobId: string }) {
                         </h3>
                         {completedScenes.length > 0 && (
                             <button
-                                onClick={() => setApprovedScenes(new Set(completedScenes.map(s => s.id)))}
+                                onClick={() => completedScenes
+                                    .filter(s => s.user_approved !== true)
+                                    .forEach(s => handleApprove(s.id, true))}
                                 className="text-xs px-3 py-1 bg-green-600/20 hover:bg-green-600/30 border border-green-500/30 text-green-400 rounded-lg transition-all font-semibold"
                             >
                                 ✓ Approve All
                             </button>
                         )}
                     </div>
-                    {allDone && !allApproved && (
+                    {heldForQA && (
+                        <p className="text-xs text-red-400/90 mb-3 flex items-center gap-1.5">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                            QA held {qaFailures.length} scene{qaFailures.length === 1 ? '' : 's'} — assembly is blocked until you override
+                        </p>
+                    )}
+                    {allDone && !heldForQA && !allApproved && (
                         <p className="text-xs text-amber-400/80 mb-3 flex items-center gap-1.5">
                             <AlertCircle className="w-3.5 h-3.5" />
                             Preview and approve each scene before assembling
@@ -618,7 +644,7 @@ function JobMonitor({ jobId }: { jobId: string }) {
                             <SceneCard
                                 key={s.id}
                                 scene={s}
-                                approved={approvedScenes.has(s.id)}
+                                approved={s.user_approved === true}
                                 onApprove={handleApprove}
                             />
                         ))}

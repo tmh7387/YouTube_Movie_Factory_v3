@@ -6,7 +6,13 @@ from typing import List, Dict, Any, Optional
 import uuid
 import os
 from app.db.session import get_db
-from app.models import ProductionJob, CurationJob, ProductionTrack, ProductionScene
+from app.models import (
+    CurationJob,
+    GenerationOutcome,
+    ProductionJob,
+    ProductionScene,
+    ProductionTrack,
+)
 from app.services.supabase_storage_service import supabase_storage
 from pydantic import BaseModel
 from datetime import datetime
@@ -284,6 +290,55 @@ async def retry_failed_scenes(
 
 
 # ---------------------------------------------------------------------------
+# Scene approval
+# ---------------------------------------------------------------------------
+
+class SceneApprovalRequest(BaseModel):
+    approved: bool
+    feedback: Optional[str] = None
+
+
+@router.put("/scene/{scene_id}/approve")
+async def approve_scene(
+    scene_id: uuid.UUID,
+    request: SceneApprovalRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Record a human verdict on one scene.
+
+    Approvals used to live in a React useState Set and were never sent anywhere, so
+    they vanished on reload and the approval gate was decorative. user_approved is
+    nullable: null means "not reviewed", which is not the same as False.
+
+    The verdict is mirrored onto the scene's generation_outcome row — that is the
+    human half of the signal memory_service learns from.
+    """
+    result = await db.execute(select(ProductionScene).where(ProductionScene.id == scene_id))
+    scene = result.scalar_one_or_none()
+    if not scene:
+        raise HTTPException(status_code=404, detail="Scene not found")
+
+    scene.user_approved = request.approved
+    scene.user_feedback = request.feedback
+
+    outcome_res = await db.execute(
+        select(GenerationOutcome).where(GenerationOutcome.scene_id == scene_id)
+    )
+    outcome = outcome_res.scalar_one_or_none()
+    if outcome:
+        outcome.user_approved = request.approved
+
+    await db.commit()
+    return {
+        "scene_id": str(scene_id),
+        "user_approved": scene.user_approved,
+        "user_feedback": scene.user_feedback,
+        "outcome_recorded": outcome is not None,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Trigger assembly
 # ---------------------------------------------------------------------------
 
@@ -362,6 +417,7 @@ def _scene_to_dict(s) -> dict:
         "animation_model": s.animation_model, "animation_status": s.animation_status,
         "local_video_path": s.local_video_path, "cometapi_task_id": s.cometapi_task_id,
         "qa_status": s.qa_status, "qa_notes": s.qa_notes,
+        "user_approved": s.user_approved, "user_feedback": s.user_feedback,
         "reference_inputs": s.reference_inputs,
         "beat_start_sec": float(s.beat_start_sec) if s.beat_start_sec is not None else None,
         "beat_end_sec": float(s.beat_end_sec) if s.beat_end_sec is not None else None,

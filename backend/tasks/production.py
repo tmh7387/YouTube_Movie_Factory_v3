@@ -10,7 +10,13 @@ from typing import Optional
 import httpx
 from sqlalchemy import select, update
 from app.db.session import AsyncSessionLocal as async_session_factory
-from app.models import ProductionJob, CurationJob, PreProductionBible, ProductionScene
+from app.models import (
+    CurationJob,
+    GenerationOutcome,
+    PreProductionBible,
+    ProductionJob,
+    ProductionScene,
+)
 from app.services.media_gen_service import media_gen_service
 from app.services.assembly_service import assembly_service
 from app.services.audio_analysis import (
@@ -19,6 +25,7 @@ from app.services.audio_analysis import (
     audio_analysis_service,
 )
 from app.services.gpt_image_service import gpt_image_service
+from app.services.memory_service import memory_service
 from app.services.qa_service import qa_service
 from app.services.skill_loader_service import skill_loader_service
 from app.core.config import settings
@@ -241,6 +248,9 @@ async def run_production_pipeline(
             f"⏸ QA gate: {failed} scene(s) failed review — job held at qa_review. "
             f"POST /api/production/{job_id}/assemble-anyway to override.",
         )
+        # A held job is still a finished production as far as learning goes — the
+        # failures are exactly the part worth remembering.
+        await _close_the_loop(job_id)
         return
 
     # Phase 4: ffmpeg assembly
@@ -680,6 +690,8 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
         if scene.animation_status == "completed":
             await _qa_review_scene(db, scene)
             await db.commit()
+            await _record_generation_outcome(db, scene, motion_prompt, video_model)
+            await db.commit()
 
 
 async def _qa_review_scene(db, scene: ProductionScene) -> str:
@@ -704,6 +716,62 @@ async def _qa_review_scene(db, scene: ProductionScene) -> str:
     scene.qa_notes = json.dumps(result.get("verdict") or {})
     logger.info(f"Scene {scene.id} QA: {result['status']}")
     return result["status"]
+
+
+def _qa_scores(scene: ProductionScene) -> dict:
+    try:
+        verdict = json.loads(scene.qa_notes or "{}")
+    except (TypeError, ValueError):
+        return {}
+    return {
+        key: verdict[key]
+        for key in ("character_match", "style_match", "prompt_adherence", "artifacts")
+        if key in verdict
+    }
+
+
+async def _record_generation_outcome(
+    db,
+    scene: ProductionScene,
+    prompt: str,
+    model: str,
+) -> None:
+    """
+    One generation_outcome row per scene: what was asked for, what came back, and what
+    QA thought of it. The human half (user_approved) is filled in later by the approve
+    endpoint. This is the only signal the learning loop has to work from.
+
+    The skills credited are recomputed from the scene's animation model with the same
+    selection rules the brief used, so nothing has to be threaded through the pipeline
+    to keep them in sync.
+    """
+    existing = await db.execute(
+        select(GenerationOutcome).where(GenerationOutcome.scene_id == scene.id)
+    )
+    row = existing.scalar_one_or_none()
+
+    skill_slugs = skill_loader_service.select_skill_slugs(
+        animation_model=scene.animation_model or ""
+    )
+    values = {
+        "job_id": scene.job_id,
+        "model": model,
+        "prompt": prompt,
+        "reference_mode": (scene.reference_inputs or {}).get("mode"),
+        "beat_aligned": scene.beat_start_sec is not None,
+        "qa_pass": scene.qa_status == "pass" if scene.qa_status in ("pass", "fail") else None,
+        "qa_scores": _qa_scores(scene),
+        "skill_slugs": skill_slugs,
+    }
+
+    if row is None:
+        db.add(GenerationOutcome(scene_id=scene.id, **values))
+    else:
+        # Re-animating a scene replaces its outcome rather than adding a second one.
+        for key, value in values.items():
+            setattr(row, key, value)
+
+    await memory_service.increment_usage(skill_slugs)
 
 
 # ---------------------------------------------------------------------------
@@ -778,3 +846,31 @@ async def _assemble_video(job_id: str, scene_ids: Optional[list] = None, music_u
             )
             await db2.commit()
         await _log(job_id, f"✅ Phase 4 complete — {res.get('duration', 0):.1f}s video assembled")
+        await _close_the_loop(job_id)
+
+
+async def _close_the_loop(job_id: str) -> None:
+    """
+    Feed the finished job back into memory: write the project log and re-derive skill
+    confidence from this job's outcomes. Never fatal — a job is not un-produced because
+    the memory write failed.
+    """
+    try:
+        await memory_service.write_project_log(job_id)
+    except Exception as e:
+        logger.warning(f"Project log failed for {job_id}: {e}")
+
+    try:
+        async with async_session_factory() as db:
+            rows = await db.execute(
+                select(GenerationOutcome).where(GenerationOutcome.job_id == job_id)
+            )
+            slugs = sorted({
+                slug
+                for row in rows.scalars().all()
+                for slug in (row.skill_slugs or [])
+            })
+        if slugs:
+            await memory_service.update_skill_confidence(slugs)
+    except Exception as e:
+        logger.warning(f"Skill confidence update failed for {job_id}: {e}")

@@ -19,6 +19,7 @@ class ClaudeService:
         animation_model: str = "",
         video_type: Optional[str] = None,
         bible: Optional[Dict[str, Any]] = None,
+        memory_block: str = "",
     ) -> Dict[str, Any]:
         """
         Generate a detailed creative brief including storyboard, narration, and technical direction.
@@ -30,6 +31,10 @@ class ClaudeService:
 
         When bible is provided, character and environment references are injected
         so Claude maintains visual consistency across all scenes.
+
+        memory_block carries accumulated director memory (lessons, patterns, standing
+        preferences) assembled by memory_service. It sits alongside the skill block so
+        what previous productions learned reaches the brief.
         """
         # Load production skills relevant to the target animation model
         skills_block = await skill_loader_service.build_prompt_block(
@@ -123,6 +128,8 @@ IMPORTANT RULES FOR PROMPTS:
 
 {skills_block}
 
+{memory_block}
+
 Focus on creating "wow" visual prompts that are descriptive and cinematic."""
 
         user_prompt = f"Research Analysis:\n{analysis}\n\nUser Style Notes: {style_notes}"
@@ -150,7 +157,8 @@ Focus on creating "wow" visual prompts that are descriptive and cinematic."""
             brief = json.loads(content)
             logger.info(
                 f"Creative brief generated: {len(brief.get('storyboard', []))} scenes, "
-                f"skills injected: {bool(skills_block)}"
+                f"skills injected: {bool(skills_block)}, "
+                f"memory injected: {bool(memory_block)}"
             )
             return brief
                 
