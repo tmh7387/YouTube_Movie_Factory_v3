@@ -94,14 +94,16 @@ RETRY_MARKERS = (
 #
 # Each entry is (name, needs_url, builder).
 #
-# "id+type" leads because nano_banana_2 named those two keys itself:
-#   input_images.0.id: Field required; input_images.0.type: Field required
-# The value of `type` is not named in that reply, so the upload's own type is used when
-# it carries one, then "image" and "media" are tried. A wrong enum answers "Input should
-# be ...", which lists the values it does accept.
+# {"id": ..., "type": "media_input"} leads because it is the answer, confirmed against a
+# live account on 2026-08-17: nano_banana_2 named the two keys itself ("input_images.0.id:
+# Field required; input_images.0.type: Field required"), then listed the kinds it accepts,
+# and media_input is the one that means "a file I uploaded" rather than the output of some
+# earlier job. The rest stay as fallbacks so a model that wants something else costs a few
+# cheap calls, not an outage.
+CONFIRMED_MEDIA_TYPE = "media_input"
 ARRAY_ELEMENT_SHAPES = (
+    ("id+type=media_input", False, lambda m: {"id": m["id"], "type": CONFIRMED_MEDIA_TYPE}),
     ("id+type", False, lambda m: {"id": m["id"], "type": m.get("type") or "image"}),
-    ("id+type=image", False, lambda m: {"id": m["id"], "type": "image"}),
     ("id+type=media", False, lambda m: {"id": m["id"], "type": "media"}),
     ("value/role", False, lambda m: {"value": m["id"], "role": "image"}),
     ("image_url block", True, lambda m: {"type": "image_url", "image_url": m["url"]}),

@@ -594,8 +594,41 @@ async def check_cometapi_video(ctx: Context) -> Result:
         mode="std",
     )
     if "error" in result:
-        return Result(FAIL, result["error"][:250])
+        # "no available channel for group default and model X" is an account fact, not a
+        # bug: the key cannot reach that model. A bare 503 sends you hunting through the
+        # code. The list of video models the key CAN reach is the actual next step.
+        detail = result["error"][:250]
+        if "model_not_found" in result["error"] or "no available channel" in result["error"]:
+            reachable = await _cometapi_video_models()
+            detail = (
+                f"your CometAPI key cannot reach {settings.SEEDANCE_VIDEO_MODEL}. "
+                f"Set SEEDANCE_VIDEO_MODEL in env/.env to one it can: {reachable}"
+            )
+        return Result(FAIL, detail)
     return Result(OK, f"{settings.SEEDANCE_VIDEO_MODEL} -> {result['url'][:70]}")
+
+
+async def _cometapi_video_models(limit: int = 12) -> str:
+    """Video-looking model ids this key can see, or why we could not find out."""
+    import httpx
+
+    from app.core.config import settings
+    from app.services.media_gen_service import COMET_BASE
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            response = await client.get(
+                f"{COMET_BASE}/models",
+                headers={"Authorization": f"Bearer {settings.COMETAPI_API_KEY}"},
+            )
+        response.raise_for_status()
+        ids = [item.get("id", "") for item in response.json().get("data", [])]
+    except Exception as exc:                  # noqa: BLE001 - this is the error path already
+        return f"(could not list models: {type(exc).__name__})"
+
+    wanted = ("seedance", "kling", "veo", "video", "hailuo", "minimax", "wan")
+    matches = sorted({i for i in ids if any(w in i.lower() for w in wanted)})
+    return ", ".join(matches[:limit]) or "(none of this key's models look like video models)"
 
 
 CHECKS: list[Check] = [
