@@ -16,7 +16,7 @@ import logging
 
 from app.db.session import get_db
 from app.models import ResearchJob, CurationJob
-from tasks.curation import run_briefing_pipeline
+from tasks.curation import _orchestrate_curation
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
