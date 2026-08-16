@@ -52,6 +52,24 @@ make gates      # just the four acceptance gates
 make smoke      # just the end-to-end run
 ```
 
+### On Windows
+
+`make` is a Unix tool. Windows does not have it. Run the same things directly from
+PowerShell, in the `backend` folder, with the virtual environment activated:
+
+```powershell
+cd backend
+.\venv\Scripts\Activate.ps1
+
+python -m pytest                        # same as: make verify-backend
+python -m pytest tests/test_gate_*.py   # same as: make gates
+python -m live_check                    # same as: make live-check
+python -m live_check --list             # list every check, run none
+python -m worker --once                 # one worker sweep
+```
+
+The frontend half of `make verify` is `npm ci` then `npx tsc --noEmit` in `frontend`.
+
 ### Checking the real services
 
 Everything under `make verify` replaces the external vendors with stand-ins. That
