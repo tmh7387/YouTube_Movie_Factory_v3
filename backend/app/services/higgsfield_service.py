@@ -37,6 +37,16 @@ logger = logging.getLogger(__name__)
 URL_KEYS = ("url", "result_url", "output_url", "video_url", "image_url", "download_url")
 NESTED_KEYS = ("results", "result", "outputs", "output", "jobs", "data", "items", "assets")
 
+# Branches that echo the REQUEST back, not the result. A --wait reply repeats the job
+# record, so the still we uploaded is in there with a perfectly good URL. Reading it as
+# the output made animation "succeed" by handing back its own input.
+REQUEST_KEYS = ("params", "param", "input", "inputs", "medias", "input_images", "request")
+
+# What a file extension says the asset is. Used to reject the wrong kind outright: a
+# .png is never the answer to "give me the video", however tolerant the parser is.
+VIDEO_SUFFIXES = (".mp4", ".mov", ".webm", ".m4v", ".mkv")
+IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif")
+
 # Which flag carries a picture depends on the model, and the CLI's help is not the
 # authority — `higgsfield model get <model>` is. Two live examples:
 #
@@ -495,41 +505,62 @@ class HiggsfieldService:
 
         Deliberately tolerant: the CLI's schema is undocumented, and a generator that
         worked yesterday must not stop working because a key was renamed one level
-        deeper. `want` ("image"/"video") biases the choice when several URLs appear.
+        deeper. But tolerance has a floor. `want` ("image"/"video") is a REJECTION, not
+        a preference: asked for a video, a .png is never the answer. It used to be only
+        a preference, and animation duly returned the still it had just uploaded.
         """
-        found: List[str] = []
+        def collect(skip_request_branches: bool) -> List[str]:
+            found: List[str] = []
 
-        def walk(node: Any) -> None:
-            if isinstance(node, str):
-                if node.startswith(("http://", "https://")):
-                    found.append(node)
-                return
-            if isinstance(node, list):
-                for item in node:
-                    walk(item)
-                return
-            if isinstance(node, dict):
-                for key in URL_KEYS:
-                    value = node.get(key)
-                    if isinstance(value, str) and value.startswith("http"):
-                        found.append(value)
-                for key in NESTED_KEYS:
-                    if key in node:
-                        walk(node[key])
-                for key, value in node.items():
-                    if key not in URL_KEYS and key not in NESTED_KEYS:
+            def walk(node: Any) -> None:
+                if isinstance(node, str):
+                    if node.startswith(("http://", "https://")):
+                        found.append(node)
+                    return
+                if isinstance(node, list):
+                    for item in node:
+                        walk(item)
+                    return
+                if isinstance(node, dict):
+                    for key in URL_KEYS:
+                        value = node.get(key)
+                        if isinstance(value, str) and value.startswith("http"):
+                            found.append(value)
+                    for key in NESTED_KEYS:
+                        if key in node:
+                            walk(node[key])
+                    for key, value in node.items():
+                        if key in URL_KEYS or key in NESTED_KEYS:
+                            continue
+                        if skip_request_branches and key in REQUEST_KEYS:
+                            continue
                         walk(value)
 
-        walk(payload)
+            walk(payload)
+            return found
+
+        # The echo of the request is searched only if the result branches held nothing,
+        # so a reply that puts its output somewhere unexpected still works.
+        found = collect(skip_request_branches=True) or collect(skip_request_branches=False)
         if not found:
             return None
 
-        if want:
-            suffixes = (".mp4", ".mov", ".webm") if want == "video" else (".png", ".jpg", ".jpeg", ".webp")
-            preferred = [u for u in found if u.lower().split("?")[0].endswith(suffixes)]
-            if preferred:
-                return preferred[0]
-        return found[0]
+        if not want:
+            return found[0]
+
+        right, wrong = (VIDEO_SUFFIXES, IMAGE_SUFFIXES) if want == "video" \
+            else (IMAGE_SUFFIXES, VIDEO_SUFFIXES)
+
+        def suffix_of(url: str) -> str:
+            return "." + url.lower().split("?")[0].rsplit(".", 1)[-1]
+
+        preferred = [u for u in found if suffix_of(u).endswith(right)]
+        if preferred:
+            return preferred[0]
+        # Nothing named the right kind. Anything named the WRONG kind is dropped rather
+        # than returned — an extensionless or signed URL is still a candidate.
+        neutral = [u for u in found if not suffix_of(u).endswith(wrong)]
+        return neutral[0] if neutral else None
 
     # -- generation --------------------------------------------------------
 

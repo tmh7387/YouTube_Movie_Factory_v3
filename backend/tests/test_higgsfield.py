@@ -159,6 +159,52 @@ def test_no_url_returns_none():
     assert HiggsfieldService.extract_url({"status": "queued"}) is None
 
 
+# --- the still we sent in is never the clip we asked for ----------------------
+
+def test_the_echoed_input_still_is_not_returned_as_the_video():
+    """
+    A --wait reply repeats the job record, so the picture we uploaded is in it with a
+    perfectly good URL. Returning that made animation "succeed" by handing back its own
+    input: a 256x256 PNG, zero seconds long, reported as a finished clip.
+    """
+    reply = {
+        "params": {"medias": [{"url": "https://cdn.hf/user/in.png"}], "prompt": "dolly"},
+        "results": [{"url": "https://cdn.hf/user/out.mp4"}],
+    }
+    assert HiggsfieldService.extract_url(reply, want="video") == "https://cdn.hf/user/out.mp4"
+
+
+def test_a_still_is_rejected_rather_than_returned_when_no_clip_is_present():
+    """
+    Asked for a video, a .png is not a fallback — it is a wrong answer. None makes the
+    caller report "no video URL in the reply", which is the truth and is actionable.
+    """
+    reply = {"params": {"medias": [{"url": "https://cdn.hf/user/in.png"}]}}
+    assert HiggsfieldService.extract_url(reply, want="video") is None
+
+
+def test_an_extensionless_url_still_counts_as_a_candidate():
+    """Signed and extensionless URLs are common. Only the WRONG kind is dropped."""
+    reply = {"results": [{"url": "https://cdn.hf/user/asset?token=abc"}]}
+    assert HiggsfieldService.extract_url(reply, want="video") == "https://cdn.hf/user/asset?token=abc"
+
+
+def test_the_request_echo_is_searched_when_nothing_else_carries_a_url():
+    """Tolerance survives: skipping the echo must not blind the parser to a lone URL."""
+    reply = {"params": {"output": {"url": "https://cdn.hf/user/out.mp4"}}}
+    assert HiggsfieldService.extract_url(reply, want="video") == "https://cdn.hf/user/out.mp4"
+
+
+async def test_animation_reports_an_error_when_only_the_input_still_comes_back(cli, reference):
+    """The end-to-end shape of the bug: a pass that was really a failure."""
+    cli(stdout=json.dumps({"params": {"medias": [{"url": "https://cdn.hf/in.png"}]}}))
+
+    result = await higgsfield_service.animate_image(reference, prompt="dolly", duration=4)
+
+    assert "error" in result, "returning the input still as the clip is a silent failure"
+    assert "no video URL" in result["error"]
+
+
 @pytest.mark.parametrize(
     "stdout",
     [

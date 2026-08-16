@@ -44,6 +44,10 @@ if sys.platform == "win32":
 
 OK, FAIL, SKIP = "ok", "fail", "skip"
 
+# ffprobe reports a still picture as a one-frame video stream. These are the codec names
+# it uses for one, and seeing one means the URL is a picture whatever the check expected.
+STILL_CODECS = {"png", "mjpeg", "jpeg", "webp", "gif", "bmp", "tiff", "avif"}
+
 
 @dataclass
 class Result:
@@ -613,13 +617,22 @@ async def _probe(url: str) -> dict:
     payload = json.loads(proc.stdout or "{}")
     streams = payload.get("streams") or []
     if not streams:
-        return {"error": "no video stream — this URL is probably the input still"}
+        return {"error": "no video stream at all"}
+
     stream = streams[0]
+    codec = stream.get("codec_name", "?")
+    duration = float(payload.get("format", {}).get("duration") or 0.0)
+
+    # A PNG is a video stream to ffprobe — one frame, codec "png", no duration. Passing
+    # that is exactly the bug this probe exists to catch, so it is rejected by name.
+    if codec in STILL_CODECS or duration <= 0:
+        return {"error": f"this is a still, not a clip: codec {codec}, duration {duration:.1f}s"}
+
     return {
-        "codec": stream.get("codec_name", "?"),
+        "codec": codec,
         "width": stream.get("width", 0),
         "height": stream.get("height", 0),
-        "duration": float(payload.get("format", {}).get("duration") or 0.0),
+        "duration": duration,
     }
 
 
