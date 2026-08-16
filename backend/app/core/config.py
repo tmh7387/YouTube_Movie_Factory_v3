@@ -90,6 +90,10 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_KEY: str = ""
     SUPABASE_AUDIO_BUCKET: str = "production-audio"
+    # Reference sheets and image-board uploads are PNGs. They cannot go in the audio
+    # bucket: it restricts mime types, so every picture upload came back
+    # 415 invalid_mime_type. Pictures get their own bucket.
+    SUPABASE_ASSET_BUCKET: str = "production-assets"
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(__file__), "..", "..", "..", "env", ".env"),

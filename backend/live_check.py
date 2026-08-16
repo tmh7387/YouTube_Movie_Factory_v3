@@ -36,6 +36,12 @@ BACKEND_ROOT = Path(__file__).resolve().parent
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
+# Windows defaults to the Proactor loop, which psycopg refuses to run async on
+# ("Psycopg cannot use the 'ProactorEventLoop'"). run.py and app/main.py already do
+# this; a standalone entry point has to do it for itself or every database call fails.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 OK, FAIL, SKIP = "ok", "fail", "skip"
 
 
@@ -289,6 +295,32 @@ async def check_higgsfield_cli(_ctx: Context) -> Result:
     return Result(OK, "signed in, all three configured models available")
 
 
+async def check_higgsfield_params(_ctx: Context) -> Result:
+    """
+    Print each configured model's real parameter list.
+
+    Media flag names differ per model — nano_banana_2 refuses --image-references even
+    though the CLI's own help advertises it. The service searches a candidate list at
+    runtime; this check shows the authoritative answer so the list can be trimmed.
+    """
+    from app.core.config import settings
+    from app.services.higgsfield_service import higgsfield_service
+
+    if not await higgsfield_service.available():
+        return Result(SKIP, "Higgsfield unavailable")
+
+    lines = []
+    for model in (settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL, settings.HIGGSFIELD_VIDEO_MODEL):
+        described = await higgsfield_service.describe_model(model)
+        if "error" in described:
+            lines.append(f"{model}: {described['error'][:120]}")
+            continue
+        parsed = described.get("parsed")
+        names = sorted(parsed.keys()) if isinstance(parsed, dict) else None
+        lines.append(f"{model}: {names if names else described['raw'][:300]}")
+    return Result(OK, " || ".join(lines))
+
+
 async def check_higgsfield_image(ctx: Context) -> Result:
     """The primary still generator, with a reference picture attached."""
     from app.core.config import settings
@@ -332,6 +364,10 @@ async def check_cometapi_image(ctx: Context) -> Result:
                 f"this key. Image models this key can reach: {available}"
             )
         return Result(FAIL, result["error"][:160] + hint)
+    if result.get("b64_json"):
+        # gpt-image models return base64 and never a URL, even through the gateway.
+        # No ctx.image_url, so the video check that animates it will skip.
+        return Result(OK, f"{settings.DEFAULT_IMAGE_MODEL} -> {len(result['b64_json'])} b64 chars")
     ctx.image_url = result["url"]
     return Result(OK, f"{settings.DEFAULT_IMAGE_MODEL} -> {result['url'][:70]}")
 
@@ -443,6 +479,7 @@ CHECKS: list[Check] = [
     Check("youtube", "search returns results", check_youtube),
     Check("supabase", "upload succeeds and the URL is publicly readable", check_supabase),
     Check("higgsfield_cli", "CLI installed, signed in, configured models exist", check_higgsfield_cli),
+    Check("higgsfield_params", "show each model's real parameter names", check_higgsfield_params),
     Check("higgsfield_image", "primary still generation with a reference", check_higgsfield_image, slow=True),
     Check("cometapi_image", "fallback still image generation", check_cometapi_image),
     Check("openai_generate", "plain OpenAI image generation", check_openai_generate),

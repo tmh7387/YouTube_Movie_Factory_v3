@@ -15,7 +15,11 @@ import pytest
 
 import tasks.production as production
 from app.core.config import settings
-from app.services.higgsfield_service import HiggsfieldService, higgsfield_service
+from app.services.higgsfield_service import (
+    IMAGE_REFERENCE_FLAGS,
+    HiggsfieldService,
+    higgsfield_service,
+)
 
 
 @pytest.fixture
@@ -65,7 +69,8 @@ async def test_a_reference_uses_the_reference_model_and_passes_the_file(cli, ref
     assert result["character_consistent"] is True
     argv = calls[0]
     assert argv[1:4] == ["generate", "create", settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL]
-    assert "--image-references" in argv
+    assert IMAGE_REFERENCE_FLAGS[0] in argv
+    assert reference in argv
     assert "--json" in argv and "--wait" in argv
 
 
@@ -76,7 +81,7 @@ async def test_no_reference_uses_the_plain_image_model(cli):
 
     assert result["character_consistent"] is False
     assert calls[0][3] == settings.HIGGSFIELD_IMAGE_MODEL
-    assert "--image-references" not in calls[0]
+    assert not any(f in calls[0] for f in IMAGE_REFERENCE_FLAGS)
 
 
 async def test_references_are_capped(cli, tmp_path):
@@ -88,14 +93,14 @@ async def test_references_are_capped(cli, tmp_path):
     calls = cli(stdout=json.dumps({"url": "https://cdn.hf/x.png"}))
 
     await higgsfield_service.generate_image("a diver", reference_paths=paths)
-    assert calls[0].count("--image-references") == settings.HIGGSFIELD_MAX_REFERENCES
+    assert calls[0].count(IMAGE_REFERENCE_FLAGS[0]) == settings.HIGGSFIELD_MAX_REFERENCES
 
 
 async def test_a_missing_reference_file_is_dropped_not_sent(cli):
     calls = cli(stdout=json.dumps({"url": "https://cdn.hf/x.png"}))
     result = await higgsfield_service.generate_image("a diver", reference_paths=["/nope.png"])
 
-    assert "--image-references" not in calls[0]
+    assert IMAGE_REFERENCE_FLAGS[0] not in calls[0]
     assert result["character_consistent"] is False
 
 
@@ -317,3 +322,91 @@ def test_the_configured_model_ids_are_higgsfield_style(backend_root):
         settings.HIGGSFIELD_VIDEO_MODEL,
     ):
         assert "-" not in value, f"{value} looks like a CometAPI id, not a Higgsfield one"
+
+
+# --- the media flag differs per model ----------------------------------------
+
+async def test_a_rejected_media_flag_is_retried_with_the_next_name(monkeypatch, reference):
+    """
+    nano_banana_2 answers "Unknown params: image-references" even though the CLI's own
+    help advertises that flag. Hardcoding one name breaks the moment a model declares a
+    different one, so the service works through a candidate list and remembers the
+    winner.
+    """
+    calls = []
+
+    class _Process:
+        def __init__(self, out, code):
+            self._out, self.returncode = out, code
+
+        async def communicate(self):
+            return self._out, b"Error: Unknown params: image\nHint: Run: higgsfield model get x"
+
+    async def _exec(binary, *args, **_kwargs):
+        calls.append(list(args))
+        # Reject everything except the second candidate.
+        if IMAGE_REFERENCE_FLAGS[1] in args:
+            return _Process(b'{"url": "https://cdn.hf/x.png"}', 0)
+        return _Process(b"", 1)
+
+    monkeypatch.setattr("app.services.higgsfield_service.asyncio.create_subprocess_exec", _exec)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
+
+    assert result["url"] == "https://cdn.hf/x.png"
+    assert len(calls) == 2, "should have stopped at the first flag that worked"
+    # And it is remembered, so the next scene does not repeat the search.
+    assert higgsfield_service._media_flag[settings.HIGGSFIELD_REFERENCE_IMAGE_MODEL] == \
+        IMAGE_REFERENCE_FLAGS[1]
+
+
+async def test_a_real_failure_is_not_retried_as_a_flag_problem(monkeypatch, reference):
+    """Only "Unknown params" means the flag was wrong. Everything else stops at once."""
+    calls = []
+
+    class _Process:
+        returncode = 1
+
+        async def communicate(self):
+            return b"", b"Error: insufficient credits"
+
+    async def _exec(_binary, *args, **_kwargs):
+        calls.append(list(args))
+        return _Process()
+
+    monkeypatch.setattr("app.services.higgsfield_service.asyncio.create_subprocess_exec", _exec)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
+
+    assert "insufficient credits" in result["error"]
+    assert len(calls) == 1, "retried a failure that had nothing to do with the flag name"
+
+
+async def test_exhausting_every_flag_names_the_command_that_would_answer(
+    monkeypatch, reference
+):
+    class _Process:
+        returncode = 1
+
+        async def communicate(self):
+            return b"", b"Error: Unknown params: image"
+
+    async def _exec(_binary, *_args, **_kwargs):
+        return _Process()
+
+    monkeypatch.setattr("app.services.higgsfield_service.asyncio.create_subprocess_exec", _exec)
+    monkeypatch.setattr(higgsfield_service, "_binary", "higgsfield")
+    monkeypatch.setattr(higgsfield_service, "_authenticated", True)
+    monkeypatch.setattr(higgsfield_service, "_media_flag", {})
+    monkeypatch.setattr(settings, "HIGGSFIELD_ENABLED", True)
+
+    result = await higgsfield_service.generate_image("a diver", reference_paths=[reference])
+    assert "higgsfield model get" in result["error"]

@@ -35,11 +35,71 @@ logger = logging.getLogger(__name__)
 URL_KEYS = ("url", "result_url", "output_url", "video_url", "image_url", "download_url")
 NESTED_KEYS = ("results", "result", "outputs", "output", "jobs", "data", "items", "assets")
 
+# Which flag carries a reference picture depends on the model: the CLI's help lists
+# --image-references, but nano_banana_2 answers "Unknown params: image-references" and
+# points at `higgsfield model get <model>`. Rather than hardcode one name and break on
+# the next model, try them in order and remember which one the model accepted.
+IMAGE_REFERENCE_FLAGS = ("--image", "--image-references", "--reference-images", "--images")
+START_IMAGE_FLAGS = ("--start-image", "--image", "--start_image")
+
+# The CLI says this when a flag is not in a model's parameter list.
+UNKNOWN_PARAM_MARKER = "unknown params"
+
 
 class HiggsfieldService:
     def __init__(self):
         self._binary: Optional[str] = None
         self._authenticated: Optional[bool] = None
+        # model id -> the media flag that model accepted, learned on first use.
+        self._media_flag: Dict[str, str] = {}
+
+    async def _run_with_media_flag(
+        self,
+        model: str,
+        base_args: List[str],
+        media_paths: List[str],
+        candidates: tuple,
+        timeout: float,
+    ) -> Dict[str, Any]:
+        """
+        Run the generate command, finding the media flag this model accepts.
+
+        Each model declares its own parameter names, and the CLI rejects the rest with
+        "Unknown params: <name>". A flag that works is remembered, so the search costs
+        at most a few cheap failures once per model per process.
+        """
+        if not media_paths:
+            return await self._run(base_args, timeout)
+
+        known = self._media_flag.get(model)
+        order = [known] + [c for c in candidates if c != known] if known else list(candidates)
+
+        last: Dict[str, Any] = {"error": "no media flag attempted"}
+        for flag in order:
+            args = list(base_args)
+            for path in media_paths:
+                args += [flag, path]
+            result = await self._run(args, timeout)
+
+            if "error" not in result:
+                if self._media_flag.get(model) != flag:
+                    logger.info(f"Higgsfield: {model} accepts {flag} for media inputs")
+                    self._media_flag[model] = flag
+                return result
+
+            if UNKNOWN_PARAM_MARKER not in result["error"].lower():
+                # A real failure — the flag was fine, the request was not.
+                return result
+            last = result
+            logger.debug(f"Higgsfield: {model} rejected {flag}, trying the next name")
+
+        return {
+            "error": (
+                f"{model} accepted none of {', '.join(candidates)} for media inputs. "
+                f"Run `higgsfield model get {model}` to see its parameters. "
+                f"Last reply: {last['error'][:200]}"
+            )
+        }
 
     # -- availability ------------------------------------------------------
 
@@ -202,12 +262,14 @@ class HiggsfieldService:
 
         args = ["generate", "create", chosen, "--prompt", prompt, "--json", "--wait",
                 "--wait-timeout", settings.HIGGSFIELD_WAIT_TIMEOUT]
-        for ref in refs[:settings.HIGGSFIELD_MAX_REFERENCES]:
-            args += ["--image-references", str(Path(ref).resolve())]
         if aspect_ratio:
             args += ["--aspect_ratio", aspect_ratio]
 
-        result = await self._run(args, timeout=settings.HIGGSFIELD_TIMEOUT_SECONDS)
+        paths = [str(Path(r).resolve()) for r in refs[:settings.HIGGSFIELD_MAX_REFERENCES]]
+        result = await self._run_with_media_flag(
+            chosen, args, paths, IMAGE_REFERENCE_FLAGS,
+            timeout=settings.HIGGSFIELD_TIMEOUT_SECONDS,
+        )
         if "error" in result:
             return result
 
@@ -242,14 +304,16 @@ class HiggsfieldService:
             return {"error": f"start image not found: {image_path}"}
 
         args = ["generate", "create", chosen, "--json", "--wait",
-                "--wait-timeout", settings.HIGGSFIELD_WAIT_TIMEOUT,
-                "--start-image", str(source.resolve())]
+                "--wait-timeout", settings.HIGGSFIELD_WAIT_TIMEOUT]
         if prompt:
             args += ["--prompt", prompt]
         if duration:
             args += ["--duration", str(duration)]
 
-        result = await self._run(args, timeout=settings.HIGGSFIELD_TIMEOUT_SECONDS)
+        result = await self._run_with_media_flag(
+            chosen, args, [str(source.resolve())], START_IMAGE_FLAGS,
+            timeout=settings.HIGGSFIELD_TIMEOUT_SECONDS,
+        )
         if "error" in result:
             return result
 
@@ -270,6 +334,13 @@ class HiggsfieldService:
         if not isinstance(payload, list):
             return {"error": f"unexpected model list shape: {str(payload)[:200]}"}
         return {"models": [m.get("job_set_type") for m in payload if isinstance(m, dict)]}
+
+    async def describe_model(self, model: str) -> Dict[str, Any]:
+        """`higgsfield model get <model>` — the definitive parameter list for a model."""
+        result = await self._run(["model", "get", model, "--json"], timeout=60)
+        if "error" in result:
+            return result
+        return {"raw": result["stdout"][:2000], "parsed": self.parse_json(result["stdout"])}
 
 
 higgsfield_service = HiggsfieldService()
