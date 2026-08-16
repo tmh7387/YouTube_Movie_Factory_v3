@@ -210,3 +210,60 @@ def test_supabase_is_a_declared_dependency(backend_root):
     """
     requirements = (backend_root / "requirements.txt").read_text()
     assert "supabase" in requirements
+
+
+# --- CometAPI is a gateway: the request must suit the model behind it ---------
+
+def _comet_capture(monkeypatch, body):
+    captured = {}
+
+    async def _handler(request: httpx.Request) -> httpx.Response:
+        captured["payload"] = json.loads(request.content)
+        return httpx.Response(200, json=body)
+
+    transport = httpx.MockTransport(_handler)
+    real_client = httpx.AsyncClient
+    monkeypatch.setattr(
+        "app.services.media_gen_service.httpx.AsyncClient",
+        lambda *_a, **kw: real_client(**{**kw, "transport": transport}),
+    )
+    return captured
+
+
+async def test_a_gpt_image_model_via_cometapi_omits_response_format(monkeypatch):
+    """
+    Setting DEFAULT_IMAGE_MODEL to a gpt-image model routes an OpenAI model through the
+    CometAPI gateway. gpt-image rejects response_format with a 400, exactly as it does
+    on OpenAI's own endpoint.
+    """
+    captured = _comet_capture(monkeypatch, {"data": [{"b64_json": "ZmFrZQ=="}]})
+    result = await media_gen_service.generate_image("a pebble", model="gpt-image-2")
+
+    assert "response_format" not in captured["payload"]
+    assert result["b64_json"] == "ZmFrZQ=="
+
+
+async def test_a_gpt_image_model_gets_a_size_it_accepts(monkeypatch):
+    """gpt-image accepts only 1024x1024, 1536x1024 and 1024x1536 — not 1280x720."""
+    captured = _comet_capture(monkeypatch, {"data": [{"b64_json": "ZmFrZQ=="}]})
+    await media_gen_service.generate_image("a pebble", model="gpt-image-2", size="1280x720")
+
+    assert captured["payload"]["size"] == "1536x1024"
+
+
+async def test_a_seedream_model_still_asks_for_a_url(monkeypatch):
+    captured = _comet_capture(monkeypatch, {"data": [{"url": "https://cdn/x.jpg"}]})
+    result = await media_gen_service.generate_image(
+        "a pebble", model="doubao-seedream-4-0-250828", size="1280x720"
+    )
+
+    assert captured["payload"]["response_format"] == "url"
+    assert captured["payload"]["size"] == "1280x720"
+    assert result["url"] == "https://cdn/x.jpg"
+
+
+async def test_a_base64_reply_is_returned_rather_than_treated_as_missing(monkeypatch):
+    _comet_capture(monkeypatch, {"data": [{"b64_json": "ZmFrZQ=="}]})
+    result = await media_gen_service.generate_image("a pebble", model="anything")
+    assert "error" not in result
+    assert result["b64_json"] == "ZmFrZQ=="
