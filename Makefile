@@ -23,7 +23,7 @@ GATES := tests/test_gate_imports.py \
          tests/test_gate_migration_coherence.py \
          tests/test_gate_smoke.py
 
-.PHONY: verify verify-backend verify-frontend gates smoke live-check live-check-all db-state venv clean-venv
+.PHONY: verify verify-backend verify-frontend gates smoke live-check live-check-all e2e db-state venv clean-venv
 
 verify: verify-backend verify-frontend
 
@@ -58,6 +58,10 @@ live-check: venv
 # Adds video generation — slower and the expensive one.
 live-check-all: venv
 	cd $(BACKEND) && .venv/bin/python -m live_check --all
+
+# One real job, end to end, against the real services. Costs generation credits.
+e2e: venv
+	cd $(BACKEND) && .venv/bin/python -m e2e_run
 
 # Read-only. Says which migrations the database really has, and what to run next.
 # Use it whenever `alembic current` refuses to answer.

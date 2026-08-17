@@ -89,6 +89,7 @@ python -m live_check                    # same as: make live-check
 python -m live_check --list             # list every check, run none
 python -m worker --once                 # one worker sweep
 python -m db_state                      # what the database really has (read-only)
+python -m e2e_run                       # one real job, end to end (costs credits)
 ```
 
 The frontend half of `make verify` is `npm ci` then `npx tsc --noEmit` in `frontend`.
