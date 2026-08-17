@@ -68,7 +68,14 @@ export default function ResearchIntake({ onStarted }: { onStarted?: (jobId: stri
                             const resp = await axios.post(`${API}/bible/upload-intake?source_type=${sourceType}`, form);
                             urls.push(resp.data.public_url);
                         }
-                        sourceData.urls = urls;
+                        // Key names must match intake_normalizer.normalize_to_research_context:
+                        // image_board reads image_urls, audio_track reads file_url.
+                        if (sourceType === 'image_board') {
+                            sourceData.image_urls = urls;
+                        } else {
+                            sourceData.file_url = urls[0];
+                            sourceData.file_urls = urls;
+                        }
                     }
                     break;
                 case 'youtube_channel':

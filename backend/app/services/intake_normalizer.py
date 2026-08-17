@@ -52,8 +52,7 @@ async def normalize_to_research_context(
         context = await _normalize_single_video(context, source_data)
 
     elif source_type == "image_board":
-        context["image_urls"] = source_data.get("image_urls", [])
-        context["text_content"] = source_data.get("notes", "")
+        context = _normalize_image_board(context, source_data)
 
     elif source_type == "audio_track":
         context["audio_meta"] = {
@@ -81,6 +80,40 @@ async def normalize_to_research_context(
         logger.warning(f"Unknown source_type: {source_type}, treating as text_brief")
         context["text_content"] = source_data.get("text", topic)
 
+    return context
+
+
+def _normalize_image_board(context: dict, source_data: dict) -> dict:
+    """
+    Carry uploaded reference images into the research context.
+
+    The frontend used to post these under `urls` while this function read `image_urls`,
+    so an Image Board intake arrived as an empty list every time. Both sides now agree
+    on `image_urls`, and `urls` is still accepted so links captured under the old key
+    are not silently dropped.
+
+    Setting context["image_urls"] alone is not enough — nothing downstream reads it.
+    The URLs are also written into text_content, which is what actually reaches
+    ai_service.analyze_content() and, through it, the research brief.
+    """
+    urls = source_data.get("image_urls") or source_data.get("urls") or []
+    urls = [u for u in urls if isinstance(u, str) and u.strip()]
+    context["image_urls"] = urls
+
+    notes = (source_data.get("notes") or "").strip()
+    parts = []
+    if notes:
+        parts.append(notes)
+    if urls:
+        parts.append(
+            f"--- REFERENCE IMAGES ({len(urls)}) ---\n"
+            + "\n".join(f"{i}. {u}" for i, u in enumerate(urls, 1))
+        )
+    else:
+        parts.append("No reference images were supplied with this image board.")
+
+    context["text_content"] = "\n\n".join(parts)
+    logger.info(f"Image board normalized: {len(urls)} reference image(s)")
     return context
 
 

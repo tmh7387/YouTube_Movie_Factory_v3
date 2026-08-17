@@ -1,3 +1,15 @@
+"""
+Suno music generation via CometAPI.
+
+STAGED — DELIBERATELY UNWIRED. This module has no importers by design. Music is
+user-upload-only today (ProductionJob.music_url, set by POST /api/production/upload/audio)
+and api/production.py hardcodes num_tracks=0, so no pipeline phase generates a track.
+tasks/production.py used to carry a _generate_music_track() that called into here without
+ever importing it — unreachable code that would have raised NameError the moment
+num_tracks went above zero. That function is gone; this service is kept for the day
+generated music comes back, and is listed in tests/test_gate_orphans.py::ALLOWED_ORPHANS.
+Delete both the allowlist entry and this paragraph when it is wired.
+"""
 import httpx
 import logging
 import asyncio

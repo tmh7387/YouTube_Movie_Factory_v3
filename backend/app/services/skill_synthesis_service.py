@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 from anthropic import AsyncAnthropic
 from app.core.config import settings
+from app.services.anthropic_response import response_text
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +154,7 @@ Return ONLY the JSON array, no other text."""
                 messages=[{"role": "user", "content": user_message}],
             )
 
-            raw = response.content[0].text.strip()
+            raw = response_text(response).strip()
             # Only strip fences when the whole response is wrapped in them
             if raw.startswith("```"):
                 m = re.search(r"```(?:json)?\s*([\s\S]*?)```", raw)

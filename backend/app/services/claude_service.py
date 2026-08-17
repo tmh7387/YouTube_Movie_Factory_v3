@@ -4,6 +4,7 @@ from typing import Dict, Any, Optional
 from anthropic import AsyncAnthropic
 from app.core.config import settings
 from app.services.skill_loader_service import skill_loader_service
+from app.services.anthropic_response import response_text
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,7 @@ class ClaudeService:
         animation_model: str = "",
         video_type: Optional[str] = None,
         bible: Optional[Dict[str, Any]] = None,
+        memory_block: str = "",
     ) -> Dict[str, Any]:
         """
         Generate a detailed creative brief including storyboard, narration, and technical direction.
@@ -30,6 +32,10 @@ class ClaudeService:
 
         When bible is provided, character and environment references are injected
         so Claude maintains visual consistency across all scenes.
+
+        memory_block carries accumulated director memory (lessons, patterns, standing
+        preferences) assembled by memory_service. It sits alongside the skill block so
+        what previous productions learned reaches the brief.
         """
         # Load production skills relevant to the target animation model
         skills_block = await skill_loader_service.build_prompt_block(
@@ -43,6 +49,7 @@ class ClaudeService:
             chars = bible.get("characters", [])
             envs = bible.get("environments", [])
             style = bible.get("style_lock", {})
+            camera = bible.get("camera_specs") or {}
 
             char_lines = "\n".join(
                 f"- **{c.get('name', '?')}**: {c.get('physical', '')} | Wardrobe: {c.get('wardrobe', '')}"
@@ -58,6 +65,18 @@ class ClaudeService:
             neg = style.get("negative_prompt", "")
             palette = style.get("color_palette", [])
 
+            # camera_specs is loaded into the bible dict by tasks/curation.py and used to
+            # be dropped on the floor here, so camera direction never reached the brief.
+            camera_lines = "\n".join(
+                f"- {label}: {camera[key]}"
+                for key, label in (
+                    ("default_lens", "Default Lens"),
+                    ("default_movement", "Default Movement"),
+                    ("lighting_setup", "Lighting Setup"),
+                )
+                if camera.get(key)
+            )
+
             bible_block = f"""
 ## Pre-Production Bible — FOLLOW THESE RULES
 
@@ -71,6 +90,9 @@ class ClaudeService:
 - Color Palette: {', '.join(palette) if palette else 'Not specified'}
 - Visual Rules: {'; '.join(rules) if rules else 'None'}
 - Negative Prompt (add to every visual_prompt): {neg}
+
+### Camera Specs (apply to motion_prompt unless a scene demands otherwise)
+{camera_lines if camera_lines else 'Not specified'}
 
 CRITICAL: Every scene's visual_prompt MUST reference bible characters by name and
 apply the style_lock rules. Use the negative prompt to avoid unwanted artifacts.
@@ -107,6 +129,8 @@ IMPORTANT RULES FOR PROMPTS:
 
 {skills_block}
 
+{memory_block}
+
 Focus on creating "wow" visual prompts that are descriptive and cinematic."""
 
         user_prompt = f"Research Analysis:\n{analysis}\n\nUser Style Notes: {style_notes}"
@@ -122,7 +146,7 @@ Focus on creating "wow" visual prompts that are descriptive and cinematic."""
                 ]
             )
             
-            content = response.content[0].text.strip()
+            content = response_text(response).strip()
 
             # Strip markdown code fences Claude sometimes wraps around JSON
             if content.startswith("```"):
@@ -134,7 +158,8 @@ Focus on creating "wow" visual prompts that are descriptive and cinematic."""
             brief = json.loads(content)
             logger.info(
                 f"Creative brief generated: {len(brief.get('storyboard', []))} scenes, "
-                f"skills injected: {bool(skills_block)}"
+                f"skills injected: {bool(skills_block)}, "
+                f"memory injected: {bool(memory_block)}"
             )
             return brief
                 

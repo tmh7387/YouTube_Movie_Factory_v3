@@ -3,6 +3,7 @@ import json
 import logging
 from app.services.claude_service import claude_service
 from app.services.bible_service import generate_bible_from_context
+from app.services.memory_service import memory_service
 from app.db.session import AsyncSessionLocal
 from app.models import ResearchJob, ResearchVideo, CurationJob, PreProductionBible
 from sqlalchemy import select, update
@@ -152,12 +153,20 @@ async def _orchestrate_curation(curation_job_id: str, research_job_id: str, sele
                     logger.warning(f"Bible generation failed: {bible_dict.get('error')} — proceeding without bible")
                     bible_dict = None
 
-            # 6. Generate Creative Brief (with bible + production skill injection)
-            logger.info(f"Generating brief for topic: {topic} (animation_model={animation_model})")
+            # 6. Generate Creative Brief (bible + production skills + director memory)
+            # The five memory files under .agent/music-video-director/memory/ were read
+            # by no code before this pass; build_memory_block caps the injection at
+            # ~2,000 tokens with the newest lessons first.
+            memory_block = memory_service.build_memory_block()
+            logger.info(
+                f"Generating brief for topic: {topic} (animation_model={animation_model}, "
+                f"memory={len(memory_block)} chars)"
+            )
             brief_result = await claude_service.generate_creative_brief(
                 combined_context,
                 animation_model=animation_model,
                 bible=bible_dict,
+                memory_block=memory_block,
             )
             
             # 7. Final update

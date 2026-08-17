@@ -5,6 +5,12 @@ then computes per-stem RMS energy envelopes for reactive cut timing.
 
 Requires: pip install demucs torch torchaudio
 Gate: settings.STEM_SEPARATION_ENABLED must be True.
+
+STAGED — DELIBERATELY UNWIRED. This module has no importers by design. Stem-reactive
+cutting depends on the beat grid landed in this pass, but demucs pulls in torch and a
+GPU, so wiring it is a later decision. STEM_SEPARATION_ENABLED defaults to False and
+this module is listed in tests/test_gate_orphans.py::ALLOWED_ORPHANS. Delete both the
+allowlist entry and this paragraph when it is wired.
 """
 import asyncio
 import logging

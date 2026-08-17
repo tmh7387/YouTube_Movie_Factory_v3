@@ -5,12 +5,25 @@ from sqlalchemy import select, update
 from typing import List, Dict, Any, Optional
 import uuid
 import os
+from app.core.config import settings
 from app.db.session import get_db
-from app.models import ProductionJob, CurationJob, ProductionTrack, ProductionScene
+from app.models import (
+    CurationJob,
+    GenerationOutcome,
+    ProductionJob,
+    ProductionScene,
+    ProductionTrack,
+)
 from app.services.supabase_storage_service import supabase_storage
 from pydantic import BaseModel
 from datetime import datetime
-from tasks.production import run_production_pipeline, _animate_scene, _assemble_video
+from tasks.production import (
+    RUNNING_STATUSES,
+    _animate_scene,
+    _assemble_video,
+    release_job,
+    run_production_pipeline,
+)
 
 router = APIRouter()
 
@@ -145,13 +158,19 @@ async def start_production(
     await db.commit()
     await db.refresh(new_job)
 
-    background_tasks.add_task(
-        run_production_pipeline,
-        str(new_job.id),
-        animation_mode=request.animation_mode,
-    )
+    # 'queued' is the worker's signal to pick this up. When RUN_JOBS_INLINE is set
+    # (the default, and today's behaviour) the web process also starts it immediately.
+    # Both together are safe: run_production_pipeline claims the job, so whichever gets
+    # there first does the work and the other returns.
     new_job.status = "queued"
     await db.commit()
+
+    if settings.RUN_JOBS_INLINE:
+        background_tasks.add_task(
+            run_production_pipeline,
+            str(new_job.id),
+            animation_mode=request.animation_mode,
+        )
     return new_job
 
 
@@ -284,29 +303,138 @@ async def retry_failed_scenes(
 
 
 # ---------------------------------------------------------------------------
-# Trigger assembly
+# Resume a stalled job
 # ---------------------------------------------------------------------------
 
-@router.post("/{job_id}/assemble")
-async def trigger_assembly(
+@router.post("/{job_id}/resume")
+async def resume_production(
     job_id: uuid.UUID,
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Trigger the ffmpeg assembly phase for a job. All scenes should be 'completed'
-    before calling this, but it will proceed with whatever videos are available.
+    Pick a job back up after its worker died.
+
+    A worker reclaims stalled jobs on its own once the heartbeat goes stale; this is
+    the manual override for when you do not want to wait. Nothing is regenerated —
+    each phase skips work that is already done, so resuming costs only what was lost.
+    """
+    result = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Production job not found")
+    if job.status == "completed":
+        raise HTTPException(status_code=409, detail="Job is already completed")
+
+    previous_status = job.status
+    await release_job(str(job_id))
+    await db.refresh(job)
+    job.status = "queued"
+    await db.commit()
+
+    if settings.RUN_JOBS_INLINE:
+        background_tasks.add_task(run_production_pipeline, str(job_id))
+
+    return {
+        "job_id": str(job_id),
+        "resumed_from": previous_status,
+        "attempt_count": job.attempt_count or 0,
+        "runner": "inline" if settings.RUN_JOBS_INLINE else "worker",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Scene approval
+# ---------------------------------------------------------------------------
+
+class SceneApprovalRequest(BaseModel):
+    approved: bool
+    feedback: Optional[str] = None
+
+
+@router.put("/scene/{scene_id}/approve")
+async def approve_scene(
+    scene_id: uuid.UUID,
+    request: SceneApprovalRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Record a human verdict on one scene.
+
+    Approvals used to live in a React useState Set and were never sent anywhere, so
+    they vanished on reload and the approval gate was decorative. user_approved is
+    nullable: null means "not reviewed", which is not the same as False.
+
+    The verdict is mirrored onto the scene's generation_outcome row — that is the
+    human half of the signal memory_service learns from.
+    """
+    result = await db.execute(select(ProductionScene).where(ProductionScene.id == scene_id))
+    scene = result.scalar_one_or_none()
+    if not scene:
+        raise HTTPException(status_code=404, detail="Scene not found")
+
+    scene.user_approved = request.approved
+    scene.user_feedback = request.feedback
+
+    outcome_res = await db.execute(
+        select(GenerationOutcome).where(GenerationOutcome.scene_id == scene_id)
+    )
+    outcome = outcome_res.scalar_one_or_none()
+    if outcome:
+        outcome.user_approved = request.approved
+
+    await db.commit()
+    return {
+        "scene_id": str(scene_id),
+        "user_approved": scene.user_approved,
+        "user_feedback": scene.user_feedback,
+        "outcome_recorded": outcome is not None,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Trigger assembly
+# ---------------------------------------------------------------------------
+
+@router.post("/{job_id}/assemble-anyway")
+@router.post("/{job_id}/assemble")
+async def assemble_anyway(
+    job_id: uuid.UUID,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Assemble the job's clips regardless of QA verdicts — the explicit human override.
+
+    The pipeline stops at status 'qa_review' when any scene failed QA rather than
+    assembling a known-bad clip into the cut. This endpoint is how a human says "I
+    have looked at it, assemble anyway". It proceeds with whatever clips exist.
+
+    /assemble is kept as an alias so existing callers keep working; both paths run
+    the same override.
     """
     result = await db.execute(select(ProductionJob).where(ProductionJob.id == job_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Production job not found")
 
+    qa_res = await db.execute(
+        select(ProductionScene).where(
+            ProductionScene.job_id == job_id,
+            ProductionScene.qa_status == "fail",
+        )
+    )
+    overridden = len(qa_res.scalars().all())
+
     job.status = "assembling"
     await db.commit()
 
     background_tasks.add_task(_assemble_video, str(job_id))
-    return {"message": "Assembly started in background", "job_id": str(job_id)}
+    return {
+        "message": "Assembly started in background",
+        "job_id": str(job_id),
+        "qa_failures_overridden": overridden,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -328,6 +456,14 @@ def _job_to_dict(j) -> dict:
         "music_url": j.music_url,
         "music_filename": j.music_filename,
         "beat_sync_enabled": j.beat_sync_enabled or False,
+        "worker_id": j.worker_id,
+        "claimed_at": j.claimed_at.isoformat() if j.claimed_at else None,
+        "heartbeat_at": j.heartbeat_at.isoformat() if j.heartbeat_at else None,
+        "attempt_count": j.attempt_count or 0,
+        "is_running": j.status in RUNNING_STATUSES,
+        "tempo_bpm": float(j.tempo_bpm) if j.tempo_bpm is not None else None,
+        "beat_interval_sec": float(j.beat_interval_sec) if j.beat_interval_sec is not None else None,
+        "audio_duration_sec": float(j.audio_duration_sec) if j.audio_duration_sec is not None else None,
         "created_at": j.created_at.isoformat() if j.created_at else None,
     }
 
@@ -339,6 +475,13 @@ def _scene_to_dict(s) -> dict:
         "image_url": s.image_url, "motion_prompt": s.motion_prompt,
         "animation_model": s.animation_model, "animation_status": s.animation_status,
         "local_video_path": s.local_video_path, "cometapi_task_id": s.cometapi_task_id,
+        "qa_status": s.qa_status, "qa_notes": s.qa_notes,
+        "user_approved": s.user_approved, "user_feedback": s.user_feedback,
+        "reference_inputs": s.reference_inputs,
+        "beat_start_sec": float(s.beat_start_sec) if s.beat_start_sec is not None else None,
+        "beat_end_sec": float(s.beat_end_sec) if s.beat_end_sec is not None else None,
+        "beat_duration_sec": float(s.beat_duration_sec) if s.beat_duration_sec is not None else None,
+        "beat_drift_ms": float(s.beat_drift_ms) if s.beat_drift_ms is not None else None,
         "created_at": s.created_at.isoformat() if s.created_at else None,
     }
 

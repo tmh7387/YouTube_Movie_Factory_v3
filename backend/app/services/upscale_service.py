@@ -4,6 +4,12 @@ Requires the realesrgan-ncnn-vulkan binary in PATH or REALESRGAN_BIN env var.
 Gate: settings.UPSCALING_ENABLED must be True.
 
 Install: https://github.com/xinntao/Real-ESRGAN/releases
+
+STAGED — DELIBERATELY UNWIRED. This module has no importers by design. Upscaling runs
+after assembly and needs a native binary that is not present in any current runtime
+environment, so wiring it is a later decision. UPSCALING_ENABLED defaults to False and
+this module is listed in tests/test_gate_orphans.py::ALLOWED_ORPHANS. Delete both the
+allowlist entry and this paragraph when it is wired.
 """
 import asyncio
 import logging

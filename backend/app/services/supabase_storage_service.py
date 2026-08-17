@@ -107,14 +107,16 @@ class SupabaseStorageService:
             file_bytes: Raw file content.
             filename:   Original filename.
             folder:     Folder prefix (e.g. 'bibles/abc123', 'intake/def456').
-            bucket:     Override bucket (defaults to SUPABASE_AUDIO_BUCKET).
+            bucket:     Override bucket (defaults to SUPABASE_ASSET_BUCKET).
 
         Returns:
             {"public_url": str} on success, {"error": str} on failure.
         """
         try:
             client = self._get_client()
-            target_bucket = bucket or settings.SUPABASE_AUDIO_BUCKET
+            # Not the audio bucket. That one restricts mime types to audio, so every
+            # reference-sheet PNG was refused with 415 invalid_mime_type.
+            target_bucket = bucket or settings.SUPABASE_ASSET_BUCKET
 
             self._ensure_bucket(client, target_bucket)
 

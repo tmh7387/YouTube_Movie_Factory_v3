@@ -108,6 +108,15 @@ class ProductionJob(Base):
     music_url = Column(Text)              # Supabase public URL of uploaded audio/video
     music_filename = Column(Text)         # Original filename (e.g. 'beat.mp4', 'track.mp3')
     beat_sync_enabled = Column(Boolean, default=False)
+
+    # Ownership and liveness (migration c8d9e0f1a2b3). A job is claimed by exactly one
+    # worker; heartbeat_at is refreshed as it progresses, so a job whose worker died
+    # can be told apart from one that is simply slow.
+    worker_id = Column(String(64), nullable=True)
+    claimed_at = Column(DateTime(timezone=True), nullable=True)
+    heartbeat_at = Column(DateTime(timezone=True), nullable=True)
+    attempt_count = Column(Integer, default=0)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     published_at = Column(DateTime(timezone=True))
 
@@ -178,10 +187,48 @@ class ProductionScene(Base):
     # Pre-production bible linkage + QA (migration 8425016f02a6)
     bible_character = Column(String(200), nullable=True)
     bible_environment = Column(String(200), nullable=True)
+    # Which image path was taken (migration e5f6a7b8c9d0):
+    #   {"mode": "reference"|"text", "refs": [url, ...], "service": "gpt_image_2"|"cometapi"}
+    reference_inputs = Column(JSONB, nullable=True)
     qa_status = Column(String(20), default='pending')
     qa_notes = Column(Text, nullable=True)
+
+    # Human review (migration f6a7b8c9d0e1). null means "not reviewed" — distinct
+    # from False, which means a human looked and rejected it.
+    user_approved = Column(Boolean, nullable=True)
+    user_feedback = Column(Text, nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     __table_args__ = (UniqueConstraint('job_id', 'scene_number'),)
+
+
+class GenerationOutcome(Base):
+    """
+    One row per generated scene: what was asked for, what came back, and what both
+    the QA gate and the human thought of it.
+
+    This is the training signal the platform had no way of collecting. Skill
+    confidence and the project log are both derived from these rows.
+    """
+    __tablename__ = 'generation_outcome'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    scene_id = Column(UUID(as_uuid=True), ForeignKey('production_scenes.id'), nullable=False)
+    job_id = Column(UUID(as_uuid=True), ForeignKey('production_jobs.id'), nullable=False)
+
+    model = Column(String(50))
+    prompt = Column(Text)                 # the actual motion prompt sent to the generator
+    reference_mode = Column(String(20))   # "reference" | "text" — from reference_inputs
+    beat_aligned = Column(Boolean, default=False)
+
+    qa_pass = Column(Boolean)
+    qa_scores = Column(JSONB)
+    user_approved = Column(Boolean, nullable=True)
+
+    skill_slugs = Column(JSONB)           # skills injected into the brief that made this
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    __table_args__ = (UniqueConstraint('scene_id'),)
 
 class SystemConfig(Base):
     __tablename__ = 'system_config'

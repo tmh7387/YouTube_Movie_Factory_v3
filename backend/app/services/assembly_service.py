@@ -36,10 +36,18 @@ class AssemblyService:
         job_id: str,
         clip_urls: List[str],
         music_url: Optional[str] = None,
+        clip_windows: Optional[List[Optional[float]]] = None,
     ) -> Dict[str, Any]:
         """
         Download clips + music, then assemble with ffmpeg.
         Returns {"output_path": str, "duration": float} or {"error": str}.
+
+        clip_windows carries each scene's beat_end_sec - beat_start_sec, positionally
+        aligned with clip_urls. Generators only take integer seconds, so a clip is
+        almost never exactly as long as the musical window it fills. Trimming here is
+        what puts the cut back on the beat — generation is never warped to fit. A None
+        entry (or no list at all) means "use the whole clip", which is the behaviour
+        for jobs with no music.
         """
         job_dir = self.jobs_dir / job_id
         clips_dir = job_dir / "clips"
@@ -51,15 +59,17 @@ class AssemblyService:
         if not self._ffmpeg_available():
             return {"error": "ffmpeg not found. Install ffmpeg and ensure it is on PATH."}
 
-        # --- Step 1: Download clips ---
-        local_clips: List[Path] = []
+        # --- Step 1: Download clips (keeping each clip's trim window alongside it) ---
+        windows = list(clip_windows or [])
+        local_clips: List[tuple[Path, Optional[float]]] = []
         for i, url in enumerate(clip_urls):
             dest = clips_dir / f"scene_{i:03d}.mp4"
             err = await self._download_file(url, dest)
             if err:
                 logger.warning(f"Failed to download clip {i}: {err}")
                 continue
-            local_clips.append(dest)
+            window = windows[i] if i < len(windows) else None
+            local_clips.append((dest, self._sanitise_window(window)))
 
         if not local_clips:
             return {"error": "All clip downloads failed — nothing to assemble"}
@@ -75,10 +85,18 @@ class AssemblyService:
                 music_path = music_dest
 
         # --- Step 3: Write concat list ---
+        # `outpoint` is the concat demuxer's own trim directive, so the beat-aligned
+        # cut happens in the single re-encoding pass below rather than a second one.
         concat_list = job_dir / "concat.txt"
+        trimmed = 0
         with open(concat_list, "w") as f:
-            for clip in local_clips:
+            for clip, window in local_clips:
                 f.write(f"file '{clip.as_posix()}'\n")
+                if window is not None:
+                    f.write(f"outpoint {window:.3f}\n")
+                    trimmed += 1
+        if trimmed:
+            logger.info(f"Assembly: trimming {trimmed}/{len(local_clips)} clips to their beat windows")
 
         # --- Step 4: Run ffmpeg ---
         output_path = job_dir / "assembled.mp4"
@@ -87,6 +105,19 @@ class AssemblyService:
             lambda: self._run_ffmpeg(concat_list, music_path, output_path),
         )
         return result
+
+    @staticmethod
+    def _sanitise_window(window: Optional[float]) -> Optional[float]:
+        """A trim window is only usable if it is a positive, finite number of seconds."""
+        if window is None:
+            return None
+        try:
+            value = float(window)
+        except (TypeError, ValueError):
+            return None
+        if value <= 0 or value != value or value == float("inf"):
+            return None
+        return value
 
     # -------------------------------------------------------------------------
     # ffmpeg execution

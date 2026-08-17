@@ -189,6 +189,54 @@ export const bibleService = {
         await axios.delete(`${API_BASE_URL}/${bibleId}`);
     },
 
+    // ── Reference sheets ───────────────────────────────────────────
+    // Attaching a sheet to a specific character is what switches scene generation
+    // from "describe the character in prose again" to "anchor to this picture".
+    // The bible-level pile below is the fallback for entities with no sheet of
+    // their own.
+
+    setEntityReference: async (
+        bibleId: string,
+        entity: 'characters' | 'environments',
+        index: number,
+        file: File,
+    ): Promise<Bible> => {
+        const form = new FormData();
+        form.append('file', file);
+        const response = await axios.post(
+            `${API_BASE_URL}/${bibleId}/${entity}/${index}/reference`,
+            form,
+            { headers: { 'Content-Type': 'multipart/form-data' } },
+        );
+        return response.data;
+    },
+
+    clearEntityReference: async (
+        bibleId: string,
+        entity: 'characters' | 'environments',
+        index: number,
+    ): Promise<Bible> => {
+        const response = await axios.delete(
+            `${API_BASE_URL}/${bibleId}/${entity}/${index}/reference`,
+        );
+        return response.data;
+    },
+
+    uploadSharedSheet: async (
+        bibleId: string,
+        sheetType: 'character' | 'environment',
+        file: File,
+    ): Promise<{ public_url: string; sheet_type: string }> => {
+        const form = new FormData();
+        form.append('file', file);
+        const response = await axios.post(
+            `${API_BASE_URL}/${bibleId}/upload?sheet_type=${sheetType}`,
+            form,
+            { headers: { 'Content-Type': 'multipart/form-data' } },
+        );
+        return response.data;
+    },
+
     extractInspiration: async (videoUrl: string): Promise<InspirationData> => {
         const response = await axios.post(`${API_BASE_URL}/extract-inspiration`, {
             video_url: videoUrl,

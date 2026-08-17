@@ -17,6 +17,15 @@ export interface ProductionScene {
     animation_status: string;
     local_video_path: string | null;
     cometapi_task_id: string | null;
+    qa_status: string | null;
+    qa_notes: string | null;
+    reference_inputs: { mode: string; refs: string[]; service: string } | null;
+    beat_start_sec: number | null;
+    beat_end_sec: number | null;
+    beat_duration_sec: number | null;
+    beat_drift_ms: number | null;
+    user_approved: boolean | null;
+    user_feedback: string | null;
     created_at: string;
 }
 
@@ -43,6 +52,9 @@ export interface ProductionJob {
     music_url: string | null;
     music_filename: string | null;
     beat_sync_enabled: boolean;
+    tempo_bpm: number | null;
+    beat_interval_sec: number | null;
+    audio_duration_sec: number | null;
     created_at: string;
 }
 
@@ -115,8 +127,22 @@ export const productionService = {
         return res.data;
     },
 
-    triggerAssemble: async (jobId: string): Promise<{ message: string }> => {
-        const res = await axios.post(`${API}/production/${jobId}/assemble`);
+    // The QA gate holds a job at 'qa_review' when a scene failed review. This is the
+    // explicit human override, and it is the only way past the gate.
+    triggerAssemble: async (jobId: string): Promise<{ message: string; qa_failures_overridden: number }> => {
+        const res = await axios.post(`${API}/production/${jobId}/assemble-anyway`);
+        return res.data;
+    },
+
+    approveScene: async (
+        sceneId: string,
+        approved: boolean,
+        feedback?: string | null,
+    ): Promise<{ scene_id: string; user_approved: boolean | null }> => {
+        const res = await axios.put(`${API}/production/scene/${sceneId}/approve`, {
+            approved,
+            feedback: feedback ?? null,
+        });
         return res.data;
     },
 };
@@ -128,8 +154,10 @@ export const productionService = {
 export const PIPELINE_PHASES: Record<string, { label: string; order: number }> = {
     queued:            { label: 'Queued',         order: 0 },
     initializing:      { label: 'Initializing',   order: 1 },
+    mapping_beats:     { label: 'Beat Mapping',   order: 1 },
     generating_images: { label: 'Images',         order: 2 },
     animating:         { label: 'Animating',      order: 3 },
+    qa_review:         { label: 'QA Review',      order: 4 },
     assembling:        { label: 'Assembling',     order: 4 },
     completed:         { label: 'Complete',       order: 5 },
     failed:            { label: 'Failed',         order: -1 },
