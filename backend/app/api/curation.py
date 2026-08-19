@@ -18,6 +18,8 @@ from app.db.session import get_db
 from app.models import ResearchJob, CurationJob
 from tasks.curation import _orchestrate_curation
 
+from app.services import video_models
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
@@ -26,6 +28,9 @@ class CurationStartRequest(BaseModel):
     research_job_id: UUID
     selected_video_ids: Optional[List[str]] = None
     bible_id: Optional[UUID] = None
+    # Registry id from app/services/video_models.py. Steers the brief's prompt
+    # dialect and becomes the default for the production run.
+    video_model: Optional[str] = None
 
 
 class CurationJobResponse(BaseModel):
@@ -37,6 +42,7 @@ class CurationJobResponse(BaseModel):
     user_approved_brief: Optional[dict] = None
     num_scenes: Optional[int] = None
     selected_video_ids: Optional[List[str]] = None
+    video_model: Optional[str] = None
     created_at: Optional[datetime] = None
 
     class Config:
@@ -74,11 +80,15 @@ async def create_curation_job(req: CurationStartRequest, background_tasks: Backg
     if not res_job:
         raise HTTPException(status_code=404, detail="Research job not found")
 
+    if req.video_model and not video_models.is_known(req.video_model):
+        raise HTTPException(status_code=400, detail=f"Unknown video model: {req.video_model}")
+
     curation_job = CurationJob(
         research_job_id=req.research_job_id,
         bible_id=req.bible_id,
         status="pending",
         selected_video_ids=req.selected_video_ids,
+        video_model=video_models.resolve(req.video_model).id if req.video_model else None,
     )
     db.add(curation_job)
     await db.commit()

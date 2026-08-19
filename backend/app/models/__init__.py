@@ -85,6 +85,9 @@ class ProductionJob(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     curation_job_id = Column(UUID(as_uuid=True), ForeignKey('curation_jobs.id'))
     status = Column(String(30))  # pending | generating_music | generating_images | animating | assembling | merging | uploading | published | failed
+    # Registry id from app/services/video_models.py. NULL = fall back to the
+    # curation job's choice, then to auto-routing.
+    video_model = Column(String(50))
     job_dir = Column(Text)
     num_tracks = Column(Integer, default=2)
     num_scenes = Column(Integer)

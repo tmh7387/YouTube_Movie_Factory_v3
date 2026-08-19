@@ -15,6 +15,7 @@ from app.services.assembly_service import assembly_service
 from app.services.skill_loader_service import skill_loader_service
 from app.core.config import settings
 from app.services.model_router import recommend_model
+from app.services import video_models
 
 logger = logging.getLogger(__name__)
 
@@ -88,12 +89,15 @@ async def _update_status(job_id: str, status: str, error: Optional[str] = None):
 async def run_production_pipeline(
     job_id: str,
     animation_mode: str = "std",
+    video_model: Optional[str] = None,
 ):
     """
     Full 5-phase production pipeline:
       Phase 1 — Initialize scene rows
       Phase 2 — Generate still images
-      Phase 3 — Animate each still (Kling Pro or Seedance 2.0)
+      Phase 3 — Animate each still with the selected video model
+                 (Seedance 2.0/2.5, Kling, Wan, MiniMax H3). When no model is
+                 selected, the ModelRouter picks one per scene.
                  If beat_sync_enabled + .mp4 uploaded → passed as input_reference
       Phase 4 — Assemble final video with ffmpeg (mixes music if music_url present)
     """
@@ -131,16 +135,28 @@ async def run_production_pipeline(
         await _update_status(job_id, "initializing")
         await _log(job_id, f"Phase 1: Creating {len(storyboard_data)} scene rows")
 
+        # The user's model choice, in priority order: this run's selection, then
+        # whatever was chosen at curation time. Absent both, scenes auto-route.
+        selected_model = video_model or job.video_model or curation.video_model
+        lock_model = bool(selected_model)
+        if lock_model:
+            spec = video_models.resolve(selected_model)
+            await _log(job_id, f"Video model locked to {spec.display_name} ({spec.id})")
+        else:
+            await _log(job_id, "No video model selected — auto-routing per scene")
+
         scenes = []
         for scene_data in storyboard_data:
             scene_num = scene_data.get("scene_index") or scene_data.get("scene_number") or 0
             description = scene_data.get("narration") or scene_data.get("description", "")
 
-            # Smart model routing — analyze prompt to choose best model
+            # Smart model routing — analyze prompt to choose best model, unless
+            # the user pinned one for the whole run.
             recommendation = recommend_model(
                 visual_prompt=scene_data.get("visual_prompt", ""),
                 motion_prompt=scene_data.get("motion_prompt", ""),
-                preferred_model=None,
+                preferred_model=selected_model,
+                lock_preferred=lock_model,
             )
             scene_anim = recommendation["mode"]
             resolved_model = recommendation["model"]
@@ -247,20 +263,21 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
         scene.animation_status = "animating"
         await db.commit()
 
-        # Use model_router's recommendation stored on the scene, or fallback
-        anim_model_key = (scene.animation_model or settings.SEEDANCE_VIDEO_MODEL).lower()
-        # Map known models to CometAPI model names + modes
-        model_mode_map = {
-            "kling-v2-master": (settings.DEFAULT_VIDEO_MODEL, "pro"),
-            "kling-v1-6": (settings.DEFAULT_VIDEO_MODEL, "std"),
-            "doubao-seedance-2-0": (settings.SEEDANCE_VIDEO_MODEL, "std"),
-            "wan-pro": ("wan_pro", "std"),
-        }
-        video_model, mode = model_mode_map.get(anim_model_key, (settings.SEEDANCE_VIDEO_MODEL, "std"))
+        # Use model_router's recommendation stored on the scene, or fallback.
+        # resolve() maps legacy ids onto the registry and owns the transport,
+        # remote model name and duration limits.
+        spec = video_models.resolve(scene.animation_model)
+        mode = spec.default_mode
 
-        # Pass audio_reference_url to Seedance for beat-sync (only if .mp4 provided)
+        # Beat-sync passes the uploaded .mp4 as an audio reference. Only the
+        # CometAPI Seedance path takes input_reference; the Ark and MiniMax
+        # adapters carry references in their content arrays instead.
         extra_kwargs = {}
-        if audio_reference_url and mode == "std":
+        if (
+            audio_reference_url
+            and spec.family == "seedance"
+            and spec.transport == video_models.TRANSPORT_COMETAPI
+        ):
             extra_kwargs["input_reference"] = audio_reference_url
             logger.info(f"Scene {scene_id}: using audio reference for Seedance beat-sync")
 
@@ -304,13 +321,13 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
         # Use skill-aware default motion prompt instead of generic fallback
         motion_prompt = scene.motion_prompt or scene.description or ""
         if not motion_prompt or motion_prompt.strip() == "":
-            motion_prompt = skill_loader_service.build_motion_prompt_default(video_model)
+            motion_prompt = skill_loader_service.build_motion_prompt_default(spec.id)
 
         res = await media_gen_service.animate_image(
             image_url=image_source,
             prompt=motion_prompt,
-            model=video_model,
-            duration=5,
+            model=spec.id,
+            duration=video_models.clamp_duration(spec, 5),
             mode=mode,
             **extra_kwargs,
         )

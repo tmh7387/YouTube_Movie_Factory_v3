@@ -43,6 +43,7 @@ export interface ProductionJob {
     music_url: string | null;
     music_filename: string | null;
     beat_sync_enabled: boolean;
+    video_model: string | null;
     created_at: string;
 }
 
@@ -56,6 +57,8 @@ export interface StartProductionRequest {
     curation_job_id: string;
     animation_mode: 'std' | 'pro';
     beat_sync_enabled: boolean;
+    /** Registry id from /api/models/video. Omit to auto-route each scene. */
+    video_model?: string | null;
 }
 
 export interface AudioUploadResult {

@@ -8,6 +8,7 @@ import os
 from app.db.session import get_db
 from app.models import ProductionJob, CurationJob, ProductionTrack, ProductionScene
 from app.services.supabase_storage_service import supabase_storage
+from app.services import video_models
 from pydantic import BaseModel
 from datetime import datetime
 from tasks.production import run_production_pipeline, _animate_scene, _assemble_video
@@ -20,8 +21,10 @@ router = APIRouter()
 
 class ProductionStartRequest(BaseModel):
     curation_job_id: uuid.UUID
-    animation_mode: str = "std"       # 'std' = Seedance 2.0, 'pro' = Kling Pro
+    animation_mode: str = "std"       # Kling quality knob: 'std' | 'pro'
     beat_sync_enabled: bool = False   # Pass music as input_reference to Seedance
+    # Registry id from app/services/video_models.py. None = auto-route per scene.
+    video_model: Optional[str] = None
     # music_url is set separately via POST /upload-audio before calling /start
 
 class ProductionJobResponse(BaseModel):
@@ -30,6 +33,7 @@ class ProductionJobResponse(BaseModel):
     created_at: datetime
     num_scenes: int
     num_tracks: int
+    video_model: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -129,6 +133,27 @@ async def start_production(
     if existing_job:
         return existing_job
 
+    # Validate the model choice up front so a typo fails the request rather
+    # than silently falling back mid-render. None means "auto-route".
+    resolved_video_model = request.video_model or curation_job.video_model
+    if resolved_video_model:
+        if not video_models.is_known(resolved_video_model):
+            raise HTTPException(
+                status_code=400, detail=f"Unknown video model: {resolved_video_model}"
+            )
+        spec = video_models.resolve(resolved_video_model)
+        if not spec.is_selectable:
+            raise HTTPException(
+                status_code=400,
+                detail=f"{spec.display_name} is not available yet (status={spec.status})",
+            )
+        if not video_models.is_configured(spec):
+            raise HTTPException(
+                status_code=400,
+                detail=f"{spec.display_name} is missing credentials for its {spec.transport} transport",
+            )
+        resolved_video_model = spec.id
+
     brief = curation_job.user_approved_brief or curation_job.creative_brief or {}
     storyboard = brief.get("storyboard") or brief.get("scenes", [])
 
@@ -140,6 +165,7 @@ async def start_production(
         music_url=music_url,
         music_filename=music_filename,
         beat_sync_enabled=request.beat_sync_enabled and bool(music_url),
+        video_model=resolved_video_model,
     )
     db.add(new_job)
     await db.commit()
@@ -149,6 +175,7 @@ async def start_production(
         run_production_pipeline,
         str(new_job.id),
         animation_mode=request.animation_mode,
+        video_model=resolved_video_model,
     )
     new_job.status = "queued"
     await db.commit()

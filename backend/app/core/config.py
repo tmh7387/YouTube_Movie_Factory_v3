@@ -22,6 +22,17 @@ class Settings(BaseSettings):
     KLING_ACCESS_KEY: str = ""
     KLING_SECRET_KEY: str = ""
 
+    # --- BytePlus ModelArk (Seedance 2.5 direct) ---
+    ARK_API_KEY: str = ""
+    ARK_BASE_URL: str = "https://ark.ap-southeast.bytepluses.com/api/v3"
+
+    # --- MiniMax open platform (H3) ---
+    MINIMAX_API_KEY: str = ""
+    MINIMAX_BASE_URL: str = "https://api.minimax.io"
+
+    # --- Local ComfyUI (planned: MiniMax H3 self-hosted) ---
+    COMFYUI_BASE_URL: str = ""
+
     # --- Ported from neural-frames review: optional feature services ---
     OPENAI_API_KEY: str = ""                 # GPT-Image-2 generation
     STEM_SEPARATION_ENABLED: bool = False    # requires demucs + GPU
@@ -33,8 +44,13 @@ class Settings(BaseSettings):
     # Image generation (CometAPI SeeDream)
     DEFAULT_IMAGE_MODEL: str = "doubao-seedream-4-0-250828"
     # Video animation models
+    # DEFAULT_VIDEO_MODEL / SEEDANCE_VIDEO_MODEL are *transport-level* names
+    # passed to CometAPI. The model users actually pick is a registry id —
+    # see app/services/video_models.py.
     DEFAULT_VIDEO_MODEL: str = "kling_video"
     SEEDANCE_VIDEO_MODEL: str = "doubao-seedance-2-0"
+    # Registry id used when no model is selected for a job.
+    DEFAULT_ANIMATION_MODEL: str = "doubao-seedance-2-0"
     
     # Local storage for intermediate generation files
     JOB_FILES_DIR: str = "./jobs"

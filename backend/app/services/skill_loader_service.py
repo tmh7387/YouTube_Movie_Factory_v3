@@ -18,19 +18,56 @@ from app.models import VideoProductionSkill
 
 logger = logging.getLogger(__name__)
 
-# .agent/skills/ directory — sibling to backend/
-AGENT_SKILLS_ROOT = Path(__file__).parent.parent.parent.parent / ".agent" / "skills"
+REPO_ROOT = Path(__file__).parent.parent.parent.parent
 
-# Auto-selection rules: model keyword → skill slugs to inject
-MODEL_SKILL_MAP: dict[str, list[str]] = {
-    "seedance": [
+# Where hand-written skills live, in search order. The repo standard is
+# skills/{category}/{slug}/SKILL.md (see skills/README.md); .agent/skills is
+# kept for anything dropped in by the agent kit.
+SKILL_ROOTS = [
+    REPO_ROOT / "skills" / "general",
+    REPO_ROOT / "skills" / "music_video",
+    REPO_ROOT / "skills" / "product_brand",
+    REPO_ROOT / "skills" / "asmr",
+    REPO_ROOT / ".agent" / "skills",
+]
+
+# Back-compat alias — some callers imported this directly.
+AGENT_SKILLS_ROOT = REPO_ROOT / ".agent" / "skills"
+
+# Slugs whose directory name differs from the skill's `name:` frontmatter.
+SKILL_DIR_ALIASES: dict[str, str] = {
+    "seedance2-director": "seedance2-director-v2",
+}
+
+# Auto-selection rules: prompt dialect → skill slugs to inject.
+# Dialects come from the video model registry, so a new model picks up the right
+# director skill by declaring its dialect rather than by name-matching here.
+DIALECT_SKILL_MAP: dict[str, list[str]] = {
+    "seedance-2.0": [
         "seedance2-director",
+        "multi-shot-camera-coverage",
+    ],
+    "seedance-2.5": [
+        "seedance2-director",
+        "multi-shot-camera-coverage",
+        "multi-shot-storyboard-extraction",
+    ],
+    "minimax-h3": [
+        "minimax-h3-director",
         "multi-shot-camera-coverage",
     ],
     "kling": [
         "music-video-producer",
         "multi-shot-camera-coverage",
     ],
+    "generic": [
+        "multi-shot-camera-coverage",
+    ],
+}
+
+# Legacy substring rules, still honoured for model names that never made it into
+# the registry (e.g. "higgsfield").
+MODEL_SKILL_MAP: dict[str, list[str]] = {
     "higgsfield": [
         "higgsfield-creator",
     ],
@@ -110,10 +147,40 @@ class SkillLoaderService:
             "source": "disk",
         }
 
+    @staticmethod
+    def _skill_file_candidates(skill_dir: Path, slug: str) -> list[Path]:
+        """Filenames a skill body might live under, in preference order.
+
+        SKILL.md is the documented convention (skills/README.md), but a few
+        skills in the repo predate it and use {name}.md.
+
+        Note: a .skill file is a zip archive, not markdown — those skills have
+        to be unpacked into {slug}/SKILL.md before this loader can see them.
+        """
+        return [
+            skill_dir / "SKILL.md",
+            skill_dir / f"{slug}.md",
+            skill_dir / f"{skill_dir.name}.md",
+        ]
+
     def load_disk_skill(self, slug: str) -> Optional[dict]:
-        """Load a single skill from .agent/skills/{slug}/SKILL.md."""
-        skill_path = AGENT_SKILLS_ROOT / slug / "SKILL.md"
-        return self._parse_skill_md(skill_path)
+        """Load a skill by slug from the first SKILL_ROOT that has it."""
+        dir_names = [slug]
+        alias = SKILL_DIR_ALIASES.get(slug)
+        if alias:
+            dir_names.append(alias)
+
+        for root in SKILL_ROOTS:
+            for dir_name in dir_names:
+                for path in self._skill_file_candidates(root / dir_name, slug):
+                    parsed = self._parse_skill_md(path)
+                    if parsed:
+                        # Keep the requested slug so dedupe against DB skills
+                        # works even when the directory or file is named
+                        # differently.
+                        parsed["slug"] = slug
+                        return parsed
+        return None
 
     def load_disk_skills(self, slugs: list[str]) -> list[dict]:
         """Load multiple skills from disk, skipping any that don't exist."""
@@ -177,6 +244,15 @@ class SkillLoaderService:
         slugs: list[str] = []
         model_lower = animation_model.lower() if animation_model else ""
 
+        # Preferred path: resolve the model to its prompt dialect.
+        if model_lower:
+            from app.services import video_models
+
+            if video_models.is_known(model_lower):
+                dialect = video_models.resolve(model_lower).dialect
+                slugs.extend(DIALECT_SKILL_MAP.get(dialect, []))
+
+        # Fallback for names outside the registry.
         for keyword, skill_slugs in MODEL_SKILL_MAP.items():
             if keyword in model_lower:
                 slugs.extend(skill_slugs)
@@ -224,7 +300,8 @@ class SkillLoaderService:
             if body:
                 # Extract the most valuable sections from the full body
                 for section_name in [
-                    # Seedance v2.0
+                    # Seedance v2.x
+                    "STEP 0.5 — VERSION ROUTING (2.0 or 2.5?)",
                     "SEEDANCE NATIVE CAMERA CONTROLS",
                     "SMART CUTS & CUT DISCIPLINE",
                     "THE HOOK RULE",
@@ -235,6 +312,10 @@ class SkillLoaderService:
                     "Core Camera System",
                     "Movement × Narrative Beat Pairing",
                     "Integrated Color Grading",
+                    # MiniMax H3
+                    "STEP 3 — Write the three core fields (base modes)",
+                    "STEP 5 — Speakers, dialogue and lip-sync",
+                    "Hard limits (check before promising the user anything)",
                     # Music Video Producer
                     "IMAGE-TO-VIDEO PROMPTS",
                     "PRODUCTION PRINCIPLES",
@@ -276,13 +357,25 @@ class SkillLoaderService:
         Build a Seedance-aware default motion prompt to replace
         the hardcoded 'cinematic camera movement, smooth motion'.
         """
-        model_lower = animation_model.lower() if animation_model else ""
+        from app.services import video_models
 
-        if "seedance" in model_lower:
+        dialect = video_models.resolve(animation_model).dialect
+
+        if dialect in ("seedance-2.0", "seedance-2.5"):
             return (
                 "slow dolly in, cinematic lighting with warm 3200K tones, "
                 "subtle depth of field shift from background to subject, "
                 "smooth motion, atmospheric haze"
+            )
+        if dialect == "minimax-h3":
+            # H3 wants the audio described too — a silent prompt yields
+            # arbitrary sound design.
+            return (
+                "integrated_multimodal_description: [Shot 1] Live-action, cinematic. "
+                "The camera pushes in with small amplitude at slow speed, holding the "
+                "subject centre frame as the light shifts across them.\n\n"
+                "overall_soundscape: Quiet room tone with faint air movement underneath.\n\n"
+                "non_diegetic_music: N/A"
             )
         # Kling or generic
         return "cinematic camera movement, smooth dolly, natural motion"
