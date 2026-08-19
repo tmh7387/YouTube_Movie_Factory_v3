@@ -211,3 +211,84 @@ not from an API schema.
 Implemented in `backend/app/services/media_gen_service.py`
 (`animate_image_seedance25`) and registered in
 `backend/app/services/video_models.py`.
+
+---
+
+## Field notes — realism, from practitioners
+
+The rules above come from BytePlus. These come from creators shipping 2.5 work,
+captured in the Content Intelligence ingest of 2026-08-19
+(`reference_documents/content_intelligence_staging/`). Treat them as
+well-attested heuristics, not vendor guarantees.
+
+### Scene plate before anything else
+Generate the **empty environment** as a still before characters, then inherit
+its lighting and palette into every shot. Specify camera angle, time of day,
+practical light sources, prop states, and which way signage faces relative to
+camera.
+
+Counter-intuitively, don't sanitise it: an overexposed plate with halation
+around hot light sources carries a photographed quality into the video. A clean,
+evenly-lit plate reads as CG.
+
+Split image models by job — one for environments, one for faces and wardrobe.
+
+### Lock the space, not the first frame
+Characters teleporting between generations (different washing machine, different
+corner of the room) is a *spatial description* failure. The instinctive fix —
+pinning a literal first frame to every shot — trades it for a worse artefact:
+motion that reads as an image being animated rather than a scene being filmed.
+
+Instead, carry the same spatial anchors through every prompt in a sequence:
+which wall, what's camera-left, what's through the window, where the practicals
+are, which way the subject faces.
+
+### The anti-plastic vocabulary
+Causes of the plastic look: pinned first frames, sanitised plates, shots that
+open on a held pose, and absent texture instructions.
+
+Counters, all of which belong near the **top** of the prompt:
+- Optical imperfection — organic film grain, halation, high dynamic range,
+  large-format film.
+- Material honesty — matte non-reflective surfaces, lived-in worn materials.
+- Explicit negation of the wrong register — *not* a 3D render, *not* a game
+  engine, *not* a game-cutscene aesthetic. Describing the right look is not
+  enough; name the wrong one.
+- Never open or close on stasis. Start the character already mid-action.
+- Name costumes as costumes. "A human wearing a gorilla costume" and "a gorilla"
+  produce different physics and different skin response.
+
+### Top-load the prompt
+What sits at the head of the prompt is what the model holds to. Put shot count,
+total runtime, per-shot beats, style and texture there — then the scene body.
+
+Applies to negative control too: if background music is bleeding into
+generations, move `NO MUSIC WHATSOEVER` / `NO BGM` to the first line rather than
+rewording it at the end. This lines up with BytePlus's own note that negative
+control is reliable specifically for subtitles and audio.
+
+### Extension is a continuity tool
+Before writing an extension prompt, feed the source clip to an LLM and ask it to
+analyse each frame — what's happening, where everything sits. Then write the
+continuation from that reading, naming what must **not** change as well as the
+new action ("his hand stays where it is on the side of the machine"). Joins are
+reported as seamless when done this way.
+
+### Gate on a storyboard still
+Render one image from the finished video prompt before spending video credits.
+It won't predict the final frame — different model — but it catches wrong
+composition, wrong environment, or a character in the wrong place for a fraction
+of the cost.
+
+### Reference-image moderation
+2.5 applies strict copyright moderation to reference *images*, and will reject
+original designs that merely resemble a known character. Where the design is
+genuinely yours, move it from the image channel to the text channel: describe
+the wardrobe in the prompt and supply a body reference in plain clothing, so the
+model layers the described outfit on. This routes around an over-eager
+similarity filter; it does not make someone else's design usable.
+
+### Failed generations are takes
+Budget for them. Pull the good two or three seconds out of each near-miss and
+cut them together, the way coverage works on a set. A quoted real figure: a
+one-minute finished piece at roughly 800 credits (~$32) including throwaways.
