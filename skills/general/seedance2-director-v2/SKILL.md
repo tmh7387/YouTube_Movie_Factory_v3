@@ -45,7 +45,11 @@ Before generating any output, read these reference files:
    action/fighting, anime, claymation, Omni Reference I2V, viral comedy, cinematic/slow.
    Calibrate all output to match this level of specificity.
 
-4. `references/seedance2-5-capabilities.md` — What Seedance **2.5** adds over 2.0:
+4. `references/shot-spine.md` — The fixed 16-slot order every production-grade
+   Seedance prompt follows, plus the "write the visible" discipline. Use this as
+   the skeleton; the camera bible fills slots 8–10.
+
+5. `references/seedance2-5-capabilities.md` — What Seedance **2.5** adds over 2.0:
    integer-second timestamps, 30s durations, 50 reference assets, free aspect
    ratios, locked-vs-unlocked task rules, 3D clay-model previz, keyframe
    reference, video editing and extension. Read this whenever the target is 2.5.
