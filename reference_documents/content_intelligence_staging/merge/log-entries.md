@@ -5,7 +5,7 @@ Append these to the vault's `wiki/log.md`.
 ## [2026-08-19] ingest | the cheat codes to prompting for true realism with Seedance 2.5 (free claude skills)
 - Source: https://www.youtube.com/watch?v=5dWgZDka3Ww
 - Channel: JOEY (CTRL / noisygroup)
-- Pages created: 9 — YT_JOEY_Seedance_25_Realism_Cheat_Codes, Technique_Scene_Plate_First,
+- Pages created: 10 — YT_JOEY_Seedance_25_Realism_Cheat_Codes, Technique_Scene_Plate_First,
   Technique_Spatial_Geometry_Lock, Technique_Prompt_Top_Loading,
   Technique_Extend_Video_Continuation, BP_Anti_Plastic_Realism, Tool_Seedance_2_5,
   Tool_Seedream_5_0_Pro, Tool_Nano_Banana_Pro, Tool_Joey_Cinema_Director_Skills
