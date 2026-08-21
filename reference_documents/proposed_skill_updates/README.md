@@ -43,8 +43,11 @@ Three failure modes, all still live:
 - **De-duplication is now a gate**, checked against the directory as well as the
   index, with an explicit never-overwrite rule and ask-first escalation.
 - **Steps 5 and 6 say append, not replace**, and require the page counts to match
-  the lists beside them. The 2026-08-19 log entry claimed 9 pages against a list
-  of 10.
+  the lists beside them. (Correction, 2026-08-20: the review of this proposal
+  re-counted the 2026-08-19 log entries and both counts were in fact correct —
+  10 claimed against 10 listed, and 4 against 4. The append-not-replace rule stands
+  on its own; the count rule is cheap insurance rather than a fix for an observed
+  fault.)
 - **Step 3 handles `/watch` failing** — tell the user, normalise proper nouns by
   hand, and record transcript provenance in the log rather than passing
   auto-captions off as a real transcript. That run silently produced "Sea Dance"
@@ -52,3 +55,30 @@ Three failure modes, all still live:
 - **New Step 8 verification** before reporting, including the check that index.md
   and log.md got longer rather than shorter.
 - **Completion report** now names any step that did not finish.
+
+### Added after review (2026-08-20)
+
+Three gaps in the draft, all of which this ingest actually hit:
+
+- **The duplicate gate compared filenames, not subjects.** It would not have caught
+  the drafted `Tool_Nano_Banana_Pro` against the vault's existing `Tool_NanoBananaPro`.
+  Step 4 now requires a subject-level match and lists the variant forms to check
+  (spacing, case, prefix, alternate product names), while keeping genuine version
+  differences — Seedance 2.5 vs 2.0 — as separate pages.
+- **Nothing required the new pages to link into the existing vault.** All 14 drafted
+  pages linked only to each other. Step 4 now requires at least one wikilink from each
+  new page to a page that predates the ingest, and Step 8 verifies it.
+- **The naming table still gave `[Domain]_[Tool_Name].md` for tool pages.** The vault
+  runs 26 `Tool_*` pages against 3 `Video_*`, and that split already produced the
+  `Tool_Seedance_2.0` / `Video_Seedance_2` duplicate the manifest flags. The table now
+  says `Tool_[Tool_Name].md` and notes that `CLAUDE.md` is the stale one.
+
+### Where the live skill actually lives
+
+Not on the workstation. There is no `~/.claude/skills/synced/` directory and no
+`ingest-content/SKILL.md` anywhere under the user's home. The only local copies are
+two zip archives of the May 2026 build — `Content_Intelligence/ingest-content.skill`
+and `Content_Intelligence/skills/ingest-content.skill` — which are upload packages,
+not the running source. The skill is served from the claude.ai account, so the
+approved file has to be pasted in via claude.ai Settings → Capabilities → Skills. A
+local file edit would change nothing.

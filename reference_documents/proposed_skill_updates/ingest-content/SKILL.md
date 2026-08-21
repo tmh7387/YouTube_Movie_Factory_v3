@@ -100,12 +100,18 @@ Read through the transcript and metadata. Identify every significant element:
 | What you find | Page type | Naming convention |
 |---|---|---|
 | The video itself | Source page | `YT_[Channel]_[Short_Title].md` |
-| A tool or platform mentioned | Tool page | `[Domain]_[Tool_Name].md` |
+| A tool or platform mentioned | Tool page | `Tool_[Tool_Name].md` |
 | A workflow or method | Technique page | `Technique_[Name].md` |
 | A concept or framework | Concept page | `Concept_[Name].md` |
 | A person or channel | Person page | `Person_[Name].md` or `Channel_[Name].md` |
 | Actionable advice | Best practice page | `BP_[Short_Name].md` |
 | Comparison between tools | Comparison page | `Compare_[X]_vs_[Y].md` |
+
+`CLAUDE.md` still gives the older `[Domain]_[Tool_Name].md` form for tool pages, with
+`Video_Seedance_2.md` as its example. The vault does not follow it: 26 pages use
+`Tool_*` and only 3 use `Video_*`. Follow `Tool_*`. That split already produced one
+duplicate pair — `Tool_Seedance_2.0` against `Video_Seedance_2` — which the manifest
+still carries under `duplicate_flags`.
 
 **Duplicate check — this is a gate, not a suggestion.**
 
@@ -113,6 +119,22 @@ Before writing any page, list every page name you intend to create and check eac
 one against both `VAULT\wiki\index.md` and the actual contents of `VAULT\wiki\`.
 Check the directory as well as the index: a page can exist on disk without being
 indexed, and the index is what the old version of this skill trusted alone.
+
+**Match on the subject, not on the filename.** An exact-name comparison is not
+enough and will miss real duplicates. On 2026-08-19 a drafted `Tool_Nano_Banana_Pro`
+page went out alongside an existing vault page called `Tool_NanoBananaPro` — the same
+tool, the same title, and an exact-name check saw nothing. For every page you plan to
+write, ask what it is *about*, then scan the vault's filenames for anything covering
+that same subject, including:
+
+- spacing and separator variants — `Nano_Banana_Pro` / `NanoBananaPro` / `NanoBanana`
+- case variants — `Joey` / `JOEY`
+- prefix variants — `Tool_X` / `Video_X` / `Concept_X`
+- the tool's other names, and the vendor's name
+
+A different **version** of a product is a new page, not a duplicate: `Seedance 2.5`
+is correctly separate from `Seedance 2.0`. A different **spelling** of the same thing
+is a duplicate. When you are not sure which one you are looking at, ask the user.
 
 Then, for each name:
 
@@ -123,6 +145,15 @@ Then, for each name:
 
 Never overwrite an existing page in `VAULT\wiki\`. If you believe a page needs
 replacing rather than extending, ask the user first.
+
+**Link every new page into the vault that already exists.** A batch of new pages
+that only reference each other is an isolated island, and `CLAUDE.md` treats orphan
+pages as a defect its lint pass has to clean up. Before you finish this step, open
+`index.md` and give each new page at least one `[[wikilink]]` to a page that predates
+this ingest — the creator's `Person_*` page, the tool's earlier version, the technique
+it refines, the best practice it supports. Add the reverse link on the older page
+where it genuinely helps. Principle 3 of `CLAUDE.md` is that knowledge compounds;
+pages that link nowhere do not compound.
 
 Record the split — created vs updated — as you go. Steps 6 and 8 both need it.
 
@@ -190,6 +221,8 @@ Confirm all of the following, and state each one in your report:
   before this run. Shorter means you replaced instead of appending — restore them.
 - `VAULT\wiki\ingest_manifest.json` now lists this source.
 - The raw JSON is in `VAULT\raw\youtube\`.
+- Every page you created carries at least one [[wikilink]] to a page that existed
+  before this run, and every [[wikilink]] you wrote resolves to a real page.
 
 ## Quality Standards
 
