@@ -27,6 +27,10 @@ the Desktop app, then add a row with the commit sha the package was built from.
 | 2026-08-22 | `video-production-planner` | `753b025` | `37ec955f514a` | ☑ 2026-08-22 | Picks the Seedance version in the brief; every shot gets its own runtime. 534 -> 572 lines. |
 | 2026-08-22 | `directors-sheet` | `753b025` | `c6dab13430df` | ☑ 2026-08-22 | Records target version and per-shot runtime; amends the 2.0-era no-negation rule. 266 -> 283 lines. |
 
+| 2026-08-22 | `audio-driven-lip-sync-video` | `fb8bb2e` | `see build` | ☐ | Rebuilt around the Performance Anchor method, ported from the account's `lip-sync-music-video`. 41 -> 172 lines. Segment length now a range with 8-10s flagged as a coherence sweet spot, not a cap. |
+| 2026-08-22 | `scene-motion` | `fb8bb2e` | `see build` | ☐ | Unpacked from zip. Asks which Seedance version instead of hardcoding `seedance_2_0`; duration follows the beat sheet. |
+| 2026-08-22 | `dance-motion` | `fb8bb2e` | `see build` | ☐ | Unpacked from zip (3 references). Version-aware model and duration; the 30s option now offers a single 2.5 generation or the extension task. |
+
 Verified 2026-08-22 by a Cowork session reading the account's synced skills.
 
 `higgsfield-creator` and `music-video-producer` needed no upload — the account
