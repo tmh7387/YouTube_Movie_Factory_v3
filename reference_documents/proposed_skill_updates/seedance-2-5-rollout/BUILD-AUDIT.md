@@ -76,32 +76,37 @@ Higgsfield execution path.
 
 **That edit should be re-applied to the consolidated build, not shipped as-is.**
 
-## 4. The rollout spec describes sections that do not exist here
+## 4. The rollout spec describes sections absent from every LOCAL build
+
+> **Corrected 2026-08-22.** This section originally concluded that the rollout
+> spec might have described sections that were never read. That was wrong, and
+> the error was mine: I searched local copies only. The live skill was exported
+> from claude.ai shortly afterwards and **all four sections are in it**. The
+> drafting session read the live skill correctly. The corrected finding follows.
 
 `README.md` in this folder — and the handover prompt built from it — instruct an
 editor to change four specific things in `seedance2-director`:
 
-| Named in the rollout spec | Occurrences across all 6 local builds |
-|---|---|
-| "Platform Constraints" table | **0** |
-| `OUTPUT SETTINGS` section | **0** |
-| "Prompt Discipline" rule | **0** |
-| "zero memory between generations" | **0** |
+| Named in the rollout spec | Across the 6 local builds | In the live 2026-07-24 build |
+|---|---|---|
+| `PLATFORM CONSTRAINTS` table | **0** | **line 420** |
+| `OUTPUT SETTINGS` section | **0** | **line 408** |
+| `PROMPT DISCIPLINE RULES` | **0** | **line 438** |
+| "zero memory" / self-contained rule | **0** | **line 444** (Rule 1) |
 
-None of these strings appears in any local build of the skill. The only
-"Platform Constraint" hit anywhere on the machine is in an unrelated
-`game-development/mobile-games` skill.
+The live build carries the constraint row verbatim:
 
-Two possible explanations, and we cannot tell which without seeing the live copy:
+> **Max duration** — **15 seconds** — Seedance 2.0 supports 4-15s. Do NOT default
+> to 10s. If a segment is 11s, 12s, 13s, 14s, or 15s, use that exact value.
 
-- the live build genuinely differs from all six local ones, or
-- the cloud session that drafted the rollout described sections it had not read.
+So the rollout's central factual claim is **confirmed, not unverified**. What the
+audit actually establishes is narrower and still useful: the live build is a
+seventh distinct build that matches no local copy, which is why instructions
+written against it fail when pointed at anything on this workstation.
 
-Either way, **the rollout's central factual claim — that the skill states a flat
-15-second maximum in a Platform Constraints table — is unverified.** The 15-second
-figure *is* real; it appears in every build as a dialogue word budget
-("~25-30 spoken words fit into 15 seconds"). But the table it supposedly lives in
-does not exist locally.
+The 15-second figure also appears in every local build as a dialogue word budget
+("~25-30 spoken words fit into 15 seconds"), which is a separate instance of the
+same problem and is tracked in the branch review.
 
 ## 5. Two target skills have no local copy at all
 
