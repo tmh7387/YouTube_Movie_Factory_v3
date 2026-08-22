@@ -18,16 +18,27 @@ the Desktop app, then add a row with the commit sha the package was built from.
 
 | Date | Skill | Built from | sha256[:12] | Uploaded | Notes |
 |---|---|---|---|---|---|
-| 2026-08-22 | `seedance2-director` | *(pending commit)* | `(rebuilt — see below)` | ☐ | First mirror after completing the master. 915 lines + 5 references. Replaces the 2026-07-24 account build, which had 532 lines and no references. Description trimmed 1130 -> 876 chars to fit the 1024 platform limit; all 31 trigger phrases kept, including `storyboard mode` and `bridge to video` recovered from the live export. |
-| 2026-08-22 | `higgsfield-creator` | *(pending commit)* | `856a11c62ae9` | ☐ | Unpacked from the stale in-folder zip so the app can load it. Content unchanged. |
-| 2026-08-22 | `music-video-producer` | *(pending commit)* | `0c14adb595ed` | ☐ | Renamed to `SKILL.md` so the app can load it. Content unchanged. |
+| 2026-08-22 | `seedance2-director` | `a34125a` | `(see note)` | ☑ 2026-08-22 | First mirror after completing the master. 915 lines + 5 references. Replaces the 2026-07-24 account build, which had 532 lines and no references. Description trimmed 1130 -> 876 chars to fit the 1024 platform limit; all 31 trigger phrases kept, including `storyboard mode` and `bridge to video` recovered from the live export. |
+| 2026-08-22 | `higgsfield-creator` | `6f4edf5` | `856a11c62ae9` | ☑ n/a | Unpacked from the stale in-folder zip so the app can load it. Content unchanged. |
+| 2026-08-22 | `music-video-producer` | `6f4edf5` | `0c14adb595ed` | ☑ n/a | Renamed to `SKILL.md` so the app can load it. Content unchanged. |
 
-| 2026-08-22 | `storyboard-generator` | `753b025` | `4ba44e3711c8` | ☐ | Unioned with the older vault build (skill map + 3 handoff packages) and given scene-plate-first, the image-model split and the direction-not-detail cost gate. 339 -> 508 lines. |
-| 2026-08-22 | `credit-calculator` | `753b025` | `7ebfdd9a7c12` | ☐ | Unioned (skill map + live balance check) and given Seedance 2.5 rows plus the dated spend snapshot. 185 -> 261 lines. |
-| 2026-08-22 | `video-production-planner` | `753b025` | `37ec955f514a` | ☐ | Picks the Seedance version in the brief; every shot gets its own runtime. 534 -> 572 lines. |
-| 2026-08-22 | `directors-sheet` | `753b025` | `c6dab13430df` | ☐ | Records target version and per-shot runtime; amends the 2.0-era no-negation rule. 266 -> 283 lines. |
+| 2026-08-22 | `storyboard-generator` | `753b025` | `4ba44e3711c8` | ☑ 2026-08-22 | Unioned with the older vault build (skill map + 3 handoff packages) and given scene-plate-first, the image-model split and the direction-not-detail cost gate. 339 -> 508 lines. |
+| 2026-08-22 | `credit-calculator` | `753b025` | `7ebfdd9a7c12` | ☑ 2026-08-22 | Unioned (skill map + live balance check) and given Seedance 2.5 rows plus the dated spend snapshot. 185 -> 261 lines. |
+| 2026-08-22 | `video-production-planner` | `753b025` | `37ec955f514a` | ☑ 2026-08-22 | Picks the Seedance version in the brief; every shot gets its own runtime. 534 -> 572 lines. |
+| 2026-08-22 | `directors-sheet` | `753b025` | `c6dab13430df` | ☑ 2026-08-22 | Records target version and per-shot runtime; amends the 2.0-era no-negation rule. 266 -> 283 lines. |
 
-Tick the Uploaded box and fill in the commit sha once each upload is done.
+Verified 2026-08-22 by a Cowork session reading the account's synced skills.
+
+`higgsfield-creator` and `music-video-producer` needed no upload — the account
+content was already byte-identical to the repo (line endings aside), so the built
+packages were not used. Marked n/a rather than uploaded.
+
+**Known account-side quirk, not a repo defect.** Anthony removed the old
+`seedance2-director` and re-added it as `seedance2-director-v2`, but the account
+manifest still identifies it as `seedance2-director` and shows no `-v2` entry.
+The *content* matches the repo's v2 file exactly. Either a claude.ai rename
+limitation or a sync lag. Recorded so it is not mistaken later for a naming
+problem in the repo.
 
 ## Exports pulled down
 
