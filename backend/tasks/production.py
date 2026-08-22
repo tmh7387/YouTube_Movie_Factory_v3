@@ -161,12 +161,25 @@ async def run_production_pipeline(
             scene_anim = recommendation["mode"]
             resolved_model = recommendation["model"]
 
+            # Clip length and cut structure come from the brief (or from the
+            # user, who overrides it). There is no house default — a scene that
+            # states neither is reported at animation time rather than being
+            # quietly given some standard length.
+            stated_duration = (
+                scene_data.get("duration_sec")
+                or scene_data.get("duration")
+                or scene_data.get("target_duration_sec")
+            )
+            shots = scene_data.get("shots") or None
+
             new_scene = ProductionScene(
                 job_id=job.id,
                 scene_number=scene_num,
                 description=description,
                 image_prompt=scene_data.get("visual_prompt", ""),
                 motion_prompt=scene_data.get("motion_prompt", ""),
+                target_duration_sec=stated_duration,
+                shot_plan={"shots": shots, "source": "brief"} if shots else None,
                 animation_model=resolved_model,
                 image_model=settings.DEFAULT_IMAGE_MODEL,
                 animation_status="pending",
@@ -323,11 +336,32 @@ async def _animate_scene(scene_id: str, audio_reference_url: Optional[str] = Non
         if not motion_prompt or motion_prompt.strip() == "":
             motion_prompt = skill_loader_service.build_motion_prompt_default(spec.id)
 
+        # Clip length is the scene's, never a constant. Fall back to the model's
+        # own minimum only when the scene never stated one, and say so — a silent
+        # substitution here is what produced uniform clips regardless of content.
+        if scene.target_duration_sec:
+            requested = int(scene.target_duration_sec)
+        else:
+            requested = spec.min_duration
+            logger.warning(
+                "Scene %s has no target_duration_sec; falling back to the %s "
+                "minimum of %ss. Set a duration on the scene to control this.",
+                scene_id, spec.display_name, requested,
+            )
+        duration = video_models.clamp_duration(spec, requested)
+        if duration != requested:
+            await _log(
+                job_id,
+                f"Scene {scene.scene_number}: asked for {requested}s, "
+                f"{spec.display_name} allows {spec.min_duration}-{spec.max_duration}s "
+                f"— generating {duration}s",
+            )
+
         res = await media_gen_service.animate_image(
             image_url=image_source,
             prompt=motion_prompt,
             model=spec.id,
-            duration=video_models.clamp_duration(spec, 5),
+            duration=duration,
             mode=mode,
             **extra_kwargs,
         )

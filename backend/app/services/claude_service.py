@@ -94,7 +94,11 @@ The brief MUST be a valid JSON object with the following structure:
       "visual_prompt": "Detailed prompt for AI image generation — describe the scene as a single cinematic still",
       "motion_prompt": "Detailed prompt for AI video animation — describe camera movement, speed, and pacing",
       "pacing": "Fast/Slow/Steady",
-      "duration": 10
+      "duration_sec": 9,
+      "shots": [
+        {{"index": 1, "start": 0, "end": 4, "beat": "what happens in this cut"}},
+        {{"index": 2, "start": 4, "end": 9, "beat": "what happens in this cut"}}
+      ]
     }}
   ]
 }}
@@ -102,6 +106,20 @@ The brief MUST be a valid JSON object with the following structure:
 IMPORTANT RULES FOR PROMPTS:
 - visual_prompt: Describe a photorealistic cinematic still. Include subject, environment, lighting, color grade, and composition.
 - motion_prompt: Describe camera movement and speed using precise terminology. Never write vague instructions like "zoom in" — use exact camera vocabulary.
+
+RULES FOR LENGTH AND CUTS:
+- duration_sec: how long THIS scene needs, in whole seconds. Derive it from the
+  beat — count what has to happen and give each part the screen time it needs to
+  read. There is no house clip length. Do not default to a round number, do not
+  make every scene the same length, and do not pad a scene to fill a ceiling.
+  A two-beat reveal that plays in 7 seconds is a 7-second scene.
+- shots: the cuts inside this scene. Omit it entirely for a single continuous
+  take. When you do include it, timestamps are whole seconds, shot 1 starts at 0,
+  each shot's start equals the previous shot's end, and the last end equals
+  duration_sec. Every shot needs a beat describing what happens in it.
+- Runtime available is not runtime required. Long is not better; correct is
+  better. If the user has stated a clip length or a cut structure, honour it
+  exactly and do not second-guess it.
 
 {bible_block}
 

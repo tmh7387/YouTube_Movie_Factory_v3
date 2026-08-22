@@ -71,7 +71,7 @@ class MediaGenService:
         image_url: str,
         prompt: str = "",
         model: str = "doubao-seedance-2-0",
-        duration: int = 5,
+        duration: Optional[int] = None,
         input_reference: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
@@ -128,7 +128,7 @@ class MediaGenService:
         image_url: str,
         prompt: str = "",
         model: str = "kling_video",
-        duration: int = 5,
+        duration: Optional[int] = None,
         mode: str = "std",
     ) -> Dict[str, Any]:
         """
@@ -181,7 +181,7 @@ class MediaGenService:
         image_url: str,
         prompt: str = "",
         remote_model: str = "dreamina-seedance-2-5-260628",
-        duration: int = 5,
+        duration: Optional[int] = None,
         resolution: str = "1080p",
         ratio: str = "adaptive",
         output_format: str = "mp4",
@@ -342,7 +342,7 @@ class MediaGenService:
         image_url: str,
         prompt: str = "",
         model: str = "kling_video",
-        duration: int = 5,
+        duration: Optional[int] = None,
         mode: str = "std",
         input_reference: Optional[str] = None,
         references: Optional[List[Dict[str, str]]] = None,
@@ -355,6 +355,16 @@ class MediaGenService:
         legacy values onto the registry so old scene rows keep working.
         """
         spec = video_models.resolve(model)
+        # No house clip length. An unset duration means the caller never decided,
+        # which is a planning gap — fall back to the model's own minimum so the
+        # run proceeds, but do not pretend some standard length was intended.
+        if duration is None:
+            logger.warning(
+                "animate_image called without a duration for %s; using its "
+                "minimum of %ss. Callers should pass the scene's own length.",
+                spec.display_name, spec.min_duration,
+            )
+            duration = spec.min_duration
         duration = video_models.clamp_duration(spec, duration)
 
         if spec.transport == video_models.TRANSPORT_BYTEPLUS_ARK:

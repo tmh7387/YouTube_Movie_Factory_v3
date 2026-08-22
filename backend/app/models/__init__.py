@@ -145,6 +145,9 @@ class ProductionScene(Base):
     description = Column(Text)
     lyric_or_timestamp = Column(Text)
     target_duration_sec = Column(Numeric)
+    # Cuts inside the clip: {"shots":[{"index","start","end","beat"}], "source"}.
+    # NULL = single take running for target_duration_sec.
+    shot_plan = Column(JSONB)
     animation_method = Column(String(30), default='kling')  # kling | ken_burns | ken_burns_fallback
 
     # Animation model selection (set by ModelRouter / Claude creative direction)

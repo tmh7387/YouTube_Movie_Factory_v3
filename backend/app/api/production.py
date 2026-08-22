@@ -27,6 +27,24 @@ class ProductionStartRequest(BaseModel):
     video_model: Optional[str] = None
     # music_url is set separately via POST /upload-audio before calling /start
 
+class ShotSpec(BaseModel):
+    """One cut inside a clip. Timestamps are whole seconds, relative to the clip."""
+    index: int
+    start: int
+    end: int
+    beat: Optional[str] = None
+
+
+class SceneTimingRequest(BaseModel):
+    """Dictate how long a scene runs and how it is cut.
+
+    There is no house clip length. `duration_sec` is whatever the scene needs.
+    `shots` is optional — omit it for a single continuous take.
+    """
+    duration_sec: Optional[int] = None
+    shots: Optional[List[ShotSpec]] = None
+
+
 class ProductionJobResponse(BaseModel):
     id: uuid.UUID
     status: str
@@ -225,6 +243,89 @@ async def get_production_job(job_id: uuid.UUID, db: AsyncSession = Depends(get_d
     }
 
 
+@router.patch("/{job_id}/scenes/{scene_id}/timing")
+async def set_scene_timing(
+    job_id: uuid.UUID,
+    scene_id: uuid.UUID,
+    body: SceneTimingRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Set a scene's clip length and cut structure.
+
+    Overrides whatever the creative brief proposed. Takes effect on the next
+    animation of that scene, so it can be set before the run or before a retry.
+    """
+    result = await db.execute(
+        select(ProductionScene).where(
+            ProductionScene.id == scene_id,
+            ProductionScene.job_id == job_id,
+        )
+    )
+    scene = result.scalar_one_or_none()
+    if not scene:
+        raise HTTPException(status_code=404, detail="Scene not found on this job")
+
+    spec = video_models.resolve(scene.animation_model)
+
+    if body.duration_sec is not None:
+        if body.duration_sec < spec.min_duration or body.duration_sec > spec.max_duration:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"{spec.display_name} accepts {spec.min_duration}-{spec.max_duration}s. "
+                    f"Got {body.duration_sec}s. Pick a model with more headroom, or "
+                    f"split the scene."
+                ),
+            )
+        scene.target_duration_sec = body.duration_sec
+
+    if body.shots is not None:
+        shots = sorted(body.shots, key=lambda s: s.index)
+        total = scene.target_duration_sec
+        if total is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Set duration_sec before defining shots, or send both together.",
+            )
+        if shots and shots[0].start != 0:
+            raise HTTPException(status_code=422, detail="Shot 1 must start at 0.")
+        for prev, nxt in zip(shots, shots[1:]):
+            if prev.end != nxt.start:
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        f"Gap or overlap: shot {prev.index} ends at {prev.end}s but "
+                        f"shot {nxt.index} starts at {nxt.start}s."
+                    ),
+                )
+        if shots and shots[-1].end != int(total):
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"Last shot ends at {shots[-1].end}s but the clip runs {int(total)}s."
+                ),
+            )
+        if shots and not spec.supports_timestamps:
+            # Not an error — 2.0 honours shot order, just not clock times.
+            pass
+        scene.shot_plan = {
+            "shots": [s.model_dump() for s in shots],
+            "source": "user",
+        } if shots else None
+
+    await db.commit()
+    await db.refresh(scene)
+    return {
+        "scene_id": str(scene.id),
+        "target_duration_sec": (
+            int(scene.target_duration_sec) if scene.target_duration_sec else None
+        ),
+        "shot_plan": scene.shot_plan,
+        "model": spec.display_name,
+        "timestamps_honoured": spec.supports_timestamps,
+    }
+
+
 @router.get("/curation/{curation_job_id}")
 async def get_job_by_curation(curation_job_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
@@ -366,6 +467,8 @@ def _scene_to_dict(s) -> dict:
         "image_url": s.image_url, "motion_prompt": s.motion_prompt,
         "animation_model": s.animation_model, "animation_status": s.animation_status,
         "local_video_path": s.local_video_path, "cometapi_task_id": s.cometapi_task_id,
+        "target_duration_sec": int(s.target_duration_sec) if s.target_duration_sec else None,
+        "shot_plan": s.shot_plan,
         "created_at": s.created_at.isoformat() if s.created_at else None,
     }
 
