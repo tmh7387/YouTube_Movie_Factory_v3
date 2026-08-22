@@ -18,12 +18,65 @@ models before spending anything.
 
 ---
 
+## UPSTREAM / DOWNSTREAM SKILL MAP
+
+```
+UPSTREAM (receives scope from — any of these):
+  /video-production-planner  ── Shot count, duration, model, complexity from creative brief
+  /storyboard-generator      ── Panel count, character count, generation iterations needed
+  /seedance2-director        ── Number of Seedance clips, and the target version
+  /higgsfield-creator        ── Number of Cinema Studio scenes + Soul Cast training
+  /music-video-producer      ── Clip count from song timing map
+  User direct                ── "How much will X cost?"
+
+THIS SKILL GATES (provides cost guidance to ALL generation skills):
+  /seedance2-director    ── Cost per Seedance clip, by version and runtime
+  /higgsfield-creator    ── Cost per Cinema Studio scene + Soul Cast + Moodboard
+  /music-video-producer  ── Total cost for N clips across the full music video
+```
+
+---
+
+## Live Balance Check (Higgsfield MCP)
+
+Before estimating, check what the user actually has:
+
+```
+Tool: balance
+→ Returns: email, available credits, subscription plan
+```
+
+Include it in the estimate output:
+
+```
+LIVE BALANCE: [X] credits available ([plan name])
+```
+
+For burn rate, `transactions` returns recent spend, refund and grant history.
+
+---
+
+## Runtime drives cost — ask for it
+
+Clip length is not fixed. There is no house clip duration, so an estimate built
+on an assumed length is wrong before it starts.
+
+Ask for, or read from the brief: **shot count, and the derived runtime per shot.**
+A 30-second Seedance 2.5 clip is not priced like a 6-second one, and a project of
+twelve short beats costs differently from four long takes at the same total.
+
+Where the scope gives a total runtime but no per-clip breakdown, say which
+assumption you used and that it is an assumption.
+
+---
+
 ## Supported Platforms & Models
 
 ### CometAPI
 | Model | Cost per Generation | Duration | Notes |
 |---|---|---|---|
-| **Seedance 2.0** | ~$0.40-0.60 per clip | 5-15s | Primary video model |
+| **Seedance 2.0** | ~$0.40-0.60 per clip | 4-15s | Established grammar, shot numbers, no timestamps |
+| **Seedance 2.5** | not yet priced on this gateway | 4-30s | Integer timestamps, up to 50 reference assets, editing and extension |
 | **Kling 3.0** | ~$0.30-0.50 per clip | 5-10s | Good for I2V, fast |
 | **SeeDream 4.5** | ~$0.15-0.30 per image | N/A (image) | Storyboard generation |
 | **Nanobanana** | ~$0.10-0.25 per image | N/A (image) | Character/reference images |
@@ -32,6 +85,7 @@ models before spending anything.
 | Feature | Cost | Notes |
 |---|---|---|
 | **Seedance 2.0** | Credits-based (varies by plan) | Full Omni Reference, multi-character |
+| **Seedance 2.5** | ~250 credits per generation (see the dated snapshot below) | Up to 30s, 50 reference assets, video editing and extension |
 | **GPT Image 2** | Credits-based | Storyboard generation |
 | **Cinema Studio 2.5** | Credits-based | Premium quality, real optics |
 | **Soul Cast** | Included with plan | Character creation |
@@ -130,6 +184,28 @@ RECOMMENDATION: [Which option and why]
 | Speed / volume | CometAPI Seedance 2.0 | API-driven, parallelizable |
 | Budget-constrained short | CometAPI Kling 3.0 | Low cost, good quality for simple scenes |
 | Premium brand content | Higgsfield Cinema Studio 2.5 | Real optical physics, Soul Cast |
+
+### Seedance 2.5 — observed spend (dated snapshot, 2026-08-19)
+
+**Not a rate card.** One platform, one week, with an unlimited-but-serialised
+promotion running at the time, which distorts any per-clip average. Quote it as a
+sighting, not a price.
+
+| Observation | Figure |
+|---|---|
+| Per generation, via Higgsfield | ~250 credits |
+| Credit value | ~$0.04 |
+| One-minute project, end to end | ~800 credits ≈ $32 |
+
+Source: two practitioner breakdowns transcribed from auto-captions, not vendor
+documentation. Re-check before quoting to anyone who will hold you to it.
+
+Note the shape of that number: ~800 credits for a minute means the cost is driven
+by **generation count**, not by seconds of output. Longer clips on 2.5 can
+therefore be cheaper per finished second than the same runtime cut into more
+generations — which is the opposite of the instinct to keep clips short.
+
+---
 
 ### Real-World Benchmarks (anecdotal, added 2026-07-15)
 

@@ -62,7 +62,9 @@ THIS PLANNER CHAINS (pre-production):
   /directors-sheet       ── Creates one-page HTML visual reference
 
 THIS PLANNER ROUTES TO (generation — pick ONE per project):
-  /seedance2-director    ── Seedance 2.0 prompts (T2V + I2V Omni Reference). Best: action, anime, multi-char, cinematic.
+  /seedance2-director    ── Seedance 2.0 and 2.5 prompts (T2V, I2V, R2V, V2V, Storyboard).
+                            Best: action, anime, multi-char, cinematic. The planner picks
+                            the version; the director routes on it in its STEP 0.5.
   /higgsfield-creator    ── Cinema Studio 2.5 with real optics, Soul Cast, Moodboard. Best: brand films, premium, conference.
   /music-video-producer  ── Lyric-synced production with timing maps + FFmpeg assembly. Best: music-driven projects.
 ```
@@ -129,6 +131,27 @@ If unclear, ask:
 > "This project could go through Seedance (versatile, great for action/characters),
 > Higgsfield Cinema Studio (premium quality, real optics), or the Music Video pipeline
 > (if you have a track to sync to). Which route fits best?"
+
+### Seedance version — decide it here, not downstream
+
+When the route is `/seedance2-director`, the brief must name **2.0 or 2.5**. The
+two take different prompt grammars, so the choice changes the shot list, not just
+a parameter. Deciding it late means rewriting.
+
+| Signal in the brief | Version |
+|---|---|
+| Beats tied to clock times ("at 0:04 he turns") | **2.5** — 2.0 ignores timestamps |
+| Any shot running longer than 15s | **2.5** |
+| More than ~4 reference assets, or audio/video references | **2.5** |
+| Editing, extending or restyling existing footage | **2.5** |
+| A grey-box or clay animatic to render from | **2.5** |
+| Boards that must be followed frame-for-frame | **2.5** keyframe reference |
+| Non-standard aspect ratio | **2.5** |
+| Single self-contained shot, ≤15s, 1-2 references | **2.0** — cheaper, simpler grammar |
+
+State the chosen version in the Brief Output and carry it into every handoff.
+
+---
 
 ### Brief Output:
 
@@ -200,6 +223,17 @@ ENVIRONMENT:
 - No two adjacent shots use the same shot size AND camera type
 - Every character gets spatial position noted in every shot they appear
 - Total duration must match brief +/-10%
+
+**Give every shot its own runtime.** There is no house clip length, and shots
+should not all be the same. Count what has to happen in the shot and give each
+beat the screen time it needs to read — a two-beat reveal that plays in 7 seconds
+is a 7-second shot. Runtime available is not runtime required: padding a shot to
+the model's ceiling buys nothing and costs credits.
+
+Check each runtime against the chosen version's ceiling — 2.0 tops out at 15s,
+2.5 at 30s. Where a shot derives longer than the ceiling, split it rather than
+compressing every beat below the time it needs; on 2.5, extension is the cleaner
+split.
 
 ---
 
@@ -374,11 +408,15 @@ Use the Storyboard Mode format from /seedance2-director:
 that can be pasted directly into Higgsfield or CometAPI, or executed via:
 ```
 Tool: generate_video
-Model: seedance_2_0
+Model: [the id for the version chosen in the brief — 2.0 or 2.5]
 Prompt: [the generated Seedance prompt]
 Medias: [{value: [character_job_id], role: "image"}, ...]
-Duration: [from brief]
+Duration: [this shot's derived runtime, integer seconds]
 ```
+
+On 2.5, editing pins both ratio and duration (`ratio=adaptive`, `duration=-1`),
+and first-frame and extension tasks pin ratio. Violating those rejects the
+request outright.
 
 ### Route B — `/higgsfield-creator`:
 

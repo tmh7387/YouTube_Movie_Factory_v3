@@ -104,7 +104,14 @@ the right questions to build their visual bible.
 - **Project type** — music video, corporate, documentary, short film, ad, animation, other
 - **Target duration** in seconds or mm:ss
 - **Aspect ratio** and **resolution** (default to 16:9 and 1920×1080 if not specified)
-- **I2V / generation platform(s)** if this is an AI video project (Kling, Seedance, Runway, Sora, etc.)
+- **I2V / generation platform(s)** if this is an AI video project (Kling, Seedance,
+  Runway, Sora, etc.). Where it is Seedance, record **which version — 2.0 or 2.5**.
+  The two differ in runtime ceiling (15s vs 30s), reference budget (~4 vs 50 assets)
+  and whether timestamps are honoured, so a sheet that only says "Seedance" is
+  ambiguous to everyone reading it downstream.
+- **Per-shot runtime**, not just a project total. Shots are not a uniform length —
+  each runs as long as its beats need. Record the derived runtime against each shot
+  so the sheet shows where the time actually goes.
 - **Overall mood / tone** described in 3–5 keywords
 
 #### Characters (if the project has on-screen talent or animated characters):
@@ -151,6 +158,16 @@ Always present the derived palette to the user for confirmation before generatin
   steps only (character/prop/location sheets) — Seedance does not reliably understand
   negation in video prompts and tends to produce the opposite of what's negated. State the
   desired positive state directly in any video-prompt "always" rule instead.
+  **Amendment (2026-08-22):** on Seedance **2.5** this is narrower than it looked.
+  Negation is reported reliable for **subtitles and audio** specifically — `NO MUSIC
+  WHATSOEVER` / `NO BGM` works, and works better on the prompt's first line than its
+  last. Negations of the wrong visual register ("not a 3D render, not a game engine")
+  are also load-bearing for realism. Treat the blanket no-negation rule as 2.0-era,
+  and record which version the rule was written for.
+- **Spatial anchors** for any location that appears in more than one shot — which wall,
+  what is to camera-left, what is through the window, where the practical lights are.
+  Locking a space by description is what keeps cuts reading as one location; pinning a
+  literal first frame does the same job but flattens the motion.
 - Aesthetic references — cinematic touchstones (e.g., "Tarkovsky meets Wes Anderson")
 
 #### Camera & Lighting:

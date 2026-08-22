@@ -27,6 +27,31 @@ a single video credit is spent.
 
 ---
 
+## UPSTREAM / DOWNSTREAM SKILL MAP
+
+```
+UPSTREAM (receives input from):
+  /video-production-planner  ── Shot list + creative brief
+  User direct                ── Scene concept described in chat
+
+THIS SKILL PRODUCES:
+  1. Shot plan (directorial breakdown)
+  2. Scene plate — the empty environment, before any character work
+  3. Storyboard prompt (image-model text)
+  4. Character reference images
+  5. Environment reference images
+  6. Storyboard panels
+
+DOWNSTREAM (feeds output to — ALL of these, many-to-many):
+  /seedance2-director    ── Receives: character images as @image1/@image2, storyboard as @image3 (Omni Reference)
+  /higgsfield-creator    ── Receives: character images for Soul Cast training or direct reference, environment for Moodboard
+  /music-video-producer  ── Receives: character/environment images as start frames for per-clip I2V prompts
+  /directors-sheet       ── Receives: all generated images for the visual reference page
+  /credit-calculator     ── Receives: shot count and complexity for cost estimation
+```
+
+---
+
 ## Step 0 — Read References
 
 Before generating, read:
@@ -53,6 +78,41 @@ Gather from the user (ask if not provided):
 
 **If user provides minimal info**, make reasonable creative choices and state your
 assumptions clearly. Don't block on missing details — create and iterate.
+
+---
+
+## Step 1.5 — SCENE PLATE FIRST
+
+Build the environment as a still **before** generating any panel and before
+putting a character into it. Ask the image model for the empty set: the room, the
+angle, the practical light sources, the signage, the state of the props. No hero
+character in it.
+
+That plate is the visual bible for everything downstream — lighting, palette and
+lens character are all inherited, so an error here compounds across every panel
+and every clip generated from them.
+
+Specify explicitly:
+
+- interior or exterior, and time of day
+- camera angle
+- the state of individual props — open, spilled, worn, switched on
+- which direction any signage faces relative to camera
+
+**Do not sanitise the plate.** A technically flawed plate often produces better
+video. Overexposure and visible halation read as photographed; a clean,
+evenly-lit plate reads as CG and carries that through into motion.
+
+### Split image models by job
+
+| Job | Model | Why |
+|---|---|---|
+| Scene plates | **Seedream 5.0 Pro** | Better cinematic image character |
+| Faces and wardrobe | **Nano Banana Pro** | Face fidelity is what Seedream does not hold |
+
+Where the project is already routed to GPT Image 2, that still works — this split
+is a quality preference, not a requirement. Say which model you used, so the
+panels and the plate can be told apart later.
 
 ---
 
@@ -247,6 +307,115 @@ CRITICAL RULES FOR VIDEO STAGE:
 - Character order in references MUST match prompt order
 - Storyboard removes composition load → model focuses on motion only
 ```
+
+### Handoff A — To `/seedance2-director`:
+
+```
+SEEDANCE HANDOFF PACKAGE
+━━━━━━━━━━━━━━━━━━━━━━━━
+Target version: [2.0 or 2.5 — the director routes on this in its STEP 0.5]
+Image platform: [Higgsfield MCP / CometAPI / External]
+
+Character references:
+  @image1: [job_id or file_path]  — [Character 1 name + 5 anchor words]
+  @image2: [job_id or file_path]  — [Character 2 name + 5 anchor words] (if applicable)
+
+Storyboard reference:
+  @image3: [job_id or file_path]  — Omni Reference (composition lock)
+
+Environment reference:
+  [job_id or file_path]  — the scene plate, available for SFX/atmosphere prompting
+
+Ready for: /seedance2-director Mode A (Image-to-Video) or Mode C (Storyboard Mode)
+
+Note: If images were generated via Higgsfield MCP, job IDs are directly usable
+in the generate_video medias array. If via CometAPI or External, upload via
+media_upload before referencing in video generation.
+
+On 2.5: prefer the storyboard-reference task over pasting panels as plain images,
+and state the derived runtime per shot rather than a house clip length.
+```
+
+### Handoff B — To `/higgsfield-creator`:
+
+```
+HIGGSFIELD HANDOFF PACKAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Image platform: [Higgsfield MCP / CometAPI / External]
+
+Character references:
+  [job_id or file_path]  — Use for Soul Cast training (if a reusable character is needed)
+                           OR as direct reference in a Cinema Studio scene
+  [job_id or file_path]  — Same options
+
+Environment reference:
+  [job_id or file_path]  — Use for Moodboard style training
+
+Storyboard panels:
+  [job_id or file_path]  — Scene composition reference for Cinema Studio
+
+Ready for: /higgsfield-creator PATH B (Cinema Studio) or PATH C (Multi-Character)
+
+Note: If images came from CometAPI or External, upload via media_upload before
+Soul Cast training or Cinema Studio reference. If from Higgsfield MCP, job IDs
+are already in the media library.
+```
+
+### Handoff C — To `/music-video-producer`:
+
+```
+MUSIC VIDEO HANDOFF PACKAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Image platform: [Higgsfield MCP / CometAPI / External]
+
+Character references:
+  [job_id or file_path]  — Use as start_image for character clips
+  [job_id or file_path]  — Use as start_image for duo/group clips
+
+Environment reference:
+  [job_id or file_path]  — Use as start_image for establishing/scene-setting clips
+
+Storyboard panels:
+  [job_id or file_path]  — Visual reference for shot composition per clip
+
+Ready for: /music-video-producer Step 4 (I2V prompts per clip)
+
+Note: Each storyboard panel can serve as the start_image for the corresponding
+clip, giving the I2V model a composition anchor per section. If images came from
+CometAPI or External, upload via media_upload first.
+```
+
+### CRITICAL RULES FOR ALL HANDOFFS:
+- ONE clean front-facing image per character (not multi-angle sheets)
+- Character order in references MUST match prompt order
+- Storyboard removes composition load → the video model focuses on motion only
+- Carry the scene plate's spatial anchors into every handoff — which wall, what is
+  to camera-left, what is through the window, where the practicals are. Lock the
+  space by description; do not pin a literal first frame.
+- If images are Higgsfield MCP job IDs → directly usable in the generate_video medias array
+- If images are CometAPI or External files → upload via `media_upload` + `media_confirm` first
+
+---
+
+## Step 5.5 — THE COST GATE
+
+The storyboard exists to be looked at before video credits are spent. Render one
+image from the finished video prompt and read it before generating. An image
+costs a fraction of a video generation; if the direction is wrong, fix the prompt.
+
+**Judge direction, not detail.** The image model and the video model are different
+models and will not agree on specifics. Treating the panel as a prediction of the
+final frame causes pointless re-rolls. What the gate answers is narrower:
+
+- is the character where you thought they were
+- is this the environment you described
+- does the framing carry the idea
+
+If those three hold, generate. Differences in the fold of a sleeve are not a
+reason to re-roll.
+
+**Failed generations are takes, not waste.** Keep them — a rejected panel often
+shows what the prompt actually said, which is the fastest route to fixing it.
 
 ---
 
