@@ -1,8 +1,21 @@
 # Proposed skill updates
 
-Revisions drafted here for review before being applied to the live skill. These
+Revisions drafted here for review before being applied to the live skills. These
 files are **not** loaded by anything — copy an approved version into the skill's
 real source.
+
+The skills concerned are account-synced (`~/.claude/skills/synced/`, each with a
+`skillId` in `manifest.json`). A cloud or container session gets a read-only
+copy, so nothing here could be applied from the session that drafted it. Apply
+via Customize in the Desktop app or claude.ai skill settings, whichever holds the
+authoritative copy.
+
+## Contents
+
+| Folder | Target skill(s) | Status |
+|---|---|---|
+| `ingest-content/` | ingest-content | Drafted, unreviewed |
+| `seedance-2-5-rollout/` | seedance2-director, seedance2-composition, storyboard-generator, credit-calculator, higgsfield-generate, and chain consumers | Drafted, unreviewed |
 
 ## ingest-content
 
