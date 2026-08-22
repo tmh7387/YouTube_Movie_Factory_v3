@@ -82,3 +82,6 @@ unpacked_spec*/
 
 # runtime error log from the higgsfield CLI, not source
 backend/jobs/higgsfield_last_error.txt
+
+# generated skill upload packages — rebuild with skills/_mirror/build_skill.py
+skills/_mirror/build/
