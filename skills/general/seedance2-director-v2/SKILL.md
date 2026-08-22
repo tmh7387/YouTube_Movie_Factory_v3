@@ -1,20 +1,18 @@
 ---
 name: seedance2-director
 description: >-
-  Generate complete, production-ready video prompts engineered for Seedance 2.0
-  and Seedance 2.5 (version routing is Step 0.5 — the two take different grammars)
-  in the exact formats used by Phil Franco (Prompt Vault), heydin.ai (Omni Reference),
-  and Gadget Gyani (GGVP viral series). Covers BOTH text-to-video (pure prompt) AND
-  image-to-video (using @image1 / @image2 reference system). Use this skill whenever
-  the user mentions Seedance, wants a video prompt, describes a scene to animate, asks
-  for a shot list, mentions Seedance 2.5, timestamped beats, video editing or
-  extension, clay-model previz, keyframe reference, brand film, ad concept,
-  product video, cinematic short, action scene, anime, claymation, comedy, fighting scene, dialogue scene, or any
-  visual sequence needing generation-ready prompts. Also trigger for: write me a video
-  prompt, Seedance prompt, animate this, shot list, plan a video, make this cinematic,
-  camera direction, AI video prompt, viral video prompt, @image1, omni reference,
-  character reference, bilingual video prompt, or any scene described in plain English
-  that needs turning into Seedance video.
+  Seedance 2.0 and 2.5 prompt director — production-ready prompts for T2V,
+  I2V, R2V, V2V and storyboard modes, with version routing, timestamped beats,
+  genre templates and bilingual EN+ZH. Chains with video-production-planner,
+  storyboard-generator, directors-sheet and credit-calculator. Trigger on:
+  Seedance, Seedance prompt, write a Seedance prompt, Seedance 2.5, video
+  prompt, AI video prompt, viral video prompt, animate this, make this
+  cinematic, shot list, plan a video, camera direction, storyboard mode,
+  bridge to video, @image1, omni reference, character reference, bilingual
+  video prompt, video editing, video extension, clay-model previz, keyframe
+  reference, brand film, ad concept, product video, cinematic short, action
+  scene, anime, claymation, comedy, fighting scene, dialogue scene, or any
+  scene described in plain English that needs turning into Seedance video.
 ---
 
 # Seedance 2.x Director — Complete Prompt System

@@ -18,6 +18,7 @@ These tests fail loudly on the same mistake.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -88,3 +89,42 @@ def test_skill_md_has_name_and_description(d: Path):
     )
     for field in ("name:", "description:"):
         assert field in head, f"{d.name}/SKILL.md frontmatter is missing {field!r}"
+
+MAX_DESCRIPTION = 1024
+
+
+@pytest.mark.parametrize("d", skill_dirs(), ids=lambda d: d.name)
+def test_description_fits_the_platform_limit(d: Path):
+    """claude.ai rejects a skill whose description exceeds 1024 characters.
+
+    The limit applies to the flattened value, not the wrapped source lines, so a
+    folded block that looks short in the file can still be over.
+    """
+    skill_md = d / "SKILL.md"
+    if not skill_md.is_file():
+        pytest.skip("covered by test_skill_folder_has_a_loadable_skill_md")
+
+    text = skill_md.read_text(encoding="utf-8", errors="ignore")
+    if not text.lstrip().startswith("---"):
+        pytest.skip("covered by test_skill_md_has_name_and_description")
+    fm = text.split("---", 2)[1]
+
+    folded = re.search(
+        r"^description:[^\S\n]*(?:>-|>|\|-|\|)?[^\S\n]*\n((?:[^\S\n]+\S.*\n)+)",
+        fm,
+        re.M,
+    )
+    if folded:
+        flat = " ".join(line.strip() for line in folded.group(1).strip().splitlines())
+    else:
+        m = re.search(r"^description:[^\S\n]*(\S.*)$", fm, re.M)
+        if not m:
+            pytest.skip("covered by test_skill_md_has_name_and_description")
+        flat = m.group(1).strip()
+
+    assert len(flat) <= MAX_DESCRIPTION, (
+        f"{d.name}/SKILL.md description is {len(flat)} characters, over the "
+        f"{MAX_DESCRIPTION} limit by {len(flat) - MAX_DESCRIPTION}. claude.ai will "
+        f"reject the upload. Trim prose and duplicate trigger phrases — keep every "
+        f"distinct trigger."
+    )

@@ -18,7 +18,7 @@ the Desktop app, then add a row with the commit sha the package was built from.
 
 | Date | Skill | Built from | sha256[:12] | Uploaded | Notes |
 |---|---|---|---|---|---|
-| 2026-08-22 | `seedance2-director` | *(pending commit)* | `8dfd7a758262` | ☐ | First mirror after completing the master. 917 lines + 5 references. Replaces the 2026-07-24 account build, which had 532 lines and no references. |
+| 2026-08-22 | `seedance2-director` | *(pending commit)* | `(rebuilt — see below)` | ☐ | First mirror after completing the master. 915 lines + 5 references. Replaces the 2026-07-24 account build, which had 532 lines and no references. Description trimmed 1130 -> 876 chars to fit the 1024 platform limit; all 31 trigger phrases kept, including `storyboard mode` and `bridge to video` recovered from the live export. |
 | 2026-08-22 | `higgsfield-creator` | *(pending commit)* | `856a11c62ae9` | ☐ | Unpacked from the stale in-folder zip so the app can load it. Content unchanged. |
 | 2026-08-22 | `music-video-producer` | *(pending commit)* | `0c14adb595ed` | ☐ | Renamed to `SKILL.md` so the app can load it. Content unchanged. |
 
