@@ -42,18 +42,66 @@ reference file that Priorities 2-6 depend on.
 
 ---
 
+## PRIORITY 0 — Inventory before you touch anything
+
+**Read this first. It governs every change below.**
+
+I do not know which build of these skills is in my account. The section names and
+reference filenames I use below come from copies on my workstation, and I have at
+least three builds here that disagree with each other — one has a
+`DURATION CALIBRATION` table and no storyboard mode, another has storyboard mode
+and four reference files but no duration table at all.
+
+So treat every name I give you as a **hint, not a guarantee**.
+
+For `seedance2-director`, report the following and then stop:
+
+1. **Structure.** Does the skill have reference files, or is it a single
+   `SKILL.md`? List every reference file by name.
+2. **Headings.** List every top-level and second-level heading in `SKILL.md`.
+3. **Search hits.** Search the skill body and every reference file for each of the
+   following, and quote what you find along with the heading it sits under:
+   - `15s`, `15 second`, `4-15`
+   - `max duration`, `maximum duration`, `duration limit`
+   - `zero memory`, `no memory`, `between generations`
+   - `OUTPUT SETTINGS`
+   - `DURATION CALIBRATION`
+   - `Platform Constraint`
+   - `Seedance 2.0`
+
+Show me that inventory. I will tell you which of the changes below map onto what
+you actually found before you edit anything.
+
+### Three rules that apply to every change below
+
+- **Where I name a section or file that does not exist, do not approximate.** Do
+  not create a near-match silently and do not rename an existing section to fit my
+  description. Tell me it is missing and propose where the content should go.
+- **Where the skill has no `references/` folder**, the reference content in 1.1
+  goes inline into `SKILL.md` as its own section rather than being dropped.
+- **Where a section exists under a different name** but carries the content I
+  describe, use the one that is actually there and tell me what it is called.
+
+---
+
 ## PRIORITY 1 — `seedance2-director`
 
 This is the skill with the actual errors. Everything else is addition.
 
 ### 1.1 — Create the shared reference file
 
-Add a new reference file to this skill at
-`references/seedance-2-5-practitioner-findings.md`, and reference it from the
-skill body the same way the skill already references its other reference files
-(in the "read these first" step at the top).
+**If the skill has a `references/` folder**, add a new file to it at
+`references/seedance-2-5-practitioner-findings.md`, and point at it from the skill
+body wherever the skill lists its reference files — there is usually a "read these
+first" step near the top. Add it to that list with a one-line description matching
+the style of the entries already there.
 
-The complete contents follow. Use it verbatim.
+**If the skill has no reference files**, put the content inline in `SKILL.md` as
+its own top-level section instead, placed after the skill's opening material and
+before its first procedural step. Do not drop it, and do not create a
+`references/` folder if the skill is not built that way.
+
+Either way the content is the same. The complete text follows — use it verbatim.
 
 ````markdown
 # Seedance 2.5 — capabilities and practitioner findings
@@ -246,9 +294,16 @@ snapshot, not a rate card.
 
 This is the error that costs the most.
 
-The skill has a **Platform Constraints** table with a row reading roughly:
+Somewhere the skill states a flat 15-second maximum as if it were an engine
+limit. In the build I have seen it sits in a **Platform Constraints** table, as a
+row reading roughly:
 
 > **Max duration** — **15 seconds** — Seedance 2.0 supports 4-15s
+
+Your build may carry it elsewhere, under another name, or only implicitly — your
+Priority 0 search for `15s` / `max duration` / `4-15` will have found where. Work
+from what you found, not from my description. If no such statement exists
+anywhere, say so: part (a) below still applies, parts (b) and (c) may not.
 
 It states a flat 15-second maximum as if it were an engine limit. It is not. 2.0
 caps at 15s; 2.5 caps at 30s. The skill has no way to know which model I am on,
@@ -305,16 +360,22 @@ Padding it to the ceiling buys nothing and costs credits.
 - Round to integer seconds. Both models honour integer-second timestamps only.
 ````
 
-**(b) Split the Platform Constraints row** into two, by model version — 2.0 at
-4-15s, 2.5 up to 30s — and add a line under the table saying the ceiling is an
-upper bound with the actual runtime derived per STEP 0.5.
+**(b) Split whatever states the ceiling** into two, by model version — 2.0 at
+4-15s, 2.5 up to 30s — and add a line immediately after it saying the ceiling is
+an upper bound with the actual runtime derived per STEP 0.5. If it is a table row,
+make it two rows; if it is prose, make it two sentences.
 
 Keep "integer seconds only". Both models honour integer-second timestamps, so
 that rule matters *more* at 30s, not less.
 
-**(c) Reframe the `DURATION CALIBRATION` table.** It currently maps duration to
-shot count, signature effects and Smart Cuts, topping out at "15s (max
-standard)", and reads as a menu to pick from. Replace it with:
+**(c) Reframe the duration calibration table — if the skill has one.** In my
+build it is called `DURATION CALIBRATION` and maps duration to shot count,
+signature effects and Smart Cuts, topping out at "15s (max standard)". It reads as
+a menu to pick a duration from, which is the problem.
+
+If your build has no such table, **add this as a new section** rather than skipping
+it — the calibration is what stops a derived runtime from producing an unworkable
+shot count. Either way, the content is:
 
 ````markdown
 ## DURATION CALIBRATION
@@ -360,7 +421,10 @@ Tell me what you found rather than converting silently.
 
 ### 1.3 — Scope the "zero memory" rule to fresh generations
 
-The skill has a Prompt Discipline rule reading roughly:
+**If your Priority 0 search for `zero memory` / `between generations` found
+nothing, skip this item and tell me** — my build may carry a rule yours does not.
+
+Where it exists, the skill has a Prompt Discipline rule reading roughly:
 
 > AI video generators have **zero memory between generations**... Never reference
 > other segments... Re-describe the character, wardrobe, environment in EVERY
@@ -385,9 +449,13 @@ texture, explicit negations — then the scene body underneath.
 
 The runtime in that header is the **derived** value from 1.2, never the ceiling.
 
-This partly conflicts with the existing `OUTPUT SETTINGS` section, which already
-asks for duration and aspect ratio at the top. **Reconcile them into one ordered
-header** rather than leaving two competing instructions about what goes first.
+**If the skill has an `OUTPUT SETTINGS` section** — or anything else that already
+dictates what goes at the top of a prompt, such as a rule asking for duration and
+aspect ratio first — this partly conflicts with it. **Reconcile them into one
+ordered header** rather than leaving two competing instructions about what goes
+first, and tell me which section you merged into which.
+
+If there is no such section, just add the ordering rule.
 
 Include the positional-fix principle: if a constraint is being ignored, move it up
 before rewording it — with the `NO MUSIC WHATSOEVER` / `NO BGM` first-line case as
@@ -434,15 +502,32 @@ Add the locked-parameter rules as a constraint block: editing pins both ratio an
 duration; first-frame and extension tasks pin ratio; violating these rejects the
 request outright.
 
-Also update any capabilities reference file. One that says "Generates up to 15
-seconds at 1080p" should say the ceiling depends on the model — 2.0 up to 15s, 2.5
-up to 30s, both 1080p, both integer seconds only — and that the ceiling is an
-upper bound with the real runtime derived per STEP 0.5.
+**Then update the reference files your Priority 0 inventory actually found.** Do
+not go looking for files by the names I use here — I am describing them by content,
+and my names come from a build that may not be yours.
 
-If there is a worked-examples reference, add a note at the top saying each
-example's runtime was derived from that scene's beats rather than chosen, that the
-reader should match the reasoning not the numbers, and that the examples were
-written on 2.0 so none exceeds 15s.
+- **A capabilities or model-facts reference** — whatever file describes what the
+  engine can do. In my build it is `seedance2-capabilities.md` and contains the
+  line "Generates up to 15 seconds at 1080p". Wherever that claim lives, it should
+  say the ceiling depends on the model — 2.0 up to 15s, 2.5 up to 30s, both 1080p,
+  both integer seconds only — and that the ceiling is an upper bound with the real
+  runtime derived per STEP 0.5.
+
+- **A worked-examples reference** — whatever file holds example prompts you are
+  told to calibrate output against. In my build it is `prompt-examples.md`. Add a
+  note at the top saying each example's runtime was derived from that scene's beats
+  rather than chosen, that the reader should match the reasoning and not the
+  numbers, and that the examples were written on 2.0 so none exceeds 15s.
+
+- **Any other reference file** that states a duration, a Seedance version, or a
+  capability that 2.5 changed. My build also has a camera reference and a
+  storyboard-bridge reference; yours may have neither, or others. Check each one
+  you found and report what needs changing before you change it.
+
+**If either of those two references does not exist in your build, say so and stop
+on that item.** Do not create a new reference file to hold the note, and do not
+attach the note to an unrelated file. Tell me what you found and I will decide
+where it goes.
 
 ---
 
