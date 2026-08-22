@@ -1,12 +1,7 @@
-# Seedance 2.0 / 2.5 — Worked Prompt Examples
+# Seedance 2.0 — Worked Prompt Examples
 ## 6 Genres — Real Working Calibration Standards
 
 Match this level of specificity in every output.
-
-**On the durations below:** each example's runtime was derived from that scene's
-beats, not chosen from a menu. Match the *reasoning* — beats first, seconds after —
-not the numbers. These were all written on Seedance 2.0, so none exceeds 15s; on
-2.5 the same method can run to 30s where the scene earns it.
 
 ---
 
