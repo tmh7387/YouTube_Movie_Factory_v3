@@ -19,7 +19,7 @@ wrong, and both cost real credits:
 
 | Skill | Line | Says | Reality in 2.5 |
 |---|---|---|---|
-| seedance2-director | Platform Constraints table | "**Max duration** — **15 seconds** — Seedance 2.0 supports 4-15s" | 2.5 supports **30s**. The skill caps every prompt at half the available runtime. |
+| seedance2-director | Platform Constraints table | "**Max duration** — **15 seconds** — Seedance 2.0 supports 4-15s" | 2.5 supports **30s**. The skill caps every prompt at half the available runtime — and states a flat maximum where it should be asking which model is in use and deriving the runtime from the scene. |
 | seedance2-director | Prompt Discipline Rule 1 | "AI video generators have **zero memory between generations**... Never reference other segments... Re-describe the character, wardrobe, environment in EVERY prompt" | True for fresh generations, **false for extension**. In extension the model reads the whole input clip; re-describing the world is wasted prompt budget, and the correct move is naming what must *not* change. |
 
 Rule 1 is the subtler of the two. It isn't wrong so much as unscoped — it needs
@@ -30,16 +30,47 @@ to say "every *fresh* generation is self-contained" and carve out extension.
 1. **Add `references/seedance-2-5-practitioner-findings.md`** (the file in this
    folder) and reference it from the skill body the way the skill already
    references `seedance2-composition`.
-2. **Fix the duration constraint.** Split the row by model version: 2.0 is 4-15s,
-   2.5 is up to 30s. Keep "integer seconds only" — 2.5 honours integer-second
-   timestamps, so that rule gets *more* important, not less.
+2. **Replace the duration constraint with a model gate plus a derivation rule.**
+   Splitting the constraint row by version is necessary but not sufficient — it
+   still leaves the skill picking a number. Two changes, together:
+
+   **(a) Add a model-selection step before mode detection.** The skill must ask
+   which model the user is generating on — Seedance 2.0 (ceiling 15s) or 2.5
+   (ceiling 30s) — and carry that answer as `MODEL_CEILING` through every later
+   step. It must not infer the model from the scene or default silently. Where the
+   user does not answer, it states the assumption it is working under and says it
+   is changeable, rather than picking one quietly.
+
+   **(b) Make runtime derived, never assumed.** `MODEL_CEILING` is an upper bound,
+   not a target and not a default. The prompt must carry no absolute duration
+   chosen because it is the maximum. The skill counts the beats the scene actually
+   needs, gives each the screen time it needs to read, and sums them — a two-beat
+   reveal that plays in 7 seconds is a 7-second prompt on either model. Where the
+   derived runtime exceeds `MODEL_CEILING`, it says so and offers the real choice
+   (cut beats, or split — on 2.5, extension is the cleaner split) instead of
+   silently trimming. A user-named runtime overrides the derivation, but a beat
+   count that does not fit it gets flagged.
+
+   Keep "integer seconds only" — 2.5 honours integer-second timestamps, so that
+   rule gets *more* important, not less.
+
+   The `DURATION CALIBRATION` table needs the same reframing: it calibrates shot
+   density against a runtime already derived, and is not a menu to pick a duration
+   from. Add the 15-22s and 22-30s rows as 2.5-only, and state that shot density is
+   a consequence of runtime rather than a quota — a held 30s single take is
+   legitimate where the scene is built on duration rather than cutting.
+
+   Any per-15s figure elsewhere in the skill becomes a rate. The dialogue word
+   budget ("~25-30 spoken words fit into 15 seconds") is the known instance:
+   restate it as ~2 spoken words per second, budgeted against the derived runtime.
 3. **Scope Rule 1 to fresh generations** and add extension as an explicit
    exception, with the frame-analysis step.
 4. **Add a prompt-ordering rule** for top-loading: shot count, runtime, per-shot
-   beats, style, texture, negations — then the scene body. This partly conflicts
-   with the existing `OUTPUT SETTINGS` section, which already asks for duration
-   and aspect ratio at the top; reconcile them into one ordered header rather
-   than leaving two competing instructions about what goes first.
+   beats, style, texture, negations — then the scene body. The runtime in that
+   header is the derived value from item 2, never the model ceiling. This partly
+   conflicts with the existing `OUTPUT SETTINGS` section, which already asks for
+   duration and aspect ratio at the top; reconcile them into one ordered header
+   rather than leaving two competing instructions about what goes first.
 5. **Add the anti-plastic vocabulary** as a named block — optical imperfection,
    material honesty, explicit negation of the wrong register, never open or close
    on stasis, name costumes as costumes.
