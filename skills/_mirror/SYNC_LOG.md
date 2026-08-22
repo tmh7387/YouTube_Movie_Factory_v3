@@ -22,6 +22,11 @@ the Desktop app, then add a row with the commit sha the package was built from.
 | 2026-08-22 | `higgsfield-creator` | *(pending commit)* | `856a11c62ae9` | ☐ | Unpacked from the stale in-folder zip so the app can load it. Content unchanged. |
 | 2026-08-22 | `music-video-producer` | *(pending commit)* | `0c14adb595ed` | ☐ | Renamed to `SKILL.md` so the app can load it. Content unchanged. |
 
+| 2026-08-22 | `storyboard-generator` | `753b025` | `4ba44e3711c8` | ☐ | Unioned with the older vault build (skill map + 3 handoff packages) and given scene-plate-first, the image-model split and the direction-not-detail cost gate. 339 -> 508 lines. |
+| 2026-08-22 | `credit-calculator` | `753b025` | `7ebfdd9a7c12` | ☐ | Unioned (skill map + live balance check) and given Seedance 2.5 rows plus the dated spend snapshot. 185 -> 261 lines. |
+| 2026-08-22 | `video-production-planner` | `753b025` | `37ec955f514a` | ☐ | Picks the Seedance version in the brief; every shot gets its own runtime. 534 -> 572 lines. |
+| 2026-08-22 | `directors-sheet` | `753b025` | `c6dab13430df` | ☐ | Records target version and per-shot runtime; amends the 2.0-era no-negation rule. 266 -> 283 lines. |
+
 Tick the Uploaded box and fill in the commit sha once each upload is done.
 
 ## Exports pulled down
