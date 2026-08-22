@@ -167,11 +167,82 @@ When the user has an existing production package (like the Chrome Runway .md fil
 4. Show the user what was extracted
 5. Optionally rewrite the production package to use bible references instead of inline repetition
 
+## The Narrative Canon Layer (optional, for multi-shot stories)
+
+The schema above is a **visual** bible — enough to keep a face and a room
+consistent across shots. Anything longer than a single sequence also needs a
+**narrative** layer, or shots stay individually consistent while the story
+drifts.
+
+Adapted from Joey's `story-bible-builder` skill (see
+`docs/JOEY_SKILLS_REVIEW.md`). Add these to `project_bible.json` under a
+`canon` key when the project is a story rather than a one-off:
+
+| Section | Holds |
+|---|---|
+| `premise` | what the story is, in one paragraph |
+| `thesis` | what it is *about* — the argument the ending has to land |
+| `timeline` | world history and the sequence of events, so references stay orderable |
+| `aesthetic` | the world's visual logic, distinct from the palette (why it looks that way) |
+| `factions` | groups, their goals, and how they read on screen |
+| `locations` | named places, with the environment entries above as their visual half |
+| `world_rules` | what is and isn't possible here; the rules the audience is asked to accept |
+| `relationships` | who owes what to whom, and how the ensemble balances |
+| `engines` | the structural pressures that generate scenes — what forces the next beat |
+| `production_rules` | standing decisions: what this show never does, what it always does |
+
+### Build order
+
+Work top-down and don't skip ahead — later sections depend on earlier ones.
+Premise and thesis first, then world (factions, locations, rules), then
+characters (the largest section by far), then relationships, then the structural
+engines, then production rules. Interview the user section by section rather
+than asking for everything at once; the answers to section 3 change what you
+need to ask in section 8.
+
+Scope-check first. A single 8-second clip does not need a canon layer, and
+offering one is friction. Ask what's being built before deciding how much bible
+to build.
+
+## The Handoff Contract
+
+A bible has two modes, and they are not the same document:
+
+**Mode 1 — Standalone canon.** A reference a human reads. Prose, complete,
+discursive. Written for the person deciding what happens next.
+
+**Mode 2 — Context source for a prompt director skill.** What actually gets
+injected into `seedance2-director` or `minimax-h3-director` when a shot is being
+written. This is *not* the whole bible. Injecting the whole thing buries the
+shot-relevant facts under world history.
+
+What Mode 2 hands over, per shot:
+
+1. **Only the characters in this shot** — their physical anchor words and
+   current wardrobe, nothing else.
+2. **Only the environment this shot is in** — plus its lighting condition at
+   this point in the timeline.
+3. **The invariants** — palette, visual rules, negative prompts, camera
+   defaults. These go into the prompt's style-prefix slot; see
+   `skills/general/seedance2-director-v2/references/shot-spine.md`.
+4. **Any world rule the shot could violate.** Not all of them.
+
+Everything else stays out. The bible's job at generation time is to make the
+prompt *shorter* and more consistent, not longer.
+
+This is what `bible_service.generate_bible_from_context` and the
+`project_bible` / `character_consistency` skill contexts are wiring up in the
+backend — Mode 2 is the contract they implement.
+
 ## Integration with Other Skills
 
 - **music-video-producer**: Read the bible before generating shot lists
 - **higgsfield-creator**: Map bible camera defaults to Higgsfield Cinema Studio settings
-- **seedance2-director**: Inject character/environment into Seedance prompts
+- **seedance2-director**: Inject character/environment into Seedance prompts —
+  bible invariants land in the style-prefix slot, per-shot characters in Assets
+- **minimax-h3-director**: Same handoff, different grammar — invariants go in the
+  style sentence, and the bible should also carry a voice note per speaking
+  character since H3 generates dialogue natively
 - **ripple-edit**: Use the bible as the source of truth for global changes
 
 ## File Location Convention

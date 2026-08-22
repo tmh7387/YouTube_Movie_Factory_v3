@@ -3,49 +3,18 @@ ModelRouter — Smart model selection based on scene analysis.
 
 Analyzes scene prompts to recommend the optimal animation model
 based on content characteristics (motion intensity, character focus, etc.)
+
+Model capabilities live in app/services/video_models.py; this module only
+scores scenes against them. A user-chosen model always wins — auto-routing
+is a suggestion engine, not an override.
 """
 import logging
 from typing import Optional
 
-from app.core.config import settings
+from app.services import video_models
+from app.services.video_models import VideoModel
 
 logger = logging.getLogger(__name__)
-
-# Model capability profiles
-MODEL_PROFILES = {
-    "kling-v2-master": {
-        "display_name": "Kling v2 Master",
-        "strengths": ["character_closeup", "facial_expression", "slow_motion", "portrait"],
-        "weaknesses": ["fast_action", "wide_landscape"],
-        "cost_tier": "high",
-        "max_duration": 10,
-        "default_mode": "pro",
-    },
-    "kling-v1-6": {
-        "display_name": "Kling v1.6",
-        "strengths": ["general_purpose", "moderate_motion", "landscape"],
-        "weaknesses": ["complex_character"],
-        "cost_tier": "medium",
-        "max_duration": 10,
-        "default_mode": "std",
-    },
-    "doubao-seedance-2-0": {
-        "display_name": "Seedance 2.0",
-        "strengths": ["dance", "fast_action", "dynamic_camera", "character_movement", "wide_shot"],
-        "weaknesses": ["subtle_expression"],
-        "cost_tier": "medium",
-        "max_duration": 10,
-        "default_mode": "std",
-    },
-    "wan-pro": {
-        "display_name": "Wan Pro",
-        "strengths": ["cinematic", "atmospheric", "slow_reveal", "landscape", "abstract"],
-        "weaknesses": ["fast_action", "dialogue"],
-        "cost_tier": "low",
-        "max_duration": 5,
-        "default_mode": "std",
-    },
-}
 
 # Keywords that signal scene characteristics
 SCENE_SIGNALS = {
@@ -57,6 +26,9 @@ SCENE_SIGNALS = {
     "dynamic_camera": ["tracking shot", "dolly", "crane", "steadicam", "orbit", "circle"],
     "atmospheric": ["fog", "mist", "ethereal", "dreamlike", "surreal", "abstract", "particles"],
     "cinematic": ["cinematic", "film grain", "anamorphic", "bokeh", "shallow depth"],
+    "dialogue": ["says", "speaks", "dialogue", "conversation", "voiceover", "line:", "talking"],
+    "native_audio": ["sound design", "diegetic", "ambient sound", "sfx", "soundscape"],
+    "long_form": ["one-shot", "long take", "oner", "continuous shot", "extended sequence"],
 }
 
 
@@ -75,14 +47,43 @@ def analyze_scene(visual_prompt: str, motion_prompt: str = "") -> dict:
     return detected
 
 
+def _candidates(allowed_models: Optional[list[str]] = None) -> list[VideoModel]:
+    """Models auto-routing is allowed to pick from."""
+    if allowed_models:
+        picked = [video_models.resolve(m) for m in allowed_models]
+        # resolve() never fails, so drop anything that fell back to the default
+        # unless it was genuinely asked for.
+        wanted = {(m or "").strip().lower() for m in allowed_models}
+        return [m for m in picked if m.id in wanted or m.id in {
+            video_models.LEGACY_ALIASES.get(w, w) for w in wanted
+        }] or video_models.selectable_models()
+    return [m for m in video_models.selectable_models() if video_models.is_configured(m)] \
+        or video_models.selectable_models()
+
+
+def _describe(model: VideoModel) -> dict:
+    return {
+        "model": model.id,
+        "display_name": model.display_name,
+        "mode": model.default_mode,
+    }
+
+
 def recommend_model(
     visual_prompt: str,
     motion_prompt: str = "",
     preferred_model: Optional[str] = None,
     bible_camera_specs: Optional[dict] = None,
+    lock_preferred: bool = False,
+    allowed_models: Optional[list[str]] = None,
 ) -> dict:
     """
     Recommend the best animation model for a given scene.
+
+    preferred_model  — the user's pick. Honoured outright when lock_preferred is
+                       set; otherwise it wins any close-run scoring.
+    lock_preferred   — the user explicitly chose this model, so do not route away
+                       from it no matter what the scene text says.
 
     Returns:
         {
@@ -94,78 +95,105 @@ def recommend_model(
             "alternatives": [{"model": ..., "score": ...}],
         }
     """
+    if lock_preferred and preferred_model:
+        model = video_models.resolve(preferred_model)
+        return {
+            **_describe(model),
+            "confidence": 1.0,
+            "reasoning": f"{model.display_name} selected by the user — auto-routing disabled",
+            "alternatives": [],
+        }
+
     signals = analyze_scene(visual_prompt, motion_prompt)
+    candidates = _candidates(allowed_models)
 
     if not signals:
-        # No strong signals — use preferred or default
-        model_id = preferred_model or settings.SEEDANCE_VIDEO_MODEL
-        profile = MODEL_PROFILES.get(model_id, {})
+        model = video_models.resolve(preferred_model or video_models.default_model_id())
         return {
-            "model": model_id,
-            "display_name": profile.get("display_name", model_id),
-            "mode": profile.get("default_mode", "std"),
+            **_describe(model),
             "confidence": 0.5,
             "reasoning": "No strong scene signals detected — using default model",
             "alternatives": [],
         }
 
     # Score each model
-    scores = {}
-    for model_id, profile in MODEL_PROFILES.items():
-        score = 0
+    scores: dict[str, float] = {}
+    for model in candidates:
+        score = 0.0
         for signal, weight in signals.items():
-            if signal in profile["strengths"]:
+            if signal in model.strengths:
                 score += weight * 2
-            if signal in profile["weaknesses"]:
+            if signal in model.weaknesses:
                 score -= weight * 1.5
-        scores[model_id] = score
+        scores[model.id] = score
 
-    # Sort by score descending
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
     best_id, best_score = ranked[0]
-    best_profile = MODEL_PROFILES[best_id]
+    best = video_models.resolve(best_id)
 
     # If preferred model is close enough to best, honor user preference
-    if preferred_model and preferred_model in scores:
-        pref_score = scores[preferred_model]
-        if pref_score >= best_score * 0.7:
-            best_id = preferred_model
-            best_profile = MODEL_PROFILES.get(preferred_model, {})
-            best_score = pref_score
+    if preferred_model:
+        pref = video_models.resolve(preferred_model)
+        if pref.id in scores and scores[pref.id] >= best_score * 0.7:
+            best, best_score = pref, scores[pref.id]
 
     top_signals = sorted(signals.items(), key=lambda x: x[1], reverse=True)[:3]
-    reasoning = f"Detected: {', '.join(s for s, _ in top_signals)}. " \
-                f"Best match: {best_profile.get('display_name', best_id)} (strengths align with scene content)"
+    reasoning = (
+        f"Detected: {', '.join(s for s, _ in top_signals)}. "
+        f"Best match: {best.display_name} (strengths align with scene content)"
+    )
 
     alternatives = [
-        {"model": mid, "display_name": MODEL_PROFILES[mid].get("display_name", mid), "score": round(sc, 2)}
-        for mid, sc in ranked[1:3] if sc > 0
+        {
+            "model": mid,
+            "display_name": video_models.resolve(mid).display_name,
+            "score": round(sc, 2),
+        }
+        for mid, sc in ranked[1:3]
+        if sc > 0 and mid != best.id
     ]
 
     return {
-        "model": best_id,
-        "display_name": best_profile.get("display_name", best_id),
-        "mode": best_profile.get("default_mode", "std"),
+        **_describe(best),
         "confidence": min(1.0, max(0.3, best_score / 6)),
         "reasoning": reasoning,
         "alternatives": alternatives,
     }
 
 
-def estimate_credits(scenes: list, model_overrides: Optional[dict] = None) -> dict:
+def recommend_for_storyboard(
+    scenes: list[dict],
+    model_overrides: Optional[dict] = None,
+    preferred_model: Optional[str] = None,
+    lock_preferred: bool = False,
+) -> list[dict]:
     """
-    Estimate total credit cost for a production run.
-    Returns per-scene and total estimates.
-    """
-    cost_map = {"high": 3.0, "medium": 2.0, "low": 1.0}
-    total = 0.0
-    per_scene = []
+    Recommend a model per scene across a whole storyboard.
 
+    model_overrides maps a scene index (as a string) to a model id, letting a
+    user pin individual scenes while the rest auto-route.
+    """
+    results = []
     for i, scene in enumerate(scenes):
-        model_id = (model_overrides or {}).get(str(i), settings.SEEDANCE_VIDEO_MODEL)
-        profile = MODEL_PROFILES.get(model_id, {})
-        cost = cost_map.get(profile.get("cost_tier", "medium"), 2.0)
-        total += cost
-        per_scene.append({"scene": i + 1, "model": model_id, "credits": cost})
+        override = (model_overrides or {}).get(str(i))
+        if override:
+            model = video_models.resolve(override)
+            results.append({
+                "scene_index": i,
+                **_describe(model),
+                "confidence": 1.0,
+                "reasoning": "Pinned for this scene by the user",
+                "alternatives": [],
+            })
+            continue
 
-    return {"total_credits": total, "per_scene": per_scene, "scene_count": len(scenes)}
+        results.append({
+            "scene_index": i,
+            **recommend_model(
+                visual_prompt=scene.get("visual_prompt", "") or scene.get("description", ""),
+                motion_prompt=scene.get("motion_prompt", ""),
+                preferred_model=preferred_model,
+                lock_preferred=lock_preferred,
+            ),
+        })
+    return results

@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # Fix moved to top
 
-from app.api import health, research, curation, production, knowledge, skills, bible
+from app.api import health, research, curation, production, knowledge, skills, bible, models
 from app.core.config import settings
 
 app = FastAPI(
@@ -45,12 +45,17 @@ app.include_router(production.router, prefix="/api/production", tags=["Productio
 app.include_router(knowledge.router, prefix="/api/knowledge", tags=["Knowledge"])
 app.include_router(skills.router, prefix="/api/skills", tags=["Skills"])
 app.include_router(bible.router, prefix="/api/bible", tags=["Bible"])
+app.include_router(models.router, prefix="/api/models", tags=["Models"])
 
 @app.on_event("startup")
 async def startup_event():
     logger.info("YouTube Movie Factory API starting up...")
     logger.info(f"Using default image model: {settings.DEFAULT_IMAGE_MODEL}")
     logger.info(f"Using default video model: {settings.DEFAULT_VIDEO_MODEL}")
+    from app.services import video_models
+    usable = [m.id for m in video_models.selectable_models() if video_models.is_configured(m)]
+    logger.info(f"Default animation model: {video_models.default_model_id()}")
+    logger.info(f"Configured animation models: {usable or 'none — check API keys'}")
 
 @app.on_event("shutdown")
 async def shutdown_event():

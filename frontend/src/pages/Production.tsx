@@ -13,6 +13,7 @@ import {
     type ProductionJobDetail, PIPELINE_PHASES, sceneProgress, formatFileSize
 } from '../services/production';
 import { curationService, type CurationJob } from '../services/curation';
+import { modelService, usableModels, modelSummary, COST_TIER_COLORS, type VideoModel } from '../services/models';
 
 // ---------------------------------------------------------------------------
 // Status colours
@@ -238,6 +239,8 @@ function LiveLog({ logs }: { logs: string[] }) {
 function Launcher({ prefillId, onStarted }: { prefillId?: string; onStarted: (jobId: string) => void }) {
     const [selectedCurationId, setSelectedCurationId] = useState(prefillId ?? '');
     const [animMode, setAnimMode] = useState<'std' | 'pro'>('std');
+    // '' = let the ModelRouter pick per scene
+    const [videoModelId, setVideoModelId] = useState<string>('');
     const [audioFile, setAudioFile] = useState<File | null>(null);
     const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
     const [beatSyncEnabled, setBeatSyncEnabled] = useState(false);
@@ -250,6 +253,17 @@ function Launcher({ prefillId, onStarted }: { prefillId?: string; onStarted: (jo
         queryKey: ['curation_jobs_for_launcher'],
         queryFn: curationService.listJobs,
     });
+
+    const { data: catalogue } = useQuery({
+        queryKey: ['video_models'],
+        queryFn: () => modelService.listVideoModels(true),
+        staleTime: 5 * 60 * 1000,
+    });
+
+    const allModels: VideoModel[] = catalogue?.models ?? [];
+    const selectableModels = usableModels(allModels);
+    const unavailableModels = allModels.filter(m => !selectableModels.includes(m));
+    const chosenModel = selectableModels.find(m => m.id === videoModelId);
 
     const completedCurations = (curations ?? []).filter(j => j.status === 'completed');
     const selectedCuration: CurationJob | undefined = completedCurations.find(j => j.id === selectedCurationId);
@@ -281,7 +295,12 @@ function Launcher({ prefillId, onStarted }: { prefillId?: string; onStarted: (jo
 
     const startMutation = useMutation({
         mutationFn: () => productionService.startJob(
-            { curation_job_id: selectedCurationId, animation_mode: animMode, beat_sync_enabled: beatSyncEnabled && isVideoRef },
+            {
+                curation_job_id: selectedCurationId,
+                animation_mode: animMode,
+                beat_sync_enabled: beatSyncEnabled && isVideoRef,
+                video_model: videoModelId || null,
+            },
             uploadedUrl ?? undefined,
             audioFile?.name,
         ),
@@ -329,23 +348,81 @@ function Launcher({ prefillId, onStarted }: { prefillId?: string; onStarted: (jo
                         )}
                     </div>
 
-                    {/* Animation mode */}
+                    {/* Video model */}
                     <div>
                         <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">
-                            Animation Engine
+                            Video Model
                         </label>
                         <div className="grid grid-cols-2 gap-3">
-                            {([['std', 'Seedance 2.0', 'Fast · Cost-efficient'], ['pro', 'Kling Pro', 'Cinematic · Premium quality']] as const).map(([val, title, sub]) => (
-                                <button key={val} onClick={() => setAnimMode(val)}
-                                    className={`p-4 rounded-xl border text-left transition-all ${animMode === val
+                            {/* Auto — let the ModelRouter score each scene */}
+                            <button onClick={() => setVideoModelId('')}
+                                className={`p-4 rounded-xl border text-left transition-all ${videoModelId === ''
+                                    ? 'bg-blue-600/20 border-blue-500 shadow-lg shadow-blue-500/10'
+                                    : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                                <div className="text-sm font-semibold text-white flex items-center gap-1.5">
+                                    <Sparkles className="w-3.5 h-3.5 text-blue-400" /> Auto
+                                </div>
+                                <div className="text-xs text-gray-400 mt-0.5">Best model per scene</div>
+                            </button>
+
+                            {selectableModels.map(m => (
+                                <button key={m.id} onClick={() => setVideoModelId(m.id)}
+                                    className={`p-4 rounded-xl border text-left transition-all ${videoModelId === m.id
                                         ? 'bg-blue-600/20 border-blue-500 shadow-lg shadow-blue-500/10'
                                         : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
-                                    <div className="text-sm font-semibold text-white">{title}</div>
-                                    <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
+                                    <div className="text-sm font-semibold text-white flex items-center gap-2">
+                                        {m.display_name}
+                                        {m.status === 'preview' && (
+                                            <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                                                Preview
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className={`text-xs mt-0.5 ${COST_TIER_COLORS[m.cost_tier] ?? 'text-gray-400'}`}>
+                                        {modelSummary(m)}
+                                    </div>
                                 </button>
                             ))}
                         </div>
+
+                        {chosenModel?.notes && (
+                            <p className="mt-3 text-xs text-gray-500 leading-relaxed">{chosenModel.notes}</p>
+                        )}
+
+                        {unavailableModels.length > 0 && (
+                            <p className="mt-3 text-xs text-gray-600">
+                                Not available here:{' '}
+                                {unavailableModels.map(m => (
+                                    <span key={m.id} className="mr-2">
+                                        {m.display_name}
+                                        <span className="text-gray-700">
+                                            {' '}({m.status === 'planned' ? 'planned' : 'no credentials'})
+                                        </span>
+                                    </span>
+                                ))}
+                            </p>
+                        )}
                     </div>
+
+                    {/* Kling quality — only meaningful for the Kling family */}
+                    {chosenModel?.family === 'kling' && (
+                        <div>
+                            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">
+                                Kling Quality
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {([['std', 'Standard', 'Faster · Cost-efficient'], ['pro', 'Pro', 'Cinematic · Premium quality']] as const).map(([val, title, sub]) => (
+                                    <button key={val} onClick={() => setAnimMode(val)}
+                                        className={`p-4 rounded-xl border text-left transition-all ${animMode === val
+                                            ? 'bg-blue-600/20 border-blue-500 shadow-lg shadow-blue-500/10'
+                                            : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                                        <div className="text-sm font-semibold text-white">{title}</div>
+                                        <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Audio upload */}
                     <div>
