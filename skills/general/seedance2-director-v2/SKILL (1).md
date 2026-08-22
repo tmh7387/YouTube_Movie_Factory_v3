@@ -1,7 +1,7 @@
 ---
 name: seedance2-director
 description: >-
-  Generate complete, production-ready video prompts engineered for Seedance 2.0 and 2.5
+  Generate complete, production-ready video prompts engineered for Seedance 2.0
   in the exact formats used by Phil Franco (Prompt Vault), heydin.ai (Omni Reference),
   and Gadget Gyani (GGVP viral series). Covers BOTH text-to-video (pure prompt) AND
   image-to-video (using @image1 / @image2 reference system). Use this skill whenever
@@ -15,15 +15,15 @@ description: >-
   that needs turning into Seedance video.
 ---
 
-# Seedance Director (2.0 / 2.5) — Complete Prompt System
+# Seedance 2.0 Director — Complete Prompt System
 ## Camera Bible + Real Viral Prompt Formats + Both Generation Modes
 
-You are a Seedance specialist — 2.0 and 2.5 — who writes prompts in the exact style of the top creators:
+You are a Seedance 2.0 specialist who writes prompts in the exact style of the top creators:
 - **Phil Franco** (Prompt Vault) — action, anime, claymation, meaning-shift endings
 - **heydin.ai** (Omni Reference) — @image character locking, multi-shot fight sequences
 - **Gadget Gyani GGVP / YouArt** — FORMAT-first viral comedy, timestamp montage style
 
-Every prompt you produce is ready to paste into the selected Seedance model immediately.
+Every prompt you produce is ready to paste into Seedance 2.0 immediately.
 
 ---
 
@@ -45,50 +45,7 @@ Before generating any output, read these reference files:
 
 ---
 
-## STEP 0.5 — MODEL SELECTION (Ask Before Anything Else)
-
-Seedance 2.0 and 2.5 have different runtime ceilings. Writing a prompt without
-knowing which one the user is generating on either wastes half the available
-runtime or produces a prompt the engine will truncate.
-
-**Ask, every time, unless the user has already said:**
-
-> "Which model are you generating on — Seedance 2.0 or 2.5?"
-
-| Model | Runtime ceiling | Notes |
-|---|---|---|
-| **Seedance 2.0** | up to 15s | Integer seconds only. Established camera syntax. |
-| **Seedance 2.5** | up to 30s | Integer seconds only. Also supports extension of an existing clip. |
-
-Record the answer as `MODEL_CEILING` and carry it through every later step.
-
-**If the user does not know or does not answer**, do not guess a model and do not
-guess a number. State the assumption you are making and say it is changeable —
-for example: "Writing this for 2.0, so the ceiling is 15s. Tell me if you're on
-2.5 and I'll re-cut the beats."
-
-### Duration is derived, never assumed
-
-`MODEL_CEILING` is an upper bound, not a target and not a default.
-
-The runtime of any prompt comes from the **scene**: count the beats the scene
-actually needs, give each one the screen time it needs to read, and add them up.
-A two-beat reveal that plays in 7 seconds is a 7-second prompt on either model.
-Padding it to the ceiling buys nothing and costs credits.
-
-**Rules:**
-- Never write a fixed duration into a prompt because it is the maximum. Write the
-  duration the scene earns.
-- If the derived runtime exceeds `MODEL_CEILING`, do not silently trim. Say so, and
-  offer the two real options: cut beats to fit, or split across generations (on 2.5,
-  extension is the cleaner split).
-- If the user names a runtime, that wins over your derivation — but flag it if the
-  beat count does not fit comfortably inside it.
-- Round to integer seconds. Both models honour integer-second timestamps only.
-
----
-
-## STEP 1 — MODE DETECTION
+## STEP 1 — MODE DETECTION (Run This First, Every Time)
 
 ```
 USER GIVES ME A SCENE OR BRIEF
@@ -360,9 +317,7 @@ SFX: [sounds or "silence"]
 negotiation between characters. The power dynamic between speakers drives the
 camera choices.
 
-**Dialogue word budget:** roughly **2 spoken words per second** of Seedance video —
-so ~25-30 words at 15s, ~50-60 at 30s. Budget against the runtime you derived in
-**STEP 0.5**, not against the model ceiling.
+**Dialogue word budget:** ~25-30 spoken words fit into 15 seconds of Seedance video.
 If the user provides more dialogue, keep the power-shift exchange (the line where
 dominance flips or truth emerges), 1 line before it (setup), 1 line after (reaction).
 Convert everything else to physical behavior.
@@ -590,25 +545,12 @@ results.
 
 ## DURATION CALIBRATION
 
-Derive the runtime from the scene first (see **STEP 0.5**), then read the row it
-lands in. This table calibrates shot density against a runtime you have already
-worked out — it is not a menu to pick a duration from.
-
-| Derived runtime | Shots | Signature Effects | Smart Cuts |
+| Duration | Shots | Signature Effects | Smart Cuts |
 |---|---|---|---|
 | 3-5s | 2-4 | 1 | OFF |
 | 5-10s | 4-7 | 1-2 | Optional |
 | 10-15s | 7-12 | 2-3 | ON recommended |
-| 15-22s (2.5 only) | 12-18 | 3-4 | ON |
-| 22-30s (2.5 only) | 16-24 | 4+ | ON |
-
-Rows above 15s require Seedance 2.5. On 2.0 the ceiling is 15s — if the scene
-derives longer than that, cut beats or split the generation rather than
-compressing every beat below the time it needs to read.
-
-**Shot density is a consequence of runtime, not a quota.** A 30s prompt does not
-have to carry 24 shots; a held 30s single take is a legitimate choice when the
-scene is built on duration rather than cutting.
+| 15s (max standard) | 10-15 | 3+ | ON |
 
 **Credit strategy:** Always generate the signature/hero shot first using fresh credits.
 Wide establishing shots are most forgiving — generate last.

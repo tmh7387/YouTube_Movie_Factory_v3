@@ -1,9 +1,9 @@
-# Seedance 2.0 / 2.5 — Master Reference
+# Seedance 2.0 — Master Reference
 
-## What Seedance Actually Is
+## What Seedance 2.0 Actually Is
 
 ByteDance's cinematic AI video model released February 2026. Accepts text, image,
-video, and audio as inputs simultaneously. Runtime ceiling depends on the model: **2.0 up to 15 seconds, 2.5 up to 30 seconds**, both at 1080p and both integer seconds only. The ceiling is an upper bound — derive the actual runtime from the scene's beats (see STEP 0.5 in SKILL.md).
+video, and audio as inputs simultaneously. Generates up to 15 seconds at 1080p.
 The engine that went viral for clips that look like real Hollywood productions.
 
 ---
