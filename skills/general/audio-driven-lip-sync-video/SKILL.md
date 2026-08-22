@@ -50,11 +50,19 @@ ffmpeg -y -i "<audio>" -ss <start> -t <duration> -c:a libmp3lame -q:a 2 "segment
 ffprobe -v quiet -show_entries format=duration -of csv=p=0 "segment_<NN>.mp3"
 ```
 
-**Segment length follows the phrase, not a house number.** Whole seconds only —
-sub-second durations cause sync drift. Check the length against the target
-model's ceiling before committing: some cap at 10s, Seedance 2.0 at 15s,
-Seedance 2.5 at 30s. Runtime available is not runtime required; a phrase that
-lands in 6 seconds is a 6-second segment.
+**Segment length follows the phrase.** Whole seconds only — sub-second durations
+cause sync drift.
+
+Segments can run from about 4 seconds up to whatever the target model allows:
+**Seedance 2.0 caps at 15s, Seedance 2.5 at 30s**, and some other models at 10s.
+Within that range, **8-10 seconds is the usual sweet spot for coherence** — long
+enough to carry a phrase and a bit of performance, short enough that the model
+holds the face and the motion together. That is a rule of thumb, not a limit:
+go shorter when the phrase is shorter, and longer when the phrase and the model
+both support it.
+
+Runtime available is not runtime required. A phrase that lands in 6 seconds is a
+6-second segment; padding it to the ceiling costs credits and buys nothing.
 
 **2. Build the anchor.**
 
