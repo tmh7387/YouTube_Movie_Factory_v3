@@ -29,6 +29,42 @@ Every prompt you produce is ready to paste into Seedance 2.0 immediately.
 
 ---
 
+## UPSTREAM / DOWNSTREAM SKILL MAP
+
+```
+UPSTREAM (receives input from — any of these):
+  /video-production-planner  ── Creative brief + shot list + route selection.
+                                Arrives with character/environment image job IDs.
+  /storyboard-generator      ── Storyboard panels + character refs + environment refs.
+                                Handoff: "SEEDANCE HANDOFF PACKAGE" with
+                                @image1/@image2/@image3 mapped to asset IDs.
+  /directors-sheet           ── Visual reference page consolidating production assets.
+  User direct                ── Scene concept described in chat.
+
+EXPECTED INPUT (from /storyboard-generator):
+  @image1: [asset id or file path]  — Character 1 front-facing reference
+  @image2: [asset id or file path]  — Character 2 or environment reference
+  @image3: [asset id or file path]  — Storyboard panel (Omni Reference)
+
+THIS SKILL PRODUCES:
+  Paste-ready Seedance prompts (T2V, I2V, R2V, V2V, or Storyboard), written in
+  the grammar of the version chosen in STEP 0.5.
+  1. Paste into the generation UI manually, or
+  2. Execute through the platform's video pipeline, or
+  3. Execute via Higgsfield MCP — see HIGGSFIELD MCP EXECUTION.
+
+DOWNSTREAM:
+  /directors-sheet   ── Generated clips + production status updates
+  /credit-calculator ── Clip count and model for cost estimation
+```
+
+**Inside the YTMF app** this chain runs over the API rather than through chat:
+`SkillLoaderService` injects this skill, and `video_models.py` resolves which
+model and transport the prompt is bound for. The prompt grammar is identical
+either way — only the execution path differs.
+
+---
+
 ## Step 0 — Read These First, Every Time
 
 Before generating any output, read these reference files:
@@ -183,7 +219,7 @@ All camera choices — shot type, movement, lens, lighting — flow from these a
 
 ---
 
-## OUTPUT — TWO MODES
+## OUTPUT — GENERATION MODES
 
 ---
 
@@ -361,7 +397,9 @@ SFX: [sounds or "silence"]
 negotiation between characters. The power dynamic between speakers drives the
 camera choices.
 
-**Dialogue word budget:** ~25-30 spoken words fit into 15 seconds of Seedance video.
+**Dialogue word budget:** roughly **2 spoken words per second** — so ~25-30 words
+at 15s, ~50-60 at 30s. Budget against the runtime the scene derives, not against
+the model ceiling.
 If the user provides more dialogue, keep the power-shift exchange (the line where
 dominance flips or truth emerges), 1 line before it (setup), 1 line after (reaction).
 Convert everything else to physical behavior.
@@ -416,6 +454,48 @@ SFX: [final sounds]
   spoken lines.
 - Camera must reflect power: low-angle on the dominant speaker, high-angle or
   push-in on the one losing ground. When power shifts, the camera crosses the axis.
+
+---
+
+### MODE C: STORYBOARD-DRIVEN — 3-Image + Shot-Block
+
+**Triggers:** "storyboard mode", "I have a storyboard", "bridge to video",
+"convert storyboard to Seedance", user uploads a multi-panel image.
+
+```
+----------------------------------------------
+STORYBOARD-TO-VIDEO PROMPT — [Project Name]
+----------------------------------------------
+IMAGE ASSIGNMENTS:
+@image1: [Character 1 — front-facing reference + full description + 5 anchor words]
+@image2: [Character 2 — front-facing reference] (if applicable)
+@image3: [Storyboard — "6-panel storyboard showing sequence from [panel 1]
+         through [panel 6]"]
+
+VISUAL STYLE: [render quality, camera aesthetic, genre mood]
+Environment: [Location, time, architecture, weather]
+Lighting: [Direction, quality, color temperature]
+Music: [BPM + feel] or "No Music"
+
+SHOT BLOCKS:
+SHOT 1: [Shot Name — maps to panel 1]
+@image1 @image2 @image3
+[Camera + movement]. [Speed]. [DoF].
+[Char 1]: [action — position, movement, facing].
+[Char 2]: [action] (if present).
+Spatial: [left/right, foreground/background, distance].
+SFX: [sounds]. Duration: [Xs].
+
+[Continue for each panel...]
+----------------------------------------------
+```
+
+**Rules:** Every shot block calls all images. Character order never changes.
+Apply full anchoring and spatial locks. Re-anchor after every cut.
+
+**On 2.5**, prefer the storyboard-reference task over pasting panels as plain
+images, and use integer-second timestamps instead of `Duration:` lines. See
+`references/seedance2-5-capabilities.md`.
 
 ---
 
@@ -589,12 +669,249 @@ results.
 
 ## DURATION CALIBRATION
 
-| Duration | Shots | Signature Effects | Smart Cuts |
+Derive the runtime from the scene first, then read the row it lands in. This
+table calibrates shot density against a runtime already worked out — it is not a
+menu to pick a duration from.
+
+| Derived runtime | Shots | Signature Effects | Smart Cuts |
 |---|---|---|---|
 | 3-5s | 2-4 | 1 | OFF |
 | 5-10s | 4-7 | 1-2 | Optional |
 | 10-15s | 7-12 | 2-3 | ON recommended |
-| 15s (max standard) | 10-15 | 3+ | ON |
+| 15-22s (2.5 only) | 12-18 | 3-4 | ON |
+| 22-30s (2.5 only) | 16-24 | 4+ | ON |
+
+Rows above 15s require Seedance 2.5. On 2.0, cut beats or split the generation
+rather than compressing every beat below the time it needs to read.
+
+**Shot density is a consequence of runtime, not a quota.** A 30s prompt does not
+have to carry 24 shots; a held 30s single take is legitimate when the scene is
+built on duration rather than cutting. See `references/shot-spine.md` —
+*runtime available is not runtime required*.
 
 **Credit strategy:** Always generate the signature/hero shot first using fresh credits.
 Wide establishing shots are most forgiving — generate last.
+
+---
+
+## OUTPUT SETTINGS
+
+Every final prompt opens with a settings header. Top-loading matters: what sits
+at the head of the prompt is honoured most reliably, so anything you cannot
+afford to lose belongs here rather than three paragraphs down.
+
+Order, top to bottom:
+
+1. **Shot count** — how many shots
+2. **Runtime** — total, and seconds per shot. The derived value, never the ceiling.
+3. **Aspect ratio** — 16:9 cinema, 9:16 TikTok/Reels. Always explicit, never omitted.
+4. **Resolution** — 1080p for finals, 720p for drafts. Always explicit.
+5. **Mode** — T2V / I2V / R2V / V2V / Storyboard, and reference use if relevant
+6. **Per-shot beats** — one line each
+7. **Style** — photorealism, organic film grain, halation, large-format film
+8. **Texture** — matte non-reflective surfaces, lived-in worn materials
+9. **Negations** — not a 3D render, not a game engine, not a game-cutscene aesthetic
+
+Then the scene body underneath.
+
+**Example header:** `3 shots. 18 seconds total (6s / 7s / 5s). Aspect ratio 16:9.
+1080p. I2V with @image1 character lock.`
+
+**If a constraint is being ignored, move it up before rewording it.** Reported
+case: background music bleeding into generations unasked — the suggested fix is
+positional, putting `NO MUSIC WHATSOEVER` / `NO BGM` on the first line rather than
+the last. Offered untested by the practitioner who reported it, but consistent
+with 2.5's documented behaviour that negative control is reliable specifically
+for subtitles and audio.
+
+---
+
+## PLATFORM CONSTRAINTS (Non-Negotiable)
+
+Hard limits of the engine. Violating them causes failed generations or wasted
+credits. **The ceiling depends on which version STEP 0.5 selected.**
+
+| Constraint | Seedance 2.0 | Seedance 2.5 |
+|---|---|---|
+| **Max duration** | **15 seconds** (4-15s) | **30 seconds** (4-30s) |
+| **Duration format** | Integer seconds only. No decimals — 5, not 5.3. | Same, and timestamps are honoured, so it matters more. |
+| **Reference assets** | ~4 images | Up to 50 — ≤30 images, ≤10 video, ≤10 audio |
+| **Aspect ratio** | Six fixed buckets | Any ratio in [0.4, 2.5], plus `adaptive` |
+| **Resolution** | 1080p finals, 720p drafts | 480p / 720p / 1080p |
+| **Locked parameters** | — | Editing pins ratio *and* duration (`ratio=adaptive`, `duration=-1`); first-frame and extension pin ratio |
+| **Preset declination** | Decline presets with `declined_preset_id`. Presets override your prompt. | Same |
+
+**The ceiling is an upper bound, not a target and not a default.** Do not write a
+duration into a prompt because it is the maximum. Count the beats the scene needs,
+give each the screen time it needs to read, and sum them — a two-beat reveal that
+plays in 7 seconds is a 7-second prompt on either version. If the derived runtime
+exceeds the ceiling, say so and offer the real choice: cut beats, or split the
+generation. On 2.5, extension is the cleaner split.
+
+When executing through a tool rather than pasting, always pass resolution and
+aspect ratio explicitly. Never rely on defaults.
+
+> The 30s ceiling, the 50-asset limit and the [0.4, 2.5] ratio range come from
+> practitioner reports transcribed from auto-captions, not from vendor
+> documentation. Treat them as working figures pending confirmation.
+
+---
+
+## PROMPT DISCIPLINE RULES (Apply to Every Prompt)
+
+These prevent the most common and costly failures. Each exists because ignoring
+it wasted credits or forced a full rewrite.
+
+### Rule 1: Every FRESH Generation Is Self-Contained
+
+A fresh generation has **zero memory of any other generation**. Each prompt is
+processed in isolation. Therefore, for every fresh generation:
+
+- Never reference other segments ("like Seg 03 but bigger", "same as the previous
+  shot", "continuing from the last clip")
+- Never assume the generator knows what happened before or after
+- Re-describe the character, wardrobe, environment and mood in EVERY prompt, even
+  when identical to the previous segment
+- Repeat the 5 physical anchor words for every character in every prompt
+
+If you catch yourself writing "same as before" or "returning to", replace it with
+the full description. The generator literally cannot see "before".
+
+**Exception — extension on 2.5.** When continuing an existing clip, the model
+reads the whole input clip and already knows where subjects are placed and what
+they look like. Re-describing the world there is wasted prompt budget. The move
+instead is to **name what must not change** alongside the new action:
+
+> "He looks down, takes the chocolate bar out of his pocket, starts eating, looks
+> up at the mirror — his hand stays where it is on the side of the washing machine."
+
+Do not write that continuation from memory. Analyse the input clip's frames
+first — what is happening, where everything sits, what the hands are doing — then
+write from that reading. Without it you do not know the hand was there to preserve.
+
+### Rule 2: No Conflicting Instructions
+
+Before finalising any prompt, scan for these contradiction patterns:
+
+| Conflict | Why it fails |
+|---|---|
+| "still/silent/motionless" + "lip-sync to @audio1" | Cannot do both — either the face moves to sing, or it is still |
+| "eyes closed throughout" + "looks directly at camera" | Contradictory gaze |
+| "no movement" + "walks/dances/gestures" | Contradictory motion |
+| "whisper" + "maximum projection/shout" | Contradictory vocal intensity |
+| Narrative segment + Performance Anchor MP4 | Anchors force lip-sync; narrative segments should not have one |
+
+If a prompt needs stillness AND singing, singing wins — describe the body as
+"nearly still" while the face performs. The vocal performance is non-negotiable.
+
+### Rule 3: Concise Over Exhaustive
+
+There is a practical attention window. Piling on descriptive language past a point
+dilutes focus rather than improving output.
+
+- **Action:** describe what happens physically. Not "she embodies the spirit of
+  freedom" — "she throws her arms wide, head tilted back".
+- **SFX:** only environmental detail the camera will actually capture. Nothing
+  outside the frame.
+- **Constraints:** maximum 3 imperative statements. More and none carry weight.
+
+### Rule 4: Phoneme-Sensitive Articulation (Lip-Sync Prompts)
+
+Flag words needing explicit mouth-shape instructions:
+
+| Sound | Words | Required instruction |
+|---|---|---|
+| Bilabial P/B/M | "up", "bump", "map", "boom" | "FULL BILABIAL CLOSURE — lips press completely shut on the [P/B/M], visible lip contact, then release" |
+| OO vowel | "choose", "move", "groove" | "lips round forward on OO" |
+| EE vowel | "peace", "free", "dream" | "sustained EE with wide lateral lip stretch" |
+| TH fricative | "the", "this", "that" | "tongue tip visible between teeth" |
+
+Write the articulation language ONCE per project in a phoneme reference sheet,
+then copy it into every prompt using that word. This prevents discovering wrong
+mouth shapes after 10+ clips are generated.
+
+---
+
+## HIGGSFIELD MCP EXECUTION
+
+One of three execution paths — the others are pasting manually, and the YTMF
+pipeline, which routes through `video_models.py` instead. Use this when working
+in a chat session with the Higgsfield MCP connected.
+
+After writing the prompt in any Mode, offer to execute:
+
+> "I've written the Seedance prompt. Want me to generate the video directly via
+> Higgsfield, or would you prefer to paste it manually?"
+
+If approved:
+
+**Mode A (I2V with Omni Reference):**
+```
+Tool: generate_video
+Params:
+  model: "[the id for the version chosen in STEP 0.5]"
+  prompt: "[complete I2V prompt]"
+  duration: [derived runtime, integer seconds — see PLATFORM CONSTRAINTS]
+  aspect_ratio: "[from brief — 16:9 default]"
+  medias: [
+    {value: "[char_1_job_id]", role: "image"},
+    {value: "[char_2_job_id]", role: "image"},
+    {value: "[storyboard_panel_job_id]", role: "image"}
+  ]
+```
+
+**Mode B (T2V):**
+```
+Tool: generate_video
+Params:
+  model: "[the id for the version chosen in STEP 0.5]"
+  prompt: "[complete T2V prompt]"
+  duration: [derived runtime, integer seconds]
+  aspect_ratio: "[from brief]"
+```
+
+**Mode C (Storyboard — multi-shot):** execute each shot block separately.
+```
+Tool: generate_video  (repeat per shot)
+Params:
+  model: "[the id for the version chosen in STEP 0.5]"
+  prompt: "[Shot N prompt block]"
+  duration: [per shot, derived]
+  aspect_ratio: "[from brief]"
+  medias: [
+    {value: "[char_ref_job_id]", role: "image"},
+    {value: "[panel_N_job_id]", role: "start_image"}
+  ]
+```
+
+**Credit check:** run the `balance` tool before generating. Report remaining
+credits and estimated cost.
+
+**Post-generation:** returned job IDs can be passed to `/directors-sheet`,
+displayed via `job_display`, or used as input for subsequent shots.
+
+---
+
+## Manifest Integration
+
+When this skill drafts a prompt for a shot belonging to a `project.json`-backed
+production (see the `production-manifest` skill), the finished prompt is written
+into the manifest rather than only handed back:
+
+1. Resolve the project root, `scene-id` and `shot-id` for the shot being worked
+   on — from context, or ask if ambiguous.
+2. Determine the shot's next unused version number `N`.
+3. Write the assembled prompt to `scenes/<scene-id>/<shot-id>/v<N>/prompt.md` in
+   the fragments-then-full-text format `production-manifest` expects — fragment
+   IDs at the top, full assembled prompt below.
+4. Append a generation record to the shot's `generations[]` per
+   `production-manifest`'s "Log a generation" operation: `kind: "still"` or
+   `"motion"` depending on what was requested, `model` set to the model this
+   prompt targets, `prompt_file` pointing at the file just written, `output: null`
+   and `job_id: null` until the generation actually runs (that is
+   `higgsfield-generate`'s job), and `inputs[]` listing whatever the prompt's
+   `@image1` / `@video1` / `@audio1` tokens correspond to.
+5. If the shot's `status` was `todo`, bump it to `in-motion`.
+
+This skill does not decide `verdict` or `selected` — that happens after the
+generation runs and is reviewed.
