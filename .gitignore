@@ -79,3 +79,6 @@ tmp/
 # stray extraction / partial download artifacts
 unpacked_spec*/
 *.part
+
+# runtime error log from the higgsfield CLI, not source
+backend/jobs/higgsfield_last_error.txt
