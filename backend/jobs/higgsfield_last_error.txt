@@ -1,2 +1,0 @@
-Error: Missing required params: height, width
-Hint: Run: higgsfield.EXE model get seedance_2_5
