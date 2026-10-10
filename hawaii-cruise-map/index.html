@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#082c3f" />
+    <meta
+      name="description"
+      content="An interactive day-by-day map of Norwegian's 7-night Pride of America cruise around Hawaiʻi."
+    />
+    <title>Seven Days of Aloha — Interactive Cruise Map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Seven Days of Aloha home">
+        <span class="brand-mark">7</span>
+        <span><strong>Seven Days</strong><small>of Aloha</small></span>
+      </a>
+      <div class="voyage-chip"><span></span>Pride of America · 7 nights</div>
+      <button class="quiet-button" id="helpButton" type="button">How to use</button>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">NORWEGIAN CRUISE LINE · HAWAIʻI</p>
+          <h1>Your entire island-hopping voyage, on one map.</h1>
+          <p class="dek">Follow the Pride of America from Honolulu to Maui, Hawaiʻi Island and Kauaʻi — then sail the Nā Pali Coast home.</p>
+          <div class="hero-stats" aria-label="Cruise overview">
+            <div><strong>4</strong><span>islands</span></div>
+            <div><strong>5</strong><span>ports</span></div>
+            <div><strong>2</strong><span>overnights</span></div>
+          </div>
+        </div>
+        <div class="hero-note">
+          <span class="note-icon">✦</span>
+          <div><strong>Start here</strong><p>Choose a day or tap a port to explore the route.</p></div>
+        </div>
+      </section>
+
+      <section class="experience" aria-label="Interactive cruise itinerary">
+        <aside class="itinerary-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">YOUR VOYAGE</p><h2>Day by day</h2></div>
+            <button class="play-button" id="playRoute" type="button" aria-label="Play route"><span>▶</span> Play route</button>
+          </div>
+          <div class="day-list" id="dayList"></div>
+          <div class="panel-footer">
+            <span class="mini-compass">N</span>
+            <p>Typical weekly itinerary. Port times can change for your specific sailing.</p>
+          </div>
+        </aside>
+
+        <div class="map-shell">
+          <div class="map-toolbar">
+            <div class="legend">
+              <span><i class="dot dot-port"></i>Port of call</span>
+              <span><i class="dot dot-overnight"></i>Overnight</span>
+              <span><i class="line-key"></i>Sailing route</span>
+            </div>
+            <button class="icon-button" id="resetMap" type="button" aria-label="Show full route" title="Show full route">↺</button>
+          </div>
+
+          <div class="map-stage" id="mapStage">
+            <div class="map-wash" aria-hidden="true"></div>
+            <svg class="map" viewBox="0 0 920 650" role="img" aria-labelledby="mapTitle mapDesc">
+              <title id="mapTitle">Interactive map of Norwegian's seven-night Hawaiʻi cruise</title>
+              <desc id="mapDesc">The route begins in Honolulu, travels to Kahului, Hilo, Kona, Nāwiliwili and returns to Honolulu.</desc>
+              <defs>
+                <filter id="islandShadow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feDropShadow dx="0" dy="9" stdDeviation="7" flood-color="#002a38" flood-opacity=".35" />
+                </filter>
+                <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#d5d18f" />
+                  <stop offset="1" stop-color="#759557" />
+                </linearGradient>
+                <linearGradient id="activeLand" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#f7d57c" />
+                  <stop offset="1" stop-color="#8bbd65" />
+                </linearGradient>
+                <filter id="routeGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+              </defs>
+
+              <g class="ocean-lines" aria-hidden="true">
+                <path d="M38 128 C205 92 362 141 541 101 S826 78 904 111" />
+                <path d="M12 558 C177 515 307 573 481 535 S761 508 922 552" />
+                <path d="M103 390 C233 358 378 405 484 376" />
+              </g>
+
+              <g class="islands" filter="url(#islandShadow)">
+                <path class="island" data-island="kauai" d="M151 192 C128 178 117 151 130 127 C143 103 172 103 196 116 C219 129 225 151 212 174 C199 197 178 207 151 192Z" />
+                <path class="island" data-island="oahu" d="M286 266 C270 246 276 220 299 206 C327 190 353 200 369 218 C386 237 378 259 352 274 C329 287 303 286 286 266Z" />
+                <path class="island small" data-island="molokai" d="M421 279 C448 264 488 263 513 275 C496 290 455 299 424 293Z" />
+                <path class="island small" data-island="lanai" d="M463 332 C478 320 501 324 511 339 C504 357 479 362 464 349Z" />
+                <path class="island" data-island="maui" d="M534 281 C558 263 581 274 582 299 C582 314 594 325 616 323 C642 322 648 342 634 359 C617 379 584 373 569 354 C556 338 537 339 519 326 C503 314 512 296 534 281Z" />
+                <path class="island small" data-island="kahoolawe" d="M556 391 C574 378 603 380 613 397 C599 414 569 419 553 405Z" />
+                <path class="island" data-island="hawaii" d="M682 423 C707 397 750 394 774 416 C788 429 790 453 815 468 C842 484 839 518 814 540 C788 563 756 577 724 564 C692 551 673 527 659 500 C646 475 658 447 682 423Z" />
+              </g>
+
+              <path id="routeBase" class="route-base" d="M322 267 C395 271 466 283 554 305 C635 325 734 360 773 455 C783 480 737 514 686 520 C604 536 520 450 455 363 C388 273 274 202 177 161 C127 140 106 193 168 219 C221 240 264 254 322 267" pathLength="100" />
+              <path id="routeProgress" class="route-progress" d="M322 267 C395 271 466 283 554 305 C635 325 734 360 773 455 C783 480 737 514 686 520 C604 536 520 450 455 363 C388 273 274 202 177 161 C127 140 106 193 168 219 C221 240 264 254 322 267" pathLength="100" />
+
+              <g class="island-labels" aria-hidden="true">
+                <text x="166" y="119">KAUAʻI</text><text x="309" y="199">OʻAHU</text><text x="464" y="258">MOLOKAʻI</text>
+                <text x="470" y="377">LĀNAʻI</text><text x="570" y="265">MAUI</text><text x="742" y="389">HAWAIʻI</text>
+              </g>
+            </svg>
+            <div class="port-markers">
+              <button class="port-marker" data-stop="honolulu" aria-label="Honolulu, Oʻahu" style="--x:322;--y:267">
+                <span class="pulse"></span><span class="marker-core home">◆</span><span class="marker-label left"><b>Honolulu</b><small>Oʻahu</small></span>
+              </button>
+              <button class="port-marker" data-stop="kahului" aria-label="Kahului, Maui" style="--x:554;--y:305">
+                <span class="pulse"></span><span class="marker-core overnight"></span><span class="marker-label above"><b>Kahului</b><small>Maui · overnight</small></span>
+              </button>
+              <button class="port-marker" data-stop="hilo" aria-label="Hilo, Hawaiʻi" style="--x:773;--y:455">
+                <span class="pulse"></span><span class="marker-core"></span><span class="marker-label right"><b>Hilo</b><small>Hawaiʻi Island</small></span>
+              </button>
+              <button class="port-marker" data-stop="kona" aria-label="Kona, Hawaiʻi" style="--x:686;--y:520">
+                <span class="pulse"></span><span class="marker-core"></span><span class="marker-label below"><b>Kona</b><small>Hawaiʻi Island</small></span>
+              </button>
+              <button class="port-marker" data-stop="nawiliwili" aria-label="Nāwiliwili, Kauaʻi" style="--x:177;--y:161">
+                <span class="pulse"></span><span class="marker-core overnight"></span><span class="marker-label above"><b>Nāwiliwili</b><small>Kauaʻi · overnight</small></span>
+              </button>
+              <button class="port-marker scenic" data-stop="napali" aria-label="Nā Pali Coast scenic sailing" style="--x:168;--y:219">
+                <span class="pulse"></span><span class="marker-core">✦</span><span class="marker-label left"><b>Nā Pali Coast</b><small>scenic sailing</small></span>
+              </button>
+            </div>
+            <div class="map-card" id="mapCard" aria-live="polite"></div>
+            <div class="pacific-label">PACIFIC OCEAN</div>
+          </div>
+
+          <div class="day-progress" aria-label="Route progress">
+            <button id="previousDay" type="button" aria-label="Previous day">←</button>
+            <div class="progress-copy"><span id="progressDay">DAY 1</span><strong id="progressTitle">Aloha, Honolulu</strong></div>
+            <div class="progress-track"><span id="progressFill"></span></div>
+            <span class="progress-count" id="progressCount">01 / 07</span>
+            <button id="nextDay" type="button" aria-label="Next day">→</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="trip-notes">
+        <div><p class="eyebrow">GOOD TO KNOW</p><h2>A voyage made for exploring</h2></div>
+        <div class="note-grid">
+          <article><span>☾</span><h3>Two overnight stays</h3><p>Wake up already docked in Maui and Kauaʻi, giving you more time ashore.</p></article>
+          <article><span>◒</span><h3>No international port</h3><p>Pride of America sails entirely within Hawaiʻi on this round-trip itinerary.</p></article>
+          <article><span>≈</span><h3>Coastline finale</h3><p>Weather permitting, Day 7 includes a scenic sail past Kauaʻi’s Nā Pali Coast.</p></article>
+        </div>
+        <p class="source-note">Route based on Norwegian Cruise Line’s standard 7-day Hawaiʻi itinerary. Always confirm the schedule in your booking documents.</p>
+      </section>
+    </main>
+
+    <dialog id="helpDialog">
+      <button class="dialog-close" id="closeHelp" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">EXPLORE THE MAP</p>
+      <h2>Make the voyage yours</h2>
+      <p>Tap any port marker or day in the itinerary to reveal its schedule and highlights. Use <strong>Play route</strong> for an animated tour of the week.</p>
+      <button class="primary-button" id="startTour" type="button">Start with Day 1</button>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,112 @@
+{
+  "id": "9ab4b583-b18e-41b0-bf64-fd0a29bb4e9b",
+  "type": "image",
+  "status": "completed",
+  "model": "gpt_image_2_5",
+  "params": {
+    "prompt": "SECTION 1 — Film DNA\nCreate one photographic cinematic still of an empty train vestibule. Arri Alexa 65, Panavision C Series Anamorphic, T2.8; subtle organic film grain; 16:9. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for exterior blue-hour illumination and <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for interior lighting and walnut-and-brass finishes.\n\nSECTION 2 — Doorway and Boarding Levels\nUse <<<9d1266a7-0744-46f4-a3a9-71120945e5f8>>> for the exterior passenger door design, narrow proportions, frame and hardware. Show this doorway fully open. Preserve the original 3D aperture: 1.10 metres wide and 2.20 metres high. The camera stands inside the elevated vestibule, looking outward. The interior floor meets the doorway threshold in the foreground. Beyond the threshold, the boarding tread sits 23.8 centimetres lower; beyond that, the station platform sits another 22.2 centimetres lower. The surfaces descend away from the camera: vestibule threshold → lower boarding tread → lowest station platform. Show the top surfaces of this descending sequence from inside the train. The platform paving extends horizontally away from the bottom of the steps toward the station facade. Use the interior photographic reference for finishes and lighting only; the original geometry determines the doorway dimensions.\n\nSECTION 3 — Camera and Composition\nMatch the camera position, frontal direction, framing and doorway placement in <<<b6a34d19-4c0a-4eef-b79e-409f6fcf00cc>>>. Place the camera inside the vestibule looking directly outward across the platform. The optical axis crosses the width of the train perpendicular to its side. Keep both doorway jambs vertical and the station facade directly opposite the lens. Keep the frontal composition and include the threshold and descending tread at the bottom of the frame. The passenger route turns left after boarding; that corridor connection lies outside this shot's crop. Keep the camera directed through the exterior doorway.\n\nSECTION 4 — Platform and Vestibule Appearance\nUse <<<e05721e0-4f10-4df2-845e-c9f03a7627b4>>> for station architecture, platform paving, columns, windows and lamps. Reconstruct these features from the eye-level viewpoint inside the train, preserving their design and spacing in the visible background. The station facade, platform edge and length of the train run parallel to one another. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the exterior lighting. Finish the visible interior surfaces using <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>>. Render the geometry guide as photographic materials and lighting. Keep the station architecture sufficiently defined to assess its match to the reference.\n\nSECTION 5 — Output\nRender one empty 16:9 photographic environment plate. Keep the doorway and boarding passage clear, the train stationary and the platform lower than the vestibule. Show architecture only, with unmarked station surfaces. Preserve the frontal camera and narrow doorway proportions of the geometry reference. Include enough of the lower doorway to read the step-down from the train to the platform.",
+    "aspect_ratio": "16:9",
+    "medias": [],
+    "width": 3840,
+    "height": 2160,
+    "quality": "high",
+    "resolution": "4k",
+    "model": "sunburst",
+    "remove_bg": false,
+    "reference_elements": [
+      {
+        "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+        "name": "Platform_morn",
+        "medias": [
+          {
+            "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+            "type": "media_input",
+            "width": 4116,
+            "height": 2761
+          }
+        ],
+        "category": "auto:prop",
+        "description": null,
+        "ip_detected": false,
+        "video_medias": []
+      },
+      {
+        "id": "1aea136d-c3bc-4e46-ac1b-77338bced7b4",
+        "name": "PressOn_Boarding_Open_Door",
+        "medias": [
+          {
+            "id": "e019eb67-38c8-4866-823e-cb47f08a8ce2",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/e019eb67-38c8-4866-823e-cb47f08a8ce2.jpg",
+            "type": "media_input",
+            "width": null,
+            "height": null,
+            "duration": null
+          }
+        ],
+        "category": "auto:environment",
+        "description": "Original Training_Boarding_Interior-glass-door-open local reference. Open exterior passenger doorway, vestibule materials and lighting.",
+        "ip_detected": null,
+        "video_medias": []
+      },
+      {
+        "id": "9d1266a7-0744-46f4-a3a9-71120945e5f8",
+        "name": "Train-door",
+        "medias": [
+          {
+            "id": "227a62d5-a535-466c-a4ee-d4b4004c585b",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/227a62d5-a535-466c-a4ee-d4b4004c585b.png",
+            "type": "media_input",
+            "width": 3800,
+            "height": 2120
+          }
+        ],
+        "category": "prop",
+        "description": null,
+        "ip_detected": null,
+        "video_medias": []
+      },
+      {
+        "id": "b6a34d19-4c0a-4eef-b79e-409f6fcf00cc",
+        "name": "PressOn_Stepdown_Geometry",
+        "medias": [
+          {
+            "id": "75308d06-b2c7-440e-a56e-6592f5e435c4",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/75308d06-b2c7-440e-a56e-6592f5e435c4.png",
+            "type": "media_input",
+            "width": null,
+            "height": null,
+            "duration": null
+          }
+        ],
+        "category": "auto:environment",
+        "description": "User-approved original animatic geometry, frontal interior-to-platform view. Threshold then lower tread then platform. Camera framing widened and shifted down to expose levels. Geometry only; photographic finishes from separate elements.",
+        "ip_detected": null,
+        "video_medias": []
+      },
+      {
+        "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+        "name": "PressOn_Verse1_Platform",
+        "medias": [
+          {
+            "id": "cc722d8a-162a-4797-8076-9438d5288416",
+            "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+            "type": "media_input",
+            "width": null,
+            "height": null,
+            "duration": null
+          }
+        ],
+        "category": "auto:environment",
+        "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+        "ip_detected": null,
+        "video_medias": []
+      }
+    ]
+  },
+  "results": {
+    "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_084412_9ab4b583-b18e-41b0-bf64-fd0a29bb4e9b.png",
+    "minUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_084412_9ab4b583-b18e-41b0-bf64-fd0a29bb4e9b_min.webp"
+  },
+  "createdAt": 1789634652.237885
+}

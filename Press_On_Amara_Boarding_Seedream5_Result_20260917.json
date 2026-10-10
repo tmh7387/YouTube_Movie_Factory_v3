@@ -1,0 +1,38 @@
+{
+  "request": {
+    "results": [
+      {
+        "id": "b2ec69fb-ab9e-4c67-9398-ce7faf3c0b42",
+        "type": "image",
+        "status": "pending",
+        "model": "seedream_v5_pro",
+        "params": {
+          "prompt": "SECTION 1 — Image\nRender one 16:9 photographic cinematic still of Amara completing her final boarding step into the train vestibule.\n\nSECTION 2 — Setting and Camera\nUse <<<63bdeea2-ece9-48ae-ae9a-4cb6bd871e3b>>> as the base image. Preserve its camera position, framing, narrow door opening, jambs, sill, interior surfaces, lighting and platform background. The camera is inside the vestibule looking outward across the platform, perpendicular to the train side. Keep the complete doorway visible.\n\nSECTION 3 — Amara and Wardrobe\nPlace <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>> centrally within the doorway, wearing <<<99f29819-725f-478a-90fd-9ecfede89594>>>. Hold <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> by its handle in her anatomical RIGHT hand, on screen-left, beside her thigh. Her left hand stays low.\n\nSECTION 4 — Boarding Pose\nCapture the upward weight transfer of the final step: her leading boot is planted on the vestibule floor immediately inside the threshold; the trailing leg remains lower outside, its knee beginning to bend as she brings it upward. Her torso faces the camera with a slight forward lean over the planted foot. Her head faces the lens, chin level, eyes meeting the camera. Lips slightly parted at the start of singing. Keep her body oriented straight through the doorway before her right turn into the corridor. Scale her naturally within the 2.20-metre-high opening, with headroom above her hair.\n\nSECTION 5 — Finish\nIntegrate Amara into the base image's light with contact shadows beneath her planted boot. Keep her face, hands and doorway sharp. Preserve the unobstructed parts of the base image. One photographic still.",
+          "aspect_ratio": "16:9",
+          "resolution": "2k"
+        }
+      }
+    ]
+  },
+  "result": {
+    "jobs": [
+      {
+        "index": 0,
+        "job_id": "b2ec69fb-ab9e-4c67-9398-ce7faf3c0b42",
+        "status": "completed",
+        "type": "image",
+        "model": "seedream_v5_pro",
+        "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_045858_b2ec69fb-ab9e-4c67-9398-ce7faf3c0b42.png"
+      }
+    ],
+    "summary": {
+      "total": 1,
+      "completed": 1,
+      "failed": 0,
+      "active": 0,
+      "errors": 0
+    },
+    "all_terminal": true
+  },
+  "approval": "Candidate awaiting user approval; no video generated."
+}

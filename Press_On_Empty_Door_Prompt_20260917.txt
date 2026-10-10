@@ -1,0 +1,16 @@
+SECTION 1 — Film DNA
+Render one 16:9 photographic cinematic environment still. Arri Alexa 65, Panavision C Series Anamorphic; subtle organic film grain. Empty train vestibule looking outward through the open passenger doorway to the departure platform at blue hour.
+
+SECTION 2 — Door Geometry and Camera
+Use @[PressOn_Empty_Door_Geometry](51c98532-bce3-4a49-98b3-7213f6426e42) as the controlling composition. Preserve its camera position, level optical axis, perspective, left and right aperture edges, door head and sill positions. The opening is 1.10 metres wide and 2.20 metres high: width equals half the height. Show the complete opening with both jambs, head and sill visible. Keep its narrow single-passenger proportions.
+The camera is inside the train vestibule, centered on the opening and looking perpendicular to the train side, outward across the platform. Keep vertical jambs upright and parallel. Preserve the guide's framing; render its surfaces photographically.
+
+SECTION 3 — Door Design and Interior
+Use @[Train-door](9d1266a7-0744-46f4-a3a9-71120945e5f8) as the sole door-design reference. Show that passenger doorway in its fully open state, with the passage clear. Preserve its frame profile, metal trim and hardware design. Keep the door leaf clear of the aperture. Fit all door detailing to the geometry guide's opening dimensions.
+Finish the interior jamb surrounds in walnut with brass trim and warm practical illumination. Keep the vestibule floor and threshold unobstructed.
+
+SECTION 4 — Platform Background
+Use @[PressOn_Verse1_Platform](e05721e0-4f10-4df2-845e-c9f03a7627b4) for station architecture, columns, windows, lamps and platform paving. Reconstruct the portion seen through the opening at the camera angle of @[PressOn_Empty_Door_Geometry](51c98532-bce3-4a49-98b3-7213f6426e42). The station facade stands across the platform, beyond the doorway. Use @[Platform_morn](12f0524f-6481-47fc-8175-9022c53a1bc6) for blue-hour exterior lighting. Keep the station recognizable and in sufficient focus to review the architecture.
+
+SECTION 5 — Output
+One empty architectural photograph, with no people, mannequins, luggage or platform-number signs. Keep the train stationary. Prioritize the exact aperture proportions and inside-to-platform camera direction. Door geometry comes from the Blender guide; door design comes from @[Train-door](9d1266a7-0744-46f4-a3a9-71120945e5f8); station appearance comes from the station Elements.

@@ -1,0 +1,74 @@
+{
+  "shot_id": "SH020",
+  "project": "demo-infinite-loop",
+  "version": 1,
+
+  "duration_s": 15.0,
+  "fps": 24,
+  "aspect": "16:9",
+  "resolution": [1920, 1080],
+
+  "intent": "One continuous take that opens and closes on the same composition, locked off, so the clip can replay without a seam. The only movement in the shot is inside the frame.",
+  "format_mode": "ONE SINGLE UNBROKEN SHOT",
+  "audio": {
+    "mode": "room tone",
+    "notes": "No music track, no beat, no score, no discernible dialogue. Quiet room tone only."
+  },
+
+  "optic": {
+    "fov_diagonal_deg": 47.0,
+    "character": "standard normal lens, natural facial proportions, no distortion",
+    "dof": "shallow but honest — the man's face is sharp, the room behind him falls off gently"
+  },
+
+  "camera": {
+    "rig": "locked",
+    "handheld_drift_m": 0.0,
+    "height_m": 1.25,
+    "path": [
+      { "t": 0.0,  "pos": [0.0, -1.65, 1.25], "target": [0.0, -0.80, 1.15], "note": "opening frame — LOOP KEY: closing frame matches this exactly" },
+      { "t": 7.5,  "pos": [0.0, -1.65, 1.25], "target": [0.0, -0.80, 1.15], "note": "mid — camera unmoved" },
+      { "t": 15.0, "pos": [0.0, -1.65, 1.25], "target": [0.0, -0.80, 1.15], "note": "closing frame — LOOP KEY: identical framing, camera never moved" }
+    ],
+    "constraints": [
+      "the camera is completely locked off: it never moves, never pans, never tilts, never zooms, never breathes, never drifts",
+      "the framing at 0.0s and 15.0s is identical",
+      "all movement in the shot comes from inside the frame, never from the camera"
+    ]
+  },
+
+  "set": {
+    "description": "An old mansion study at night: dark oak panelling, deep green damask above the wainscot, a coffered ceiling, a worn Persian rug over dark boards, floor-to-ceiling bookshelves, heavy velvet curtains framing a tall sash window, a brass wall sconce, and a large carved mahogany desk carrying a green-shaded brass lamp that is the key light.",
+    "volumes": [
+      { "id": "study", "min": [-4.0, -4.0, 0.0], "max": [4.0, 4.0, 3.2], "role": "primary" }
+    ]
+  },
+
+  "cast": [
+    {
+      "id": "lead",
+      "role": "lead",
+      "proxy": "capsule",
+      "height_m": 1.80,
+      "radius_m": 0.28,
+      "start": [0.0, -0.80, 0.0],
+      "facing_deg": 0.0,
+      "motion": "seated at the desk throughout. Head down over an open ledger at the start, lifts his head at about 4 seconds, turns to look off toward the left of frame at about 7 seconds, holds the look, then lowers his head again and settles back to the opening pose by 15 seconds. The loop returns him exactly to the opening pose, so the written page never turns and he never leaves the chair."
+    }
+  ],
+
+  "beats": [
+    { "t": 0.0,  "label": "loop_open",  "action": "Head down over the open ledger, one hand flat on the page, warm lamplight on the side of his face. This is the exact frame the shot will return to." },
+    { "t": 4.0,  "label": "lift",       "action": "He lifts his head slowly off the page, eyes narrowing, listening for something." },
+    { "t": 7.0,  "label": "turn",       "action": "He turns his head to look off toward the left of frame, out past the lamp, and holds the look. This is the shot's only dramatic event." },
+    { "t": 11.0, "label": "settle",     "action": "He releases the look, unhurried, and lowers his head back toward the page." },
+    { "t": 15.0, "label": "loop_close", "action": "He has settled back into the opening pose and the frame is identical to 0.0s." }
+  ],
+
+  "exclude_from_realisation": [
+    "grey proxy materials",
+    "proxy geometry proportions beyond the camera-path intent",
+    "previz lighting",
+    "any on-screen overlay, marker or path geometry"
+  ]
+}

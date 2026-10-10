@@ -1,0 +1,627 @@
+{
+  "items": [
+    {
+      "id": "6e74cefb-9999-464d-99ab-34bde68ff9f0",
+      "type": "image",
+      "status": "completed",
+      "model": "gpt_image_2_5",
+      "params": {
+        "prompt": "SECTION 1 — Film DNA\nCreate one photographic cinematic still. Arri Alexa 65, Panavision C Series Anamorphic, T2.8; subtle organic film grain; 16:9. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the exterior blue-hour lighting and <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for the vestibule lighting.\n\nSECTION 2 — Character and Placement\nUse <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>> for Amara's identity, <<<99f29819-725f-478a-90fd-9ecfede89594>>> for her wardrobe, and <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> for her handbag.\nPosition Amara in the open exterior passenger doorway, facing the camera as she completes the final boarding step. Her leading foot rests on the vestibule floor; her trailing foot rests on the boarding tread. Her torso faces inward toward the camera. Hold <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> in her anatomical right hand at thigh height, screen-left. Keep her left arm beside her body. Direct her eyes toward the lens, lips slightly parted.\n\nSECTION 3 — Camera and Composition\nPlace the camera inside the vestibule, looking outward through the open exterior passenger doorway. Point the optical axis perpendicular to the train side. Set the camera at Amara's eye height as she reaches the vestibule floor.\nFrame her frontally from mid-thigh to above her hair. Keep her face unobstructed and sharp. Include the doorway edges and the station platform visible through the doorway behind her.\nUse <<<c63517e1-4dc8-4487-841d-85fed438a08b>>> for camera position, doorway geometry and Amara's placement. Use the photographic Elements for the finished appearance.\nHer boarding direction runs across the width of the train toward the camera. The longitudinal corridor lies to her anatomical right. Capture her body facing the camera before that right turn.\n\nSECTION 4 — Platform and Vestibule Background\nUse <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for the passenger doorway, threshold and vestibule interior.\nUse <<<e05721e0-4f10-4df2-845e-c9f03a7627b4>>> for the station architecture, platform surface, columns, windows and lamps. Reconstruct those features from the eye-level viewpoint inside the train, looking across the platform through the passenger doorway. Preserve their design and spatial relationships in the portion visible behind Amara.\nUse <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the platform's blue-hour illumination. Keep the visible station architecture recognizable, with sufficient background definition to review its match to the station reference. The train remains stationary beside the platform.\n\nSECTION 5 — Output and Continuity\nRender one 16:9 photographic still showing the start of Amara's singing performance during the final boarding step. Preserve <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>>, <<<99f29819-725f-478a-90fd-9ecfede89594>>> and the right-hand placement of <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>>. Maintain the inside-to-platform camera direction. Keep the visible background free of platform-number signs.",
+        "aspect_ratio": "16:9",
+        "medias": [],
+        "width": 3840,
+        "height": 2160,
+        "quality": "high",
+        "resolution": "4k",
+        "model": "sunburst",
+        "remove_bg": false,
+        "reference_elements": [
+          {
+            "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+            "name": "Platform_morn",
+            "medias": [
+              {
+                "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+                "type": "media_input",
+                "width": 4116,
+                "height": 2761
+              }
+            ],
+            "category": "auto:prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651",
+            "name": "Amara_Houston_2",
+            "medias": [
+              {
+                "id": "fdf74a21-7225-422b-802e-0dd92029f48a",
+                "url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260715_081447_fdf74a21-7225-422b-802e-0dd92029f48a.png",
+                "type": "image_job",
+                "width": 1536,
+                "height": 2048
+              }
+            ],
+            "category": "character",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "1aea136d-c3bc-4e46-ac1b-77338bced7b4",
+            "name": "PressOn_Boarding_Open_Door",
+            "medias": [
+              {
+                "id": "e019eb67-38c8-4866-823e-cb47f08a8ce2",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/e019eb67-38c8-4866-823e-cb47f08a8ce2.jpg",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "Original Training_Boarding_Interior-glass-door-open local reference. Open exterior passenger doorway, vestibule materials and lighting.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "99f29819-725f-478a-90fd-9ecfede89594",
+            "name": "Amara_Train_Outfit",
+            "medias": [
+              {
+                "id": "2789fb09-e001-4138-b039-13e31dca72dc",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/2789fb09-e001-4138-b039-13e31dca72dc.png",
+                "type": "media_input",
+                "width": 3840,
+                "height": 2160
+              }
+            ],
+            "category": "prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "c63517e1-4dc8-4487-841d-85fed438a08b",
+            "name": "PressOn_Boarding_Composition",
+            "medias": [
+              {
+                "id": "af41d530-b9fd-4ddd-bd2e-a682ead65ab2",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/af41d530-b9fd-4ddd-bd2e-a682ead65ab2.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:character",
+            "description": "Animatic 30.5-second frame. Camera and blocking reference ONLY: camera inside vestibule looking outward perpendicular to train side. Photographic Elements supply finished appearance; mannequin is only a placement proxy.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+            "name": "PressOn_Verse1_Platform",
+            "medias": [
+              {
+                "id": "cc722d8a-162a-4797-8076-9438d5288416",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "edfd2ab1-c99e-4da5-80bd-f50671f48fec",
+            "name": "Amara_Train_Handbag",
+            "medias": [
+              {
+                "id": "165ba7b7-60c3-4f4f-b02c-47a063a355cf",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/165ba7b7-60c3-4f4f-b02c-47a063a355cf.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "prop",
+            "description": "Locked local train wardrobe handbag: black structured leather bag with gold hardware, short handles and chain detail. Source handbag.png in Wardrobe Locked/Train. Preserve bag appearance across boarding, train and coastal reflection shots.",
+            "ip_detected": false,
+            "video_medias": []
+          }
+        ]
+      },
+      "results": {
+        "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_6e74cefb-9999-464d-99ab-34bde68ff9f0.png",
+        "minUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_6e74cefb-9999-464d-99ab-34bde68ff9f0_min.webp"
+      },
+      "createdAt": 1789319359.622251
+    },
+    {
+      "id": "e91c3030-096f-479b-a014-adb51b0f85ff",
+      "type": "image",
+      "status": "completed",
+      "model": "gpt_image_2_5",
+      "params": {
+        "prompt": "SECTION 1 — Film DNA\nCreate one photographic cinematic still. Arri Alexa 65, Panavision C Series Anamorphic, T2.8; subtle organic film grain; 16:9. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the exterior blue-hour lighting and <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for the vestibule lighting.\n\nSECTION 2 — Character and Placement\nUse <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>> for Amara's identity, <<<99f29819-725f-478a-90fd-9ecfede89594>>> for her wardrobe, and <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> for her handbag.\nPosition Amara in the open exterior passenger doorway, facing the camera as she completes the final boarding step. Her leading foot rests on the vestibule floor; her trailing foot rests on the boarding tread. Her torso faces inward toward the camera. Hold <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> in her anatomical right hand at thigh height, screen-left. Keep her left arm beside her body. Direct her eyes toward the lens, lips slightly parted.\n\nSECTION 3 — Camera and Composition\nPlace the camera inside the vestibule, looking outward through the open exterior passenger doorway. Point the optical axis perpendicular to the train side. Set the camera at Amara's eye height as she reaches the vestibule floor.\nFrame her frontally from mid-thigh to above her hair. Keep her face unobstructed and sharp. Include the doorway edges and the station platform visible through the doorway behind her.\nUse <<<c63517e1-4dc8-4487-841d-85fed438a08b>>> for camera position, doorway geometry and Amara's placement. Use the photographic Elements for the finished appearance.\nHer boarding direction runs across the width of the train toward the camera. The longitudinal corridor lies to her anatomical right. Capture her body facing the camera before that right turn.\n\nSECTION 4 — Platform and Vestibule Background\nUse <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for the passenger doorway, threshold and vestibule interior.\nUse <<<e05721e0-4f10-4df2-845e-c9f03a7627b4>>> for the station architecture, platform surface, columns, windows and lamps. Reconstruct those features from the eye-level viewpoint inside the train, looking across the platform through the passenger doorway. Preserve their design and spatial relationships in the portion visible behind Amara.\nUse <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the platform's blue-hour illumination. Keep the visible station architecture recognizable, with sufficient background definition to review its match to the station reference. The train remains stationary beside the platform.\n\nSECTION 5 — Output and Continuity\nRender one 16:9 photographic still showing the start of Amara's singing performance during the final boarding step. Preserve <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>>, <<<99f29819-725f-478a-90fd-9ecfede89594>>> and the right-hand placement of <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>>. Maintain the inside-to-platform camera direction. Keep the visible background free of platform-number signs.",
+        "aspect_ratio": "16:9",
+        "medias": [],
+        "width": 3840,
+        "height": 2160,
+        "quality": "high",
+        "resolution": "4k",
+        "model": "sunburst",
+        "remove_bg": false,
+        "reference_elements": [
+          {
+            "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+            "name": "Platform_morn",
+            "medias": [
+              {
+                "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+                "type": "media_input",
+                "width": 4116,
+                "height": 2761
+              }
+            ],
+            "category": "auto:prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651",
+            "name": "Amara_Houston_2",
+            "medias": [
+              {
+                "id": "fdf74a21-7225-422b-802e-0dd92029f48a",
+                "url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260715_081447_fdf74a21-7225-422b-802e-0dd92029f48a.png",
+                "type": "image_job",
+                "width": 1536,
+                "height": 2048
+              }
+            ],
+            "category": "character",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "1aea136d-c3bc-4e46-ac1b-77338bced7b4",
+            "name": "PressOn_Boarding_Open_Door",
+            "medias": [
+              {
+                "id": "e019eb67-38c8-4866-823e-cb47f08a8ce2",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/e019eb67-38c8-4866-823e-cb47f08a8ce2.jpg",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "Original Training_Boarding_Interior-glass-door-open local reference. Open exterior passenger doorway, vestibule materials and lighting.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "99f29819-725f-478a-90fd-9ecfede89594",
+            "name": "Amara_Train_Outfit",
+            "medias": [
+              {
+                "id": "2789fb09-e001-4138-b039-13e31dca72dc",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/2789fb09-e001-4138-b039-13e31dca72dc.png",
+                "type": "media_input",
+                "width": 3840,
+                "height": 2160
+              }
+            ],
+            "category": "prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "c63517e1-4dc8-4487-841d-85fed438a08b",
+            "name": "PressOn_Boarding_Composition",
+            "medias": [
+              {
+                "id": "af41d530-b9fd-4ddd-bd2e-a682ead65ab2",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/af41d530-b9fd-4ddd-bd2e-a682ead65ab2.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:character",
+            "description": "Animatic 30.5-second frame. Camera and blocking reference ONLY: camera inside vestibule looking outward perpendicular to train side. Photographic Elements supply finished appearance; mannequin is only a placement proxy.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+            "name": "PressOn_Verse1_Platform",
+            "medias": [
+              {
+                "id": "cc722d8a-162a-4797-8076-9438d5288416",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "edfd2ab1-c99e-4da5-80bd-f50671f48fec",
+            "name": "Amara_Train_Handbag",
+            "medias": [
+              {
+                "id": "165ba7b7-60c3-4f4f-b02c-47a063a355cf",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/165ba7b7-60c3-4f4f-b02c-47a063a355cf.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "prop",
+            "description": "Locked local train wardrobe handbag: black structured leather bag with gold hardware, short handles and chain detail. Source handbag.png in Wardrobe Locked/Train. Preserve bag appearance across boarding, train and coastal reflection shots.",
+            "ip_detected": false,
+            "video_medias": []
+          }
+        ]
+      },
+      "results": {
+        "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_e91c3030-096f-479b-a014-adb51b0f85ff.png",
+        "minUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_e91c3030-096f-479b-a014-adb51b0f85ff_min.webp"
+      },
+      "createdAt": 1789319359.622214
+    },
+    {
+      "id": "3f51c0b3-911b-46ab-adc2-a847513f9da9",
+      "type": "image",
+      "status": "completed",
+      "model": "gpt_image_2_5",
+      "params": {
+        "prompt": "SECTION 1 — Film DNA\nCreate one photographic cinematic still. Arri Alexa 65, Panavision C Series Anamorphic, T2.8; subtle organic film grain; 16:9. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the exterior blue-hour lighting and <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for the vestibule lighting.\n\nSECTION 2 — Character and Placement\nUse <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>> for Amara's identity, <<<99f29819-725f-478a-90fd-9ecfede89594>>> for her wardrobe, and <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> for her handbag.\nPosition Amara in the open exterior passenger doorway, facing the camera as she completes the final boarding step. Her leading foot rests on the vestibule floor; her trailing foot rests on the boarding tread. Her torso faces inward toward the camera. Hold <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> in her anatomical right hand at thigh height, screen-left. Keep her left arm beside her body. Direct her eyes toward the lens, lips slightly parted.\n\nSECTION 3 — Camera and Composition\nPlace the camera inside the vestibule, looking outward through the open exterior passenger doorway. Point the optical axis perpendicular to the train side. Set the camera at Amara's eye height as she reaches the vestibule floor.\nFrame her frontally from mid-thigh to above her hair. Keep her face unobstructed and sharp. Include the doorway edges and the station platform visible through the doorway behind her.\nUse <<<c63517e1-4dc8-4487-841d-85fed438a08b>>> for camera position, doorway geometry and Amara's placement. Use the photographic Elements for the finished appearance.\nHer boarding direction runs across the width of the train toward the camera. The longitudinal corridor lies to her anatomical right. Capture her body facing the camera before that right turn.\n\nSECTION 4 — Platform and Vestibule Background\nUse <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for the passenger doorway, threshold and vestibule interior.\nUse <<<e05721e0-4f10-4df2-845e-c9f03a7627b4>>> for the station architecture, platform surface, columns, windows and lamps. Reconstruct those features from the eye-level viewpoint inside the train, looking across the platform through the passenger doorway. Preserve their design and spatial relationships in the portion visible behind Amara.\nUse <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the platform's blue-hour illumination. Keep the visible station architecture recognizable, with sufficient background definition to review its match to the station reference. The train remains stationary beside the platform.\n\nSECTION 5 — Output and Continuity\nRender one 16:9 photographic still showing the start of Amara's singing performance during the final boarding step. Preserve <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>>, <<<99f29819-725f-478a-90fd-9ecfede89594>>> and the right-hand placement of <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>>. Maintain the inside-to-platform camera direction. Keep the visible background free of platform-number signs.",
+        "aspect_ratio": "16:9",
+        "medias": [],
+        "width": 3840,
+        "height": 2160,
+        "quality": "high",
+        "resolution": "4k",
+        "model": "sunburst",
+        "remove_bg": false,
+        "reference_elements": [
+          {
+            "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+            "name": "Platform_morn",
+            "medias": [
+              {
+                "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+                "type": "media_input",
+                "width": 4116,
+                "height": 2761
+              }
+            ],
+            "category": "auto:prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651",
+            "name": "Amara_Houston_2",
+            "medias": [
+              {
+                "id": "fdf74a21-7225-422b-802e-0dd92029f48a",
+                "url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260715_081447_fdf74a21-7225-422b-802e-0dd92029f48a.png",
+                "type": "image_job",
+                "width": 1536,
+                "height": 2048
+              }
+            ],
+            "category": "character",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "1aea136d-c3bc-4e46-ac1b-77338bced7b4",
+            "name": "PressOn_Boarding_Open_Door",
+            "medias": [
+              {
+                "id": "e019eb67-38c8-4866-823e-cb47f08a8ce2",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/e019eb67-38c8-4866-823e-cb47f08a8ce2.jpg",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "Original Training_Boarding_Interior-glass-door-open local reference. Open exterior passenger doorway, vestibule materials and lighting.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "99f29819-725f-478a-90fd-9ecfede89594",
+            "name": "Amara_Train_Outfit",
+            "medias": [
+              {
+                "id": "2789fb09-e001-4138-b039-13e31dca72dc",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/2789fb09-e001-4138-b039-13e31dca72dc.png",
+                "type": "media_input",
+                "width": 3840,
+                "height": 2160
+              }
+            ],
+            "category": "prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "c63517e1-4dc8-4487-841d-85fed438a08b",
+            "name": "PressOn_Boarding_Composition",
+            "medias": [
+              {
+                "id": "af41d530-b9fd-4ddd-bd2e-a682ead65ab2",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/af41d530-b9fd-4ddd-bd2e-a682ead65ab2.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:character",
+            "description": "Animatic 30.5-second frame. Camera and blocking reference ONLY: camera inside vestibule looking outward perpendicular to train side. Photographic Elements supply finished appearance; mannequin is only a placement proxy.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+            "name": "PressOn_Verse1_Platform",
+            "medias": [
+              {
+                "id": "cc722d8a-162a-4797-8076-9438d5288416",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "edfd2ab1-c99e-4da5-80bd-f50671f48fec",
+            "name": "Amara_Train_Handbag",
+            "medias": [
+              {
+                "id": "165ba7b7-60c3-4f4f-b02c-47a063a355cf",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/165ba7b7-60c3-4f4f-b02c-47a063a355cf.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "prop",
+            "description": "Locked local train wardrobe handbag: black structured leather bag with gold hardware, short handles and chain detail. Source handbag.png in Wardrobe Locked/Train. Preserve bag appearance across boarding, train and coastal reflection shots.",
+            "ip_detected": false,
+            "video_medias": []
+          }
+        ]
+      },
+      "results": {
+        "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_3f51c0b3-911b-46ab-adc2-a847513f9da9.png",
+        "minUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_3f51c0b3-911b-46ab-adc2-a847513f9da9_min.webp"
+      },
+      "createdAt": 1789319359.622161
+    },
+    {
+      "id": "bfe976bb-d8be-4ca9-9781-5238dffb4a16",
+      "type": "image",
+      "status": "completed",
+      "model": "gpt_image_2_5",
+      "params": {
+        "prompt": "SECTION 1 — Film DNA\nCreate one photographic cinematic still. Arri Alexa 65, Panavision C Series Anamorphic, T2.8; subtle organic film grain; 16:9. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the exterior blue-hour lighting and <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for the vestibule lighting.\n\nSECTION 2 — Character and Placement\nUse <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>> for Amara's identity, <<<99f29819-725f-478a-90fd-9ecfede89594>>> for her wardrobe, and <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> for her handbag.\nPosition Amara in the open exterior passenger doorway, facing the camera as she completes the final boarding step. Her leading foot rests on the vestibule floor; her trailing foot rests on the boarding tread. Her torso faces inward toward the camera. Hold <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>> in her anatomical right hand at thigh height, screen-left. Keep her left arm beside her body. Direct her eyes toward the lens, lips slightly parted.\n\nSECTION 3 — Camera and Composition\nPlace the camera inside the vestibule, looking outward through the open exterior passenger doorway. Point the optical axis perpendicular to the train side. Set the camera at Amara's eye height as she reaches the vestibule floor.\nFrame her frontally from mid-thigh to above her hair. Keep her face unobstructed and sharp. Include the doorway edges and the station platform visible through the doorway behind her.\nUse <<<c63517e1-4dc8-4487-841d-85fed438a08b>>> for camera position, doorway geometry and Amara's placement. Use the photographic Elements for the finished appearance.\nHer boarding direction runs across the width of the train toward the camera. The longitudinal corridor lies to her anatomical right. Capture her body facing the camera before that right turn.\n\nSECTION 4 — Platform and Vestibule Background\nUse <<<1aea136d-c3bc-4e46-ac1b-77338bced7b4>>> for the passenger doorway, threshold and vestibule interior.\nUse <<<e05721e0-4f10-4df2-845e-c9f03a7627b4>>> for the station architecture, platform surface, columns, windows and lamps. Reconstruct those features from the eye-level viewpoint inside the train, looking across the platform through the passenger doorway. Preserve their design and spatial relationships in the portion visible behind Amara.\nUse <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for the platform's blue-hour illumination. Keep the visible station architecture recognizable, with sufficient background definition to review its match to the station reference. The train remains stationary beside the platform.\n\nSECTION 5 — Output and Continuity\nRender one 16:9 photographic still showing the start of Amara's singing performance during the final boarding step. Preserve <<<1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651>>>, <<<99f29819-725f-478a-90fd-9ecfede89594>>> and the right-hand placement of <<<edfd2ab1-c99e-4da5-80bd-f50671f48fec>>>. Maintain the inside-to-platform camera direction. Keep the visible background free of platform-number signs.",
+        "aspect_ratio": "16:9",
+        "medias": [],
+        "width": 3840,
+        "height": 2160,
+        "quality": "high",
+        "resolution": "4k",
+        "model": "sunburst",
+        "remove_bg": false,
+        "reference_elements": [
+          {
+            "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+            "name": "Platform_morn",
+            "medias": [
+              {
+                "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+                "type": "media_input",
+                "width": 4116,
+                "height": 2761
+              }
+            ],
+            "category": "auto:prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651",
+            "name": "Amara_Houston_2",
+            "medias": [
+              {
+                "id": "fdf74a21-7225-422b-802e-0dd92029f48a",
+                "url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260715_081447_fdf74a21-7225-422b-802e-0dd92029f48a.png",
+                "type": "image_job",
+                "width": 1536,
+                "height": 2048
+              }
+            ],
+            "category": "character",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "1aea136d-c3bc-4e46-ac1b-77338bced7b4",
+            "name": "PressOn_Boarding_Open_Door",
+            "medias": [
+              {
+                "id": "e019eb67-38c8-4866-823e-cb47f08a8ce2",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/e019eb67-38c8-4866-823e-cb47f08a8ce2.jpg",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "Original Training_Boarding_Interior-glass-door-open local reference. Open exterior passenger doorway, vestibule materials and lighting.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "99f29819-725f-478a-90fd-9ecfede89594",
+            "name": "Amara_Train_Outfit",
+            "medias": [
+              {
+                "id": "2789fb09-e001-4138-b039-13e31dca72dc",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/2789fb09-e001-4138-b039-13e31dca72dc.png",
+                "type": "media_input",
+                "width": 3840,
+                "height": 2160
+              }
+            ],
+            "category": "prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "c63517e1-4dc8-4487-841d-85fed438a08b",
+            "name": "PressOn_Boarding_Composition",
+            "medias": [
+              {
+                "id": "af41d530-b9fd-4ddd-bd2e-a682ead65ab2",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/af41d530-b9fd-4ddd-bd2e-a682ead65ab2.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:character",
+            "description": "Animatic 30.5-second frame. Camera and blocking reference ONLY: camera inside vestibule looking outward perpendicular to train side. Photographic Elements supply finished appearance; mannequin is only a placement proxy.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+            "name": "PressOn_Verse1_Platform",
+            "medias": [
+              {
+                "id": "cc722d8a-162a-4797-8076-9438d5288416",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "edfd2ab1-c99e-4da5-80bd-f50671f48fec",
+            "name": "Amara_Train_Handbag",
+            "medias": [
+              {
+                "id": "165ba7b7-60c3-4f4f-b02c-47a063a355cf",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/165ba7b7-60c3-4f4f-b02c-47a063a355cf.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "prop",
+            "description": "Locked local train wardrobe handbag: black structured leather bag with gold hardware, short handles and chain detail. Source handbag.png in Wardrobe Locked/Train. Preserve bag appearance across boarding, train and coastal reflection shots.",
+            "ip_detected": false,
+            "video_medias": []
+          }
+        ]
+      },
+      "results": {
+        "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_bfe976bb-d8be-4ca9-9781-5238dffb4a16.png",
+        "minUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_bfe976bb-d8be-4ca9-9781-5238dffb4a16_min.webp"
+      },
+      "createdAt": 1789319359.622087
+    }
+  ],
+  "jobs": [
+    {
+      "index": 0,
+      "job_id": "6e74cefb-9999-464d-99ab-34bde68ff9f0",
+      "status": "completed",
+      "type": "image",
+      "model": "gpt_image_2_5",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_6e74cefb-9999-464d-99ab-34bde68ff9f0.png"
+    },
+    {
+      "index": 1,
+      "job_id": "e91c3030-096f-479b-a014-adb51b0f85ff",
+      "status": "completed",
+      "type": "image",
+      "model": "gpt_image_2_5",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_e91c3030-096f-479b-a014-adb51b0f85ff.png"
+    },
+    {
+      "index": 2,
+      "job_id": "3f51c0b3-911b-46ab-adc2-a847513f9da9",
+      "status": "completed",
+      "type": "image",
+      "model": "gpt_image_2_5",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_3f51c0b3-911b-46ab-adc2-a847513f9da9.png"
+    },
+    {
+      "index": 3,
+      "job_id": "bfe976bb-d8be-4ca9-9781-5238dffb4a16",
+      "status": "completed",
+      "type": "image",
+      "model": "gpt_image_2_5",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260913_170919_bfe976bb-d8be-4ca9-9781-5238dffb4a16.png"
+    }
+  ],
+  "all_found": true
+}

@@ -1,0 +1,31 @@
+SECTION 1 — Film DNA
+
+Create one photographic cinematic still. Arri Alexa 65, Panavision C Series Anamorphic, T2.8; subtle organic film grain; 16:9. Use @Platform_morn for the exterior blue-hour lighting and @PressOn_Boarding_Open_Door for the vestibule lighting.
+
+SECTION 2 — Character and Placement
+
+Use @Amara_Houston_2 for Amara's identity, @Amara_Train_Outfit for her wardrobe, and @Amara_Train_Handbag for her handbag.
+
+Position Amara in the open exterior passenger doorway, facing the camera as she completes the final boarding step. Her leading foot rests on the vestibule floor; her trailing foot rests on the boarding tread. Her torso faces inward toward the camera. Hold @Amara_Train_Handbag in her anatomical right hand at thigh height, screen-left. Keep her left arm beside her body. Direct her eyes toward the lens, lips slightly parted.
+
+SECTION 3 — Camera and Composition
+
+Place the camera inside the vestibule, looking outward through the open exterior passenger doorway. Point the optical axis perpendicular to the train side. Set the camera at Amara's eye height as she reaches the vestibule floor.
+
+Frame her frontally from mid-thigh to above her hair. Keep her face unobstructed and sharp. Include the doorway edges and the station platform visible through the doorway behind her.
+
+Use @PressOn_Boarding_Composition for camera position, doorway geometry and Amara's placement. Use the photographic Elements for the finished appearance.
+
+Her boarding direction runs across the width of the train toward the camera. The longitudinal corridor lies to her anatomical right. Capture her body facing the camera before that right turn.
+
+SECTION 4 — Platform and Vestibule Background
+
+Use @PressOn_Boarding_Open_Door for the passenger doorway, threshold and vestibule interior.
+
+Use @PressOn_Verse1_Platform for the station architecture, platform surface, columns, windows and lamps. Reconstruct those features from the eye-level viewpoint inside the train, looking across the platform through the passenger doorway. Preserve their design and spatial relationships in the portion visible behind Amara.
+
+Use @Platform_morn for the platform's blue-hour illumination. Keep the visible station architecture recognizable, with sufficient background definition to review its match to the station reference. The train remains stationary beside the platform.
+
+SECTION 5 — Output and Continuity
+
+Render one 16:9 photographic still showing the start of Amara's singing performance during the final boarding step. Preserve @Amara_Houston_2, @Amara_Train_Outfit and the right-hand placement of @Amara_Train_Handbag. Maintain the inside-to-platform camera direction. Keep the visible background free of platform-number signs.

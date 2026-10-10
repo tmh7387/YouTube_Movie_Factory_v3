@@ -1,0 +1,116 @@
+{
+  "results": [
+    {
+      "id": "b222faf9-3887-4381-b434-e7b2d9ec7059",
+      "type": "image",
+      "status": "completed",
+      "model": "gpt_image_2_5",
+      "params": {
+        "prompt": "SECTION 1 — Image\nRender one 16:9 photographic cinematic empty train vestibule. Arri Alexa 65, Panavision C Series Anamorphic. Warm interior practical lighting and blue-hour station light.\n\nSECTION 2 — Connected Layout and Camera\nUse <<<e4c24eff-8ace-4d13-b493-a8dbb84bac6d>>> for the actual connected floor plan and framing. Camera inside the vestibule looks outward through the open boarding doorway, with the internal passenger-corridor doorway visible on screen-left. Show the corridor continuing through that open internal doorway. Hold its glass door leaf fully open against the corridor wall so the walkable passage is plainly visible. The route enters from the platform, steps up into the vestibule, then turns right from the boarding person's perspective into the screen-left corridor. Keep both openings and the connecting floor visible.\n\nSECTION 3 — Boarding Door and Steps\nUse <<<9d1266a7-0744-46f4-a3a9-71120945e5f8>>> for exterior door design, trim and hardware. Preserve the 1.10-metre-wide and 2.20-metre-high aperture in the connected geometry guide. Show the door fully open. The vestibule floor is elevated above the platform. Show its threshold, the intermediate boarding tread below it, and the platform below that tread. Use <<<02b28d81-bea9-4ee4-9983-0b04a0eaf632>>> only to clarify this stepped relationship; use the connected guide for the room layout and camera. Keep the step edges and contact shadows readable.\n\nSECTION 4 — Photographic Station Reference\nUse <<<e05721e0-4f10-4df2-845e-c9f03a7627b4>>> as the station-design authority: reproduce its ornate iron columns, arched decorative panels, tall glazing, warm lamps and pale platform paving in the portion visible through the boarding doorway. Reproject this station into the doorway camera view. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for blue-hour illumination. The 3D guide supplies spatial placement only; finish the station with the photographic reference architecture and materials.\n\nSECTION 5 — Finish\nOne empty photographic environment. Walnut and brass vestibule surfaces; realistic metal and glazing. Keep the boarding opening, lower steps, platform architecture and open screen-left corridor entrance sharp enough to inspect. The passenger passage remains physically connected and clear. Train stationary.",
+        "aspect_ratio": "16:9",
+        "medias": [],
+        "width": 3840,
+        "height": 2160,
+        "quality": "high",
+        "resolution": "4k",
+        "model": "sunburst",
+        "remove_bg": false,
+        "reference_elements": [
+          {
+            "id": "02b28d81-bea9-4ee4-9983-0b04a0eaf632",
+            "name": "PressOn_Raised_Door_Guide",
+            "medias": [
+              {
+                "id": "2b180a0c-8e85-4517-a525-4fe5946d4525",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/2b180a0c-8e85-4517-a525-4fe5946d4525.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "Geometry-only guide. Platform z0, tread z0.275m, vestibule z0.55m. Opening 1.10x2.20m. Camera inside facing outward, tilted down to show descending levels. Supersedes previous guide camera.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+            "name": "Platform_morn",
+            "medias": [
+              {
+                "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+                "type": "media_input",
+                "width": 4116,
+                "height": 2761
+              }
+            ],
+            "category": "auto:prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "9d1266a7-0744-46f4-a3a9-71120945e5f8",
+            "name": "Train-door",
+            "medias": [
+              {
+                "id": "227a62d5-a535-466c-a4ee-d4b4004c585b",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/227a62d5-a535-466c-a4ee-d4b4004c585b.png",
+                "type": "media_input",
+                "width": 3800,
+                "height": 2120
+              }
+            ],
+            "category": "prop",
+            "description": null,
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+            "name": "PressOn_Verse1_Platform",
+            "medias": [
+              {
+                "id": "cc722d8a-162a-4797-8076-9438d5288416",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "e4c24eff-8ace-4d13-b493-a8dbb84bac6d",
+            "name": "PressOn_Connected_Vestibule",
+            "medias": [
+              {
+                "id": "6dcb22c6-c5c3-44a4-ac96-d5b0a9d11b3d",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/6dcb22c6-c5c3-44a4-ac96-d5b0a9d11b3d.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "3D layout guide, not photographic approval. Actual refined interior: entry +X, right turn -Y through open internal doorway. Station registered at Y68.1. Preserve route and aperture; photographic station Elements control final aesthetic.",
+            "ip_detected": null,
+            "video_medias": []
+          }
+        ]
+      },
+      "results": {
+        "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_055309_b222faf9-3887-4381-b434-e7b2d9ec7059.png",
+        "minUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_055309_b222faf9-3887-4381-b434-e7b2d9ec7059_min.webp"
+      },
+      "createdAt": 1789624389.005734
+    }
+  ]
+}

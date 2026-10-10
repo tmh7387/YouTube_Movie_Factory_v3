@@ -1,0 +1,3645 @@
+1
+00:00:14,480 --> 00:00:16,550
+
+Hi, I'm Adil. Today we're building five
+
+2
+00:00:16,550 --> 00:00:16,560
+Hi, I'm Adil. Today we're building five
+ 
+
+3
+00:00:16,560 --> 00:00:18,230
+Hi, I'm Adil. Today we're building five
+scenes like these without building the
+
+4
+00:00:18,230 --> 00:00:18,240
+scenes like these without building the
+ 
+
+5
+00:00:18,240 --> 00:00:20,710
+scenes like these without building the
+3D setups by hand. I'll give Astra the
+
+6
+00:00:20,710 --> 00:00:20,720
+3D setups by hand. I'll give Astra the
+ 
+
+7
+00:00:20,720 --> 00:00:22,390
+3D setups by hand. I'll give Astra the
+direction, review the blocking it
+
+8
+00:00:22,390 --> 00:00:22,400
+direction, review the blocking it
+ 
+
+9
+00:00:22,400 --> 00:00:24,150
+direction, review the blocking it
+creates, and use Kixfield to generate
+
+10
+00:00:24,150 --> 00:00:24,160
+creates, and use Kixfield to generate
+ 
+
+11
+00:00:24,160 --> 00:00:25,910
+creates, and use Kixfield to generate
+the finished videos. We'll work in
+
+12
+00:00:25,910 --> 00:00:25,920
+the finished videos. We'll work in
+ 
+
+13
+00:00:25,920 --> 00:00:27,830
+the finished videos. We'll work in
+Blender and try a browserbased workflow
+
+14
+00:00:27,830 --> 00:00:27,840
+Blender and try a browserbased workflow
+ 
+
+15
+00:00:27,840 --> 00:00:30,470
+Blender and try a browserbased workflow
+in 3D dutu. And no, you don't need any
+
+16
+00:00:30,470 --> 00:00:30,480
+in 3D dutu. And no, you don't need any
+ 
+
+17
+00:00:30,480 --> 00:00:32,069
+in 3D dutu. And no, you don't need any
+complex software skills to do any of
+
+18
+00:00:32,069 --> 00:00:32,079
+complex software skills to do any of
+ 
+
+19
+00:00:32,079 --> 00:00:33,990
+complex software skills to do any of
+this. I'll show you the requests, the
+
+20
+00:00:33,990 --> 00:00:34,000
+this. I'll show you the requests, the
+ 
+
+21
+00:00:34,000 --> 00:00:36,630
+this. I'll show you the requests, the
+changes I made, and the results. Let's
+
+22
+00:00:36,630 --> 00:00:36,640
+changes I made, and the results. Let's
+ 
+
+23
+00:00:36,640 --> 00:00:38,709
+changes I made, and the results. Let's
+dive right in. First up, the infinite
+
+24
+00:00:38,709 --> 00:00:38,719
+dive right in. First up, the infinite
+ 
+
+25
+00:00:38,719 --> 00:00:40,229
+dive right in. First up, the infinite
+loop. Have you ever caught yourself
+
+26
+00:00:40,229 --> 00:00:40,239
+loop. Have you ever caught yourself
+ 
+
+27
+00:00:40,239 --> 00:00:41,670
+loop. Have you ever caught yourself
+watching a video twice because a
+
+28
+00:00:41,670 --> 00:00:41,680
+watching a video twice because a
+ 
+
+29
+00:00:41,680 --> 00:00:43,350
+watching a video twice because a
+seamless edit totally tricked your
+
+30
+00:00:43,350 --> 00:00:43,360
+seamless edit totally tricked your
+ 
+
+31
+00:00:43,360 --> 00:00:44,790
+seamless edit totally tricked your
+brain? That's exactly what we're
+
+32
+00:00:44,790 --> 00:00:44,800
+brain? That's exactly what we're
+ 
+
+33
+00:00:44,800 --> 00:00:46,869
+brain? That's exactly what we're
+building today. First though, check out
+
+34
+00:00:46,869 --> 00:00:46,879
+building today. First though, check out
+ 
+
+35
+00:00:46,879 --> 00:00:55,029
+building today. First though, check out
+the final video.
+
+36
+00:00:55,029 --> 00:00:55,039
+
+ 
+
+37
+00:00:55,039 --> 00:01:20,230
+
+Pretty
+
+38
+00:01:20,230 --> 00:01:20,240
+
+ 
+
+39
+00:01:20,240 --> 00:01:22,070
+
+smooth, right? It looks super high-end,
+
+40
+00:01:22,070 --> 00:01:22,080
+smooth, right? It looks super high-end,
+ 
+
+41
+00:01:22,080 --> 00:01:23,990
+smooth, right? It looks super high-end,
+but honestly, it's way easier to pull
+
+42
+00:01:23,990 --> 00:01:24,000
+but honestly, it's way easier to pull
+ 
+
+43
+00:01:24,000 --> 00:01:25,749
+but honestly, it's way easier to pull
+off than you think. Let me show you how
+
+44
+00:01:25,749 --> 00:01:25,759
+off than you think. Let me show you how
+ 
+
+45
+00:01:25,759 --> 00:01:28,230
+off than you think. Let me show you how
+it comes together. This is blocking a
+
+46
+00:01:28,230 --> 00:01:28,240
+it comes together. This is blocking a
+ 
+
+47
+00:01:28,240 --> 00:01:30,230
+it comes together. This is blocking a
+rough 3D version of the scene using
+
+48
+00:01:30,230 --> 00:01:30,240
+rough 3D version of the scene using
+ 
+
+49
+00:01:30,240 --> 00:01:31,990
+rough 3D version of the scene using
+simple shapes to plan the camera and
+
+50
+00:01:31,990 --> 00:01:32,000
+simple shapes to plan the camera and
+ 
+
+51
+00:01:32,000 --> 00:01:33,670
+simple shapes to plan the camera and
+action. For the shot, I want to check
+
+52
+00:01:33,670 --> 00:01:33,680
+action. For the shot, I want to check
+ 
+
+53
+00:01:33,680 --> 00:01:35,590
+action. For the shot, I want to check
+how the ending connects to the beginning
+
+54
+00:01:35,590 --> 00:01:35,600
+how the ending connects to the beginning
+ 
+
+55
+00:01:35,600 --> 00:01:37,350
+how the ending connects to the beginning
+before I generate the finished video.
+
+56
+00:01:37,350 --> 00:01:37,360
+before I generate the finished video.
+ 
+
+57
+00:01:37,360 --> 00:01:39,270
+before I generate the finished video.
+So, I'm asking Astra to build that setup
+
+58
+00:01:39,270 --> 00:01:39,280
+So, I'm asking Astra to build that setup
+ 
+
+59
+00:01:39,280 --> 00:01:41,270
+So, I'm asking Astra to build that setup
+in Blender. Now, let's get set up.
+
+60
+00:01:41,270 --> 00:01:41,280
+in Blender. Now, let's get set up.
+ 
+
+61
+00:01:41,280 --> 00:01:44,069
+in Blender. Now, let's get set up.
+First, go to Higsfield, open plugins,
+
+62
+00:01:44,069 --> 00:01:44,079
+First, go to Higsfield, open plugins,
+ 
+
+63
+00:01:44,079 --> 00:01:47,109
+First, go to Higsfield, open plugins,
+choose Blender, and download the plugin.
+
+64
+00:01:47,109 --> 00:01:47,119
+choose Blender, and download the plugin.
+ 
+
+65
+00:01:47,119 --> 00:01:50,069
+choose Blender, and download the plugin.
+Then open Blender, drag the plugin in
+
+66
+00:01:50,069 --> 00:01:50,079
+Then open Blender, drag the plugin in
+ 
+
+67
+00:01:50,079 --> 00:01:52,789
+Then open Blender, drag the plugin in
+and log into your account. The Hixel
+
+68
+00:01:52,789 --> 00:01:52,799
+and log into your account. The Hixel
+ 
+
+69
+00:01:52,799 --> 00:01:54,550
+and log into your account. The Hixel
+toolbar will appear in your viewport.
+
+70
+00:01:54,550 --> 00:01:54,560
+toolbar will appear in your viewport.
+ 
+
+71
+00:01:54,560 --> 00:01:55,990
+toolbar will appear in your viewport.
+We'll use this connection later to
+
+72
+00:01:55,990 --> 00:01:56,000
+We'll use this connection later to
+ 
+
+73
+00:01:56,000 --> 00:01:58,310
+We'll use this connection later to
+generate the final video. Next, open the
+
+74
+00:01:58,310 --> 00:01:58,320
+generate the final video. Next, open the
+ 
+
+75
+00:01:58,320 --> 00:02:00,550
+generate the final video. Next, open the
+chat, click plugins on the left, and
+
+76
+00:02:00,550 --> 00:02:00,560
+chat, click plugins on the left, and
+ 
+
+77
+00:02:00,560 --> 00:02:03,350
+chat, click plugins on the left, and
+find Higsfield. Then enter add
+
+78
+00:02:03,350 --> 00:02:03,360
+find Higsfield. Then enter add
+ 
+
+79
+00:02:03,360 --> 00:02:06,389
+find Higsfield. Then enter add
+Higsfield/ use Blender to connect Astra,
+
+80
+00:02:06,389 --> 00:02:06,399
+Higsfield/ use Blender to connect Astra,
+ 
+
+81
+00:02:06,399 --> 00:02:08,710
+Higsfield/ use Blender to connect Astra,
+Blender, and Higsfield. And that's it.
+
+82
+00:02:08,710 --> 00:02:08,720
+Blender, and Higsfield. And that's it.
+ 
+
+83
+00:02:08,720 --> 00:02:11,190
+Blender, and Higsfield. And that's it.
+We're ready to go. So I give Astra the
+
+84
+00:02:11,190 --> 00:02:11,200
+We're ready to go. So I give Astra the
+ 
+
+85
+00:02:11,200 --> 00:02:13,190
+We're ready to go. So I give Astra the
+story and ask for an editable camera
+
+86
+00:02:13,190 --> 00:02:13,200
+story and ask for an editable camera
+ 
+
+87
+00:02:13,200 --> 00:02:15,750
+story and ask for an editable camera
+path with a bit of handheld drift. Let's
+
+88
+00:02:15,750 --> 00:02:15,760
+path with a bit of handheld drift. Let's
+ 
+
+89
+00:02:15,760 --> 00:02:18,070
+path with a bit of handheld drift. Let's
+hit run and see what happens. First, it
+
+90
+00:02:18,070 --> 00:02:18,080
+hit run and see what happens. First, it
+ 
+
+91
+00:02:18,080 --> 00:02:19,670
+hit run and see what happens. First, it
+breaks down the loop logic and plans out
+
+92
+00:02:19,670 --> 00:02:19,680
+breaks down the loop logic and plans out
+ 
+
+93
+00:02:19,680 --> 00:02:21,510
+breaks down the loop logic and plans out
+the blocking. Check this out. It's
+
+94
+00:02:21,510 --> 00:02:21,520
+the blocking. Check this out. It's
+ 
+
+95
+00:02:21,520 --> 00:02:23,589
+the blocking. Check this out. It's
+actually using computer use skills to
+
+96
+00:02:23,589 --> 00:02:23,599
+actually using computer use skills to
+ 
+
+97
+00:02:23,599 --> 00:02:26,229
+actually using computer use skills to
+check the viewport live inside Blender.
+
+98
+00:02:26,229 --> 00:02:26,239
+check the viewport live inside Blender.
+ 
+
+99
+00:02:26,239 --> 00:02:27,990
+check the viewport live inside Blender.
+And look at the right side here. It's
+
+100
+00:02:27,990 --> 00:02:28,000
+And look at the right side here. It's
+ 
+
+101
+00:02:28,000 --> 00:02:29,750
+And look at the right side here. It's
+building the entire setup completely on
+
+102
+00:02:29,750 --> 00:02:29,760
+building the entire setup completely on
+ 
+
+103
+00:02:29,760 --> 00:02:31,990
+building the entire setup completely on
+its own. That gives me the room, the
+
+104
+00:02:31,990 --> 00:02:32,000
+its own. That gives me the room, the
+ 
+
+105
+00:02:32,000 --> 00:02:34,309
+its own. That gives me the room, the
+character movement, and an editable
+
+106
+00:02:34,309 --> 00:02:34,319
+character movement, and an editable
+ 
+
+107
+00:02:34,319 --> 00:02:36,550
+character movement, and an editable
+camera path from the first request. It
+
+108
+00:02:36,550 --> 00:02:36,560
+camera path from the first request. It
+ 
+
+109
+00:02:36,560 --> 00:02:38,949
+camera path from the first request. It
+still blows my mind. All right, let's
+
+110
+00:02:38,949 --> 00:02:38,959
+still blows my mind. All right, let's
+ 
+
+111
+00:02:38,959 --> 00:02:40,869
+still blows my mind. All right, let's
+see what we got. So, everything we asked
+
+112
+00:02:40,869 --> 00:02:40,879
+see what we got. So, everything we asked
+ 
+
+113
+00:02:40,879 --> 00:02:43,270
+see what we got. So, everything we asked
+for is right here. the interior setup,
+
+114
+00:02:43,270 --> 00:02:43,280
+for is right here. the interior setup,
+ 
+
+115
+00:02:43,280 --> 00:02:45,910
+for is right here. the interior setup,
+the camera moving along its path, and
+
+116
+00:02:45,910 --> 00:02:45,920
+the camera moving along its path, and
+ 
+
+117
+00:02:45,920 --> 00:02:48,390
+the camera moving along its path, and
+the target tracking perfectly on its own
+
+118
+00:02:48,390 --> 00:02:48,400
+the target tracking perfectly on its own
+ 
+
+119
+00:02:48,400 --> 00:02:50,949
+the target tracking perfectly on its own
+spine. We can manually tweak it if we
+
+120
+00:02:50,949 --> 00:02:50,959
+spine. We can manually tweak it if we
+ 
+
+121
+00:02:50,959 --> 00:02:53,509
+spine. We can manually tweak it if we
+want, but honestly, what Astro built
+
+122
+00:02:53,509 --> 00:02:53,519
+want, but honestly, what Astro built
+ 
+
+123
+00:02:53,519 --> 00:02:55,190
+want, but honestly, what Astro built
+already works great. The loop is
+
+124
+00:02:55,190 --> 00:02:55,200
+already works great. The loop is
+ 
+
+125
+00:02:55,200 --> 00:02:57,270
+already works great. The loop is
+functional, but it needs a stronger
+
+126
+00:02:57,270 --> 00:02:57,280
+functional, but it needs a stronger
+ 
+
+127
+00:02:57,280 --> 00:02:59,509
+functional, but it needs a stronger
+hook. What if we're already inside a
+
+128
+00:02:59,509 --> 00:02:59,519
+hook. What if we're already inside a
+ 
+
+129
+00:02:59,519 --> 00:03:01,670
+hook. What if we're already inside a
+nested miniature? Just as he runs for
+
+130
+00:03:01,670 --> 00:03:01,680
+nested miniature? Just as he runs for
+ 
+
+131
+00:03:01,680 --> 00:03:03,830
+nested miniature? Just as he runs for
+the wardrobe, the camera pulls back to
+
+132
+00:03:03,830 --> 00:03:03,840
+the wardrobe, the camera pulls back to
+ 
+
+133
+00:03:03,840 --> 00:03:06,229
+the wardrobe, the camera pulls back to
+reveal our entire room is sitting on a
+
+134
+00:03:06,229 --> 00:03:06,239
+reveal our entire room is sitting on a
+ 
+
+135
+00:03:06,239 --> 00:03:08,630
+reveal our entire room is sitting on a
+table inside a bigger copy of itself,
+
+136
+00:03:08,630 --> 00:03:08,640
+table inside a bigger copy of itself,
+ 
+
+137
+00:03:08,640 --> 00:03:10,229
+table inside a bigger copy of itself,
+dropping us right back into the opening
+
+138
+00:03:10,229 --> 00:03:10,239
+dropping us right back into the opening
+ 
+
+139
+00:03:10,239 --> 00:03:12,630
+dropping us right back into the opening
+shot. Every single replay pulls you out
+
+140
+00:03:12,630 --> 00:03:12,640
+shot. Every single replay pulls you out
+ 
+
+141
+00:03:12,640 --> 00:03:15,030
+shot. Every single replay pulls you out
+on another level. So, back to Astra. I'm
+
+142
+00:03:15,030 --> 00:03:15,040
+on another level. So, back to Astra. I'm
+ 
+
+143
+00:03:15,040 --> 00:03:17,030
+on another level. So, back to Astra. I'm
+keeping the room and the opening camera
+
+144
+00:03:17,030 --> 00:03:17,040
+keeping the room and the opening camera
+ 
+
+145
+00:03:17,040 --> 00:03:19,110
+keeping the room and the opening camera
+move, then replacing the ending with a
+
+146
+00:03:19,110 --> 00:03:19,120
+move, then replacing the ending with a
+ 
+
+147
+00:03:19,120 --> 00:03:21,270
+move, then replacing the ending with a
+pull back into a larger copy. So, right
+
+148
+00:03:21,270 --> 00:03:21,280
+pull back into a larger copy. So, right
+ 
+
+149
+00:03:21,280 --> 00:03:23,190
+pull back into a larger copy. So, right
+here in the chat, Astra starts cloning
+
+150
+00:03:23,190 --> 00:03:23,200
+here in the chat, Astra starts cloning
+ 
+
+151
+00:03:23,200 --> 00:03:25,509
+here in the chat, Astra starts cloning
+the scene and executing the tweaks.
+
+152
+00:03:25,509 --> 00:03:25,519
+the scene and executing the tweaks.
+ 
+
+153
+00:03:25,519 --> 00:03:27,430
+the scene and executing the tweaks.
+Splender integration kicks in again.
+
+154
+00:03:27,430 --> 00:03:27,440
+Splender integration kicks in again.
+ 
+
+155
+00:03:27,440 --> 00:03:29,670
+Splender integration kicks in again.
+Over on the right, you can see how the
+
+156
+00:03:29,670 --> 00:03:29,680
+Over on the right, you can see how the
+ 
+
+157
+00:03:29,680 --> 00:03:32,229
+Over on the right, you can see how the
+scene transforms live. Now, let's watch
+
+158
+00:03:32,229 --> 00:03:32,239
+scene transforms live. Now, let's watch
+ 
+
+159
+00:03:32,239 --> 00:03:34,949
+scene transforms live. Now, let's watch
+it closer. That is so much better. Now,
+
+160
+00:03:34,949 --> 00:03:34,959
+it closer. That is so much better. Now,
+ 
+
+161
+00:03:34,959 --> 00:03:37,350
+it closer. That is so much better. Now,
+it actually feels endless. The first and
+
+162
+00:03:37,350 --> 00:03:37,360
+it actually feels endless. The first and
+ 
+
+163
+00:03:37,360 --> 00:03:39,910
+it actually feels endless. The first and
+last frames match perfectly, even though
+
+164
+00:03:39,910 --> 00:03:39,920
+last frames match perfectly, even though
+ 
+
+165
+00:03:39,920 --> 00:03:42,309
+last frames match perfectly, even though
+the camera is in totally different spots
+
+166
+00:03:42,309 --> 00:03:42,319
+the camera is in totally different spots
+ 
+
+167
+00:03:42,319 --> 00:03:44,390
+the camera is in totally different spots
+compared to the beginning. Seriously,
+
+168
+00:03:44,390 --> 00:03:44,400
+compared to the beginning. Seriously,
+ 
+
+169
+00:03:44,400 --> 00:03:46,070
+compared to the beginning. Seriously,
+setting this up by hand would have been
+
+170
+00:03:46,070 --> 00:03:46,080
+setting this up by hand would have been
+ 
+
+171
+00:03:46,080 --> 00:03:48,470
+setting this up by hand would have been
+a total headache. Now, I need a base
+
+172
+00:03:48,470 --> 00:03:48,480
+a total headache. Now, I need a base
+ 
+
+173
+00:03:48,480 --> 00:03:50,470
+a total headache. Now, I need a base
+image that works for both the start and
+
+174
+00:03:50,470 --> 00:03:50,480
+image that works for both the start and
+ 
+
+175
+00:03:50,480 --> 00:03:52,390
+image that works for both the start and
+the end to keep the loop completely
+
+176
+00:03:52,390 --> 00:03:52,400
+the end to keep the loop completely
+ 
+
+177
+00:03:52,400 --> 00:03:54,949
+the end to keep the loop completely
+seamless. Let's go back to the chat. I
+
+178
+00:03:54,949 --> 00:03:54,959
+seamless. Let's go back to the chat. I
+ 
+
+179
+00:03:54,959 --> 00:03:57,110
+seamless. Let's go back to the chat. I
+take the opening frame from the blocking
+
+180
+00:03:57,110 --> 00:03:57,120
+take the opening frame from the blocking
+ 
+
+181
+00:03:57,120 --> 00:03:59,509
+take the opening frame from the blocking
+and ask Astra to send it to Nana Banana
+
+182
+00:03:59,509 --> 00:03:59,519
+and ask Astra to send it to Nana Banana
+ 
+
+183
+00:03:59,519 --> 00:04:02,149
+and ask Astra to send it to Nana Banana
+as a layout reference. Now, I want an
+
+184
+00:04:02,149 --> 00:04:02,159
+as a layout reference. Now, I want an
+ 
+
+185
+00:04:02,159 --> 00:04:04,309
+as a layout reference. Now, I want an
+old mansion study. And look closer.
+
+186
+00:04:04,309 --> 00:04:04,319
+old mansion study. And look closer.
+ 
+
+187
+00:04:04,319 --> 00:04:07,670
+old mansion study. And look closer.
+Here, Astra plugs straight into Hixold,
+
+188
+00:04:07,670 --> 00:04:07,680
+Here, Astra plugs straight into Hixold,
+ 
+
+189
+00:04:07,680 --> 00:04:09,830
+Here, Astra plugs straight into Hixold,
+takes that uploaded image, and turns it
+
+190
+00:04:09,830 --> 00:04:09,840
+takes that uploaded image, and turns it
+ 
+
+191
+00:04:09,840 --> 00:04:12,630
+takes that uploaded image, and turns it
+into a cinematic interior. And just like
+
+192
+00:04:12,630 --> 00:04:12,640
+into a cinematic interior. And just like
+ 
+
+193
+00:04:12,640 --> 00:04:15,110
+into a cinematic interior. And just like
+that, our location is ready. I'm using
+
+194
+00:04:15,110 --> 00:04:15,120
+that, our location is ready. I'm using
+ 
+
+195
+00:04:15,120 --> 00:04:17,909
+that, our location is ready. I'm using
+this one. The miniature is easy to read,
+
+196
+00:04:17,909 --> 00:04:17,919
+this one. The miniature is easy to read,
+ 
+
+197
+00:04:17,919 --> 00:04:20,789
+this one. The miniature is easy to read,
+and the room has the movie I wanted. So,
+
+198
+00:04:20,789 --> 00:04:20,799
+and the room has the movie I wanted. So,
+ 
+
+199
+00:04:20,799 --> 00:04:22,390
+and the room has the movie I wanted. So,
+this will be the reference for both the
+
+200
+00:04:22,390 --> 00:04:22,400
+this will be the reference for both the
+ 
+
+201
+00:04:22,400 --> 00:04:24,790
+this will be the reference for both the
+opening and closing frames. I also
+
+202
+00:04:24,790 --> 00:04:24,800
+opening and closing frames. I also
+ 
+
+203
+00:04:24,800 --> 00:04:27,270
+opening and closing frames. I also
+export the blocking as a video, so I can
+
+204
+00:04:27,270 --> 00:04:27,280
+export the blocking as a video, so I can
+ 
+
+205
+00:04:27,280 --> 00:04:29,909
+export the blocking as a video, so I can
+use it as the motion reference. Now,
+
+206
+00:04:29,909 --> 00:04:29,919
+use it as the motion reference. Now,
+ 
+
+207
+00:04:29,919 --> 00:04:31,590
+use it as the motion reference. Now,
+time to generate the cinematic version
+
+208
+00:04:31,590 --> 00:04:31,600
+time to generate the cinematic version
+ 
+
+209
+00:04:31,600 --> 00:04:34,950
+time to generate the cinematic version
+using Kixel MCP. So I'm running Cance
+
+210
+00:04:34,950 --> 00:04:34,960
+using Kixel MCP. So I'm running Cance
+ 
+
+211
+00:04:34,960 --> 00:04:37,990
+using Kixel MCP. So I'm running Cance
+2.5 30 seconds
+
+212
+00:04:37,990 --> 00:04:38,000
+2.5 30 seconds
+ 
+
+213
+00:04:38,000 --> 00:04:39,990
+2.5 30 seconds
+16 by9 for the aspect ratio and one
+
+214
+00:04:39,990 --> 00:04:40,000
+16 by9 for the aspect ratio and one
+ 
+
+215
+00:04:40,000 --> 00:04:41,990
+16 by9 for the aspect ratio and one
+continuous shot. Also I'm going to
+
+216
+00:04:41,990 --> 00:04:42,000
+continuous shot. Also I'm going to
+ 
+
+217
+00:04:42,000 --> 00:04:43,670
+continuous shot. Also I'm going to
+generate two versions so I can choose
+
+218
+00:04:43,670 --> 00:04:43,680
+generate two versions so I can choose
+ 
+
+219
+00:04:43,680 --> 00:04:46,070
+generate two versions so I can choose
+the best one. So that's Astra and Hixold
+
+220
+00:04:46,070 --> 00:04:46,080
+the best one. So that's Astra and Hixold
+ 
+
+221
+00:04:46,080 --> 00:04:47,990
+the best one. So that's Astra and Hixold
+working together. Okay, while that
+
+222
+00:04:47,990 --> 00:04:48,000
+working together. Okay, while that
+ 
+
+223
+00:04:48,000 --> 00:04:50,550
+working together. Okay, while that
+renders a quick favor. About 70% of you
+
+224
+00:04:50,550 --> 00:04:50,560
+renders a quick favor. About 70% of you
+ 
+
+225
+00:04:50,560 --> 00:04:52,790
+renders a quick favor. About 70% of you
+watching right now are unsubscribed. If
+
+226
+00:04:52,790 --> 00:04:52,800
+watching right now are unsubscribed. If
+ 
+
+227
+00:04:52,800 --> 00:04:54,310
+watching right now are unsubscribed. If
+you want more builds like this, please
+
+228
+00:04:54,310 --> 00:04:54,320
+you want more builds like this, please
+ 
+
+229
+00:04:54,320 --> 00:04:56,469
+you want more builds like this, please
+hit subscribe. It helps us make the next
+
+230
+00:04:56,469 --> 00:04:56,479
+hit subscribe. It helps us make the next
+ 
+
+231
+00:04:56,479 --> 00:04:58,710
+hit subscribe. It helps us make the next
+one way bigger. All right, let's see
+
+232
+00:04:58,710 --> 00:04:58,720
+one way bigger. All right, let's see
+ 
+
+233
+00:04:58,720 --> 00:05:11,430
+one way bigger. All right, let's see
+what we got.
+
+234
+00:05:11,430 --> 00:05:11,440
+
+ 
+
+235
+00:05:11,440 --> 00:05:13,270
+
+And look at that. The entire room
+
+236
+00:05:13,270 --> 00:05:13,280
+And look at that. The entire room
+ 
+
+237
+00:05:13,280 --> 00:05:16,070
+And look at that. The entire room
+becomes a miniature. And every replay
+
+238
+00:05:16,070 --> 00:05:16,080
+becomes a miniature. And every replay
+ 
+
+239
+00:05:16,080 --> 00:05:19,270
+becomes a miniature. And every replay
+pulls you out another level. And as you
+
+240
+00:05:19,270 --> 00:05:19,280
+pulls you out another level. And as you
+ 
+
+241
+00:05:19,280 --> 00:05:20,870
+pulls you out another level. And as you
+saw from the prompts, there's nothing
+
+242
+00:05:20,870 --> 00:05:20,880
+saw from the prompts, there's nothing
+ 
+
+243
+00:05:20,880 --> 00:05:23,029
+saw from the prompts, there's nothing
+overly complex here. Astro handled all
+
+244
+00:05:23,029 --> 00:05:23,039
+overly complex here. Astro handled all
+ 
+
+245
+00:05:23,039 --> 00:05:24,710
+overly complex here. Astro handled all
+the heavy lifting with the blocking
+
+246
+00:05:24,710 --> 00:05:24,720
+the heavy lifting with the blocking
+ 
+
+247
+00:05:24,720 --> 00:05:26,710
+the heavy lifting with the blocking
+while heel polished everything into
+
+248
+00:05:26,710 --> 00:05:26,720
+while heel polished everything into
+ 
+
+249
+00:05:26,720 --> 00:05:28,710
+while heel polished everything into
+final cinematic shot. I'll drop these
+
+250
+00:05:28,710 --> 00:05:28,720
+final cinematic shot. I'll drop these
+ 
+
+251
+00:05:28,720 --> 00:05:30,390
+final cinematic shot. I'll drop these
+blogging files in the description so you
+
+252
+00:05:30,390 --> 00:05:30,400
+blogging files in the description so you
+ 
+
+253
+00:05:30,400 --> 00:05:31,830
+blogging files in the description so you
+can test them out yourself. For
+
+254
+00:05:31,830 --> 00:05:31,840
+can test them out yourself. For
+ 
+
+255
+00:05:31,840 --> 00:05:34,230
+can test them out yourself. For
+creators, this workflow is a total cheat
+
+256
+00:05:34,230 --> 00:05:34,240
+creators, this workflow is a total cheat
+ 
+
+257
+00:05:34,240 --> 00:05:36,310
+creators, this workflow is a total cheat
+code. You get to pull off mind-blowing
+
+258
+00:05:36,310 --> 00:05:36,320
+code. You get to pull off mind-blowing
+ 
+
+259
+00:05:36,320 --> 00:05:38,469
+code. You get to pull off mind-blowing
+high budget concepts without burning
+
+260
+00:05:38,469 --> 00:05:38,479
+high budget concepts without burning
+ 
+
+261
+00:05:38,479 --> 00:05:41,029
+high budget concepts without burning
+weeks in post. Next up, the impossible
+
+262
+00:05:41,029 --> 00:05:41,039
+weeks in post. Next up, the impossible
+ 
+
+263
+00:05:41,039 --> 00:05:42,790
+weeks in post. Next up, the impossible
+meter shot. One of the most difficult
+
+264
+00:05:42,790 --> 00:05:42,800
+meter shot. One of the most difficult
+ 
+
+265
+00:05:42,800 --> 00:05:44,629
+meter shot. One of the most difficult
+shots to recreate in traditional film
+
+266
+00:05:44,629 --> 00:05:44,639
+shots to recreate in traditional film
+ 
+
+267
+00:05:44,639 --> 00:05:47,270
+shots to recreate in traditional film
+making. The camera faces the detective,
+
+268
+00:05:47,270 --> 00:05:47,280
+making. The camera faces the detective,
+ 
+
+269
+00:05:47,280 --> 00:05:49,590
+making. The camera faces the detective,
+moves backward, and passes straight
+
+270
+00:05:49,590 --> 00:05:49,600
+moves backward, and passes straight
+ 
+
+271
+00:05:49,600 --> 00:05:52,310
+moves backward, and passes straight
+through the mirror. One shot, no cuts.
+
+272
+00:05:52,310 --> 00:05:52,320
+through the mirror. One shot, no cuts.
+ 
+
+273
+00:05:52,320 --> 00:06:08,150
+through the mirror. One shot, no cuts.
+Watch this.
+
+274
+00:06:08,150 --> 00:06:08,160
+
+ 
+
+275
+00:06:08,160 --> 00:06:09,590
+
+Now, that would be quite tricky to set
+
+276
+00:06:09,590 --> 00:06:09,600
+Now, that would be quite tricky to set
+ 
+
+277
+00:06:09,600 --> 00:06:11,350
+Now, that would be quite tricky to set
+up on a real shoot, but here's how I
+
+278
+00:06:11,350 --> 00:06:11,360
+up on a real shoot, but here's how I
+ 
+
+279
+00:06:11,360 --> 00:06:13,029
+up on a real shoot, but here's how I
+built it. And this time, I'm going to
+
+280
+00:06:13,029 --> 00:06:13,039
+built it. And this time, I'm going to
+ 
+
+281
+00:06:13,039 --> 00:06:15,270
+built it. And this time, I'm going to
+let Astra generate me both the character
+
+282
+00:06:15,270 --> 00:06:15,280
+let Astra generate me both the character
+ 
+
+283
+00:06:15,280 --> 00:06:17,029
+let Astra generate me both the character
+and the location used in the scene
+
+284
+00:06:17,029 --> 00:06:17,039
+and the location used in the scene
+ 
+
+285
+00:06:17,039 --> 00:06:20,710
+and the location used in the scene
+through Gixel MCP. So, I ask Astra for a
+
+286
+00:06:20,710 --> 00:06:20,720
+through Gixel MCP. So, I ask Astra for a
+ 
+
+287
+00:06:20,720 --> 00:06:22,950
+through Gixel MCP. So, I ask Astra for a
+15-second scene. Now, to make this trick
+
+288
+00:06:22,950 --> 00:06:22,960
+15-second scene. Now, to make this trick
+ 
+
+289
+00:06:22,960 --> 00:06:25,270
+15-second scene. Now, to make this trick
+work, I asked for a mirrored copy of the
+
+290
+00:06:25,270 --> 00:06:25,280
+work, I asked for a mirrored copy of the
+ 
+
+291
+00:06:25,280 --> 00:06:27,110
+work, I asked for a mirrored copy of the
+room with both characters moving in
+
+292
+00:06:27,110 --> 00:06:27,120
+room with both characters moving in
+ 
+
+293
+00:06:27,120 --> 00:06:28,950
+room with both characters moving in
+sync. The mirror itself is just an
+
+294
+00:06:28,950 --> 00:06:28,960
+sync. The mirror itself is just an
+ 
+
+295
+00:06:28,960 --> 00:06:30,950
+sync. The mirror itself is just an
+opening. It looks like a reflection, but
+
+296
+00:06:30,950 --> 00:06:30,960
+opening. It looks like a reflection, but
+ 
+
+297
+00:06:30,960 --> 00:06:33,110
+opening. It looks like a reflection, but
+the camera can pass straight through.
+
+298
+00:06:33,110 --> 00:06:33,120
+the camera can pass straight through.
+ 
+
+299
+00:06:33,120 --> 00:06:34,629
+the camera can pass straight through.
+Let's see how Astra is going to handle
+
+300
+00:06:34,629 --> 00:06:34,639
+Let's see how Astra is going to handle
+ 
+
+301
+00:06:34,639 --> 00:06:36,790
+Let's see how Astra is going to handle
+this task. And the geometry works. On
+
+302
+00:06:36,790 --> 00:06:36,800
+this task. And the geometry works. On
+ 
+
+303
+00:06:36,800 --> 00:06:38,230
+this task. And the geometry works. On
+the right, you can see Astra building
+
+304
+00:06:38,230 --> 00:06:38,240
+the right, you can see Astra building
+ 
+
+305
+00:06:38,240 --> 00:06:40,150
+the right, you can see Astra building
+out the environment. In the chat, it
+
+306
+00:06:40,150 --> 00:06:40,160
+out the environment. In the chat, it
+ 
+
+307
+00:06:40,160 --> 00:06:41,670
+out the environment. In the chat, it
+confirms the layout and timing are
+
+308
+00:06:41,670 --> 00:06:41,680
+confirms the layout and timing are
+ 
+
+309
+00:06:41,680 --> 00:06:43,270
+confirms the layout and timing are
+locked, automatically setting up the
+
+310
+00:06:43,270 --> 00:06:43,280
+locked, automatically setting up the
+ 
+
+311
+00:06:43,280 --> 00:06:45,510
+locked, automatically setting up the
+timeline markers and walking the
+
+312
+00:06:45,510 --> 00:06:45,520
+timeline markers and walking the
+ 
+
+313
+00:06:45,520 --> 00:06:47,430
+timeline markers and walking the
+animation. Okay, let's see the finished
+
+314
+00:06:47,430 --> 00:06:47,440
+animation. Okay, let's see the finished
+ 
+
+315
+00:06:47,440 --> 00:06:49,110
+animation. Okay, let's see the finished
+blocking. And that's exactly what we
+
+316
+00:06:49,110 --> 00:06:49,120
+blocking. And that's exactly what we
+ 
+
+317
+00:06:49,120 --> 00:06:51,670
+blocking. And that's exactly what we
+wanted. The camera follows an editable
+
+318
+00:06:51,670 --> 00:06:51,680
+wanted. The camera follows an editable
+ 
+
+319
+00:06:51,680 --> 00:06:54,070
+wanted. The camera follows an editable
+curve, pulling back through the mirror.
+
+320
+00:06:54,070 --> 00:06:54,080
+curve, pulling back through the mirror.
+ 
+
+321
+00:06:54,080 --> 00:06:56,710
+curve, pulling back through the mirror.
+The trick works. Next, I'm going to ask
+
+322
+00:06:56,710 --> 00:06:56,720
+The trick works. Next, I'm going to ask
+ 
+
+323
+00:06:56,720 --> 00:06:58,390
+The trick works. Next, I'm going to ask
+Astra to generate four detective
+
+324
+00:06:58,390 --> 00:06:58,400
+Astra to generate four detective
+ 
+
+325
+00:06:58,400 --> 00:07:00,070
+Astra to generate four detective
+character sheets through Geeksfield.
+
+326
+00:07:00,070 --> 00:07:00,080
+character sheets through Geeksfield.
+ 
+
+327
+00:07:00,080 --> 00:07:02,070
+character sheets through Geeksfield.
+Okay, I'm choosing the first one, and
+
+328
+00:07:02,070 --> 00:07:02,080
+Okay, I'm choosing the first one, and
+ 
+
+329
+00:07:02,080 --> 00:07:04,469
+Okay, I'm choosing the first one, and
+I'm going to attach it with the blocking
+
+330
+00:07:04,469 --> 00:07:04,479
+I'm going to attach it with the blocking
+ 
+
+331
+00:07:04,479 --> 00:07:07,430
+I'm going to attach it with the blocking
+and ask for two 15-second versions, each
+
+332
+00:07:07,430 --> 00:07:07,440
+and ask for two 15-second versions, each
+ 
+
+333
+00:07:07,440 --> 00:07:09,189
+and ask for two 15-second versions, each
+in one continuous state. All right,
+
+334
+00:07:09,189 --> 00:07:09,199
+in one continuous state. All right,
+ 
+
+335
+00:07:09,199 --> 00:07:25,189
+in one continuous state. All right,
+let's see the result.
+
+336
+00:07:25,189 --> 00:07:25,199
+
+ 
+
+337
+00:07:25,199 --> 00:07:27,830
+
+And look at that. The reflection holds,
+
+338
+00:07:27,830 --> 00:07:27,840
+And look at that. The reflection holds,
+ 
+
+339
+00:07:27,840 --> 00:07:30,070
+And look at that. The reflection holds,
+the camera goes straight through, and
+
+340
+00:07:30,070 --> 00:07:30,080
+the camera goes straight through, and
+ 
+
+341
+00:07:30,080 --> 00:07:31,749
+the camera goes straight through, and
+the whole shot stays connected. This is
+
+342
+00:07:31,749 --> 00:07:31,759
+the whole shot stays connected. This is
+ 
+
+343
+00:07:31,759 --> 00:07:33,749
+the whole shot stays connected. This is
+where Hixel saves me a ton of work.
+
+344
+00:07:33,749 --> 00:07:33,759
+where Hixel saves me a ton of work.
+ 
+
+345
+00:07:33,759 --> 00:07:35,749
+where Hixel saves me a ton of work.
+Normally, I'd have to texture and shade
+
+346
+00:07:35,749 --> 00:07:35,759
+Normally, I'd have to texture and shade
+ 
+
+347
+00:07:35,759 --> 00:07:37,990
+Normally, I'd have to texture and shade
+the scene, set up the lights, rig the
+
+348
+00:07:37,990 --> 00:07:38,000
+the scene, set up the lights, rig the
+ 
+
+349
+00:07:38,000 --> 00:07:40,150
+the scene, set up the lights, rig the
+character, then render and composite
+
+350
+00:07:40,150 --> 00:07:40,160
+character, then render and composite
+ 
+
+351
+00:07:40,160 --> 00:07:42,390
+character, then render and composite
+everything. With Cedense, I can turn the
+
+352
+00:07:42,390 --> 00:07:42,400
+everything. With Cedense, I can turn the
+ 
+
+353
+00:07:42,400 --> 00:07:44,469
+everything. With Cedense, I can turn the
+blocking into a finished shot right here
+
+354
+00:07:44,469 --> 00:07:44,479
+blocking into a finished shot right here
+ 
+
+355
+00:07:44,479 --> 00:07:46,710
+blocking into a finished shot right here
+in the same shad without doing any of
+
+356
+00:07:46,710 --> 00:07:46,720
+in the same shad without doing any of
+ 
+
+357
+00:07:46,720 --> 00:07:48,950
+in the same shad without doing any of
+this by hand. For the next scene, I'm
+
+358
+00:07:48,950 --> 00:07:48,960
+this by hand. For the next scene, I'm
+ 
+
+359
+00:07:48,960 --> 00:07:50,950
+this by hand. For the next scene, I'm
+building the blocking straight inside
+
+360
+00:07:50,950 --> 00:07:50,960
+building the blocking straight inside
+ 
+
+361
+00:07:50,960 --> 00:07:53,430
+building the blocking straight inside
+the browser. This is 3D jutsu and kicks
+
+362
+00:07:53,430 --> 00:07:53,440
+the browser. This is 3D jutsu and kicks
+ 
+
+363
+00:07:53,440 --> 00:07:55,189
+the browser. This is 3D jutsu and kicks
+build. You build and adjust the scene in
+
+364
+00:07:55,189 --> 00:07:55,199
+build. You build and adjust the scene in
+ 
+
+365
+00:07:55,199 --> 00:07:57,350
+build. You build and adjust the scene in
+your browser. Then send the blocking to
+
+366
+00:07:57,350 --> 00:07:57,360
+your browser. Then send the blocking to
+ 
+
+367
+00:07:57,360 --> 00:08:00,070
+your browser. Then send the blocking to
+cens to generate the finished video. Or
+
+368
+00:08:00,070 --> 00:08:00,080
+cens to generate the finished video. Or
+ 
+
+369
+00:08:00,080 --> 00:08:02,150
+cens to generate the finished video. Or
+start from a reference video and 3D
+
+370
+00:08:02,150 --> 00:08:02,160
+start from a reference video and 3D
+ 
+
+371
+00:08:02,160 --> 00:08:04,309
+start from a reference video and 3D
+jutsu pulls the blocking and the camera
+
+372
+00:08:04,309 --> 00:08:04,319
+jutsu pulls the blocking and the camera
+ 
+
+373
+00:08:04,319 --> 00:08:06,550
+jutsu pulls the blocking and the camera
+move straight out of the footage. No 3D
+
+374
+00:08:06,550 --> 00:08:06,560
+move straight out of the footage. No 3D
+ 
+
+375
+00:08:06,560 --> 00:08:08,230
+move straight out of the footage. No 3D
+skills required. Here's what I built
+
+376
+00:08:08,230 --> 00:08:08,240
+skills required. Here's what I built
+ 
+
+377
+00:08:08,240 --> 00:08:10,710
+skills required. Here's what I built
+with it. One camera, four locations, and
+
+378
+00:08:10,710 --> 00:08:10,720
+with it. One camera, four locations, and
+ 
+
+379
+00:08:10,720 --> 00:08:12,790
+with it. One camera, four locations, and
+a 30-se secondond continue shot. Trying
+
+380
+00:08:12,790 --> 00:08:12,800
+a 30-se secondond continue shot. Trying
+ 
+
+381
+00:08:12,800 --> 00:08:14,550
+a 30-se secondond continue shot. Trying
+to prompt something like this with text
+
+382
+00:08:14,550 --> 00:08:14,560
+to prompt something like this with text
+ 
+
+383
+00:08:14,560 --> 00:08:16,469
+to prompt something like this with text
+alone, it would be a total mess.
+
+384
+00:08:16,469 --> 00:08:16,479
+alone, it would be a total mess.
+ 
+
+385
+00:08:16,479 --> 00:08:18,469
+alone, it would be a total mess.
+everything would fall apart. All right,
+
+386
+00:08:18,469 --> 00:08:18,479
+everything would fall apart. All right,
+ 
+
+387
+00:08:18,479 --> 00:08:20,790
+everything would fall apart. All right,
+let's check it out. Here in 3D Judu, I
+
+388
+00:08:20,790 --> 00:08:20,800
+let's check it out. Here in 3D Judu, I
+ 
+
+389
+00:08:20,800 --> 00:08:23,350
+let's check it out. Here in 3D Judu, I
+choose Astra and I ask for one
+
+390
+00:08:23,350 --> 00:08:23,360
+choose Astra and I ask for one
+ 
+
+391
+00:08:23,360 --> 00:08:25,510
+choose Astra and I ask for one
+continuous 30-se secondond shot
+
+392
+00:08:25,510 --> 00:08:25,520
+continuous 30-se secondond shot
+ 
+
+393
+00:08:25,520 --> 00:08:27,270
+continuous 30-se secondond shot
+following the couple from the street
+
+394
+00:08:27,270 --> 00:08:27,280
+following the couple from the street
+ 
+
+395
+00:08:27,280 --> 00:08:30,150
+following the couple from the street
+down the stairs through the corridor and
+
+396
+00:08:30,150 --> 00:08:30,160
+down the stairs through the corridor and
+ 
+
+397
+00:08:30,160 --> 00:08:32,550
+down the stairs through the corridor and
+kitchen and into the casino. And I ask
+
+398
+00:08:32,550 --> 00:08:32,560
+kitchen and into the casino. And I ask
+ 
+
+399
+00:08:32,560 --> 00:08:34,230
+kitchen and into the casino. And I ask
+for separate paths for the camera and
+
+400
+00:08:34,230 --> 00:08:34,240
+for separate paths for the camera and
+ 
+
+401
+00:08:34,240 --> 00:08:36,149
+for separate paths for the camera and
+the characters so I can adjust them. And
+
+402
+00:08:36,149 --> 00:08:36,159
+the characters so I can adjust them. And
+ 
+
+403
+00:08:36,159 --> 00:08:37,990
+the characters so I can adjust them. And
+by the way, if you have any questions at
+
+404
+00:08:37,990 --> 00:08:38,000
+by the way, if you have any questions at
+ 
+
+405
+00:08:38,000 --> 00:08:39,750
+by the way, if you have any questions at
+any point, hit the Discord link in the
+
+406
+00:08:39,750 --> 00:08:39,760
+any point, hit the Discord link in the
+ 
+
+407
+00:08:39,760 --> 00:08:41,190
+any point, hit the Discord link in the
+description. We have a community of
+
+408
+00:08:41,190 --> 00:08:41,200
+description. We have a community of
+ 
+
+409
+00:08:41,200 --> 00:08:43,670
+description. We have a community of
+almost 200,000 users that will be happy
+
+410
+00:08:43,670 --> 00:08:43,680
+almost 200,000 users that will be happy
+ 
+
+411
+00:08:43,680 --> 00:08:46,310
+almost 200,000 users that will be happy
+to help you out. Okay, back to work.
+
+412
+00:08:46,310 --> 00:08:46,320
+to help you out. Okay, back to work.
+ 
+
+413
+00:08:46,320 --> 00:08:48,310
+to help you out. Okay, back to work.
+Let's see what we got. Okay, the layout
+
+414
+00:08:48,310 --> 00:08:48,320
+Let's see what we got. Okay, the layout
+ 
+
+415
+00:08:48,320 --> 00:08:51,269
+Let's see what we got. Okay, the layout
+works. Now I'm adding ceilings and an
+
+416
+00:08:51,269 --> 00:08:51,279
+works. Now I'm adding ceilings and an
+ 
+
+417
+00:08:51,279 --> 00:08:53,350
+works. Now I'm adding ceilings and an
+entrance door. And let's give the
+
+418
+00:08:53,350 --> 00:08:53,360
+entrance door. And let's give the
+ 
+
+419
+00:08:53,360 --> 00:08:55,590
+entrance door. And let's give the
+opening a better hook. Start behind the
+
+420
+00:08:55,590 --> 00:08:55,600
+opening a better hook. Start behind the
+ 
+
+421
+00:08:55,600 --> 00:08:58,310
+opening a better hook. Start behind the
+car's window. The car pulls away when
+
+422
+00:08:58,310 --> 00:08:58,320
+car's window. The car pulls away when
+ 
+
+423
+00:08:58,320 --> 00:09:00,790
+car's window. The car pulls away when
+the camera follows the couple inside.
+
+424
+00:09:00,790 --> 00:09:00,800
+the camera follows the couple inside.
+ 
+
+425
+00:09:00,800 --> 00:09:03,910
+the camera follows the couple inside.
+And there we go. Now we've got a route
+
+426
+00:09:03,910 --> 00:09:03,920
+And there we go. Now we've got a route
+ 
+
+427
+00:09:03,920 --> 00:09:06,870
+And there we go. Now we've got a route
+we can work with. Also here I can move
+
+428
+00:09:06,870 --> 00:09:06,880
+we can work with. Also here I can move
+ 
+
+429
+00:09:06,880 --> 00:09:09,030
+we can work with. Also here I can move
+things myself or ask for another change
+
+430
+00:09:09,030 --> 00:09:09,040
+things myself or ask for another change
+ 
+
+431
+00:09:09,040 --> 00:09:11,990
+things myself or ask for another change
+in the chat like change the color,
+
+432
+00:09:11,990 --> 00:09:12,000
+in the chat like change the color,
+ 
+
+433
+00:09:12,000 --> 00:09:15,110
+in the chat like change the color,
+change the assets or even add them here.
+
+434
+00:09:15,110 --> 00:09:15,120
+change the assets or even add them here.
+ 
+
+435
+00:09:15,120 --> 00:09:17,350
+change the assets or even add them here.
+The colors identify the roles. So black
+
+436
+00:09:17,350 --> 00:09:17,360
+The colors identify the roles. So black
+ 
+
+437
+00:09:17,360 --> 00:09:20,389
+The colors identify the roles. So black
+is man, white as woman and yellow marks
+
+438
+00:09:20,389 --> 00:09:20,399
+is man, white as woman and yellow marks
+ 
+
+439
+00:09:20,399 --> 00:09:23,190
+is man, white as woman and yellow marks
+the kitchen workers. Their paths show
+
+440
+00:09:23,190 --> 00:09:23,200
+the kitchen workers. Their paths show
+ 
+
+441
+00:09:23,200 --> 00:09:25,110
+the kitchen workers. Their paths show
+where they move through the scene. For
+
+442
+00:09:25,110 --> 00:09:25,120
+where they move through the scene. For
+ 
+
+443
+00:09:25,120 --> 00:09:27,590
+where they move through the scene. For
+the look, I'm using a late '70s casino.
+
+444
+00:09:27,590 --> 00:09:27,600
+the look, I'm using a late '70s casino.
+ 
+
+445
+00:09:27,600 --> 00:09:30,230
+the look, I'm using a late '70s casino.
+I add character sheets for a couple plus
+
+446
+00:09:30,230 --> 00:09:30,240
+I add character sheets for a couple plus
+ 
+
+447
+00:09:30,240 --> 00:09:32,150
+I add character sheets for a couple plus
+reference images for the street and the
+
+448
+00:09:32,150 --> 00:09:32,160
+reference images for the street and the
+ 
+
+449
+00:09:32,160 --> 00:09:33,750
+reference images for the street and the
+gaming hall. I'm going to describe the
+
+450
+00:09:33,750 --> 00:09:33,760
+gaming hall. I'm going to describe the
+ 
+
+451
+00:09:33,760 --> 00:09:35,509
+gaming hall. I'm going to describe the
+other characters in the prompt, the
+
+452
+00:09:35,509 --> 00:09:35,519
+other characters in the prompt, the
+ 
+
+453
+00:09:35,519 --> 00:09:37,590
+other characters in the prompt, the
+cooks, the staff, and the guests. So,
+
+454
+00:09:37,590 --> 00:09:37,600
+cooks, the staff, and the guests. So,
+ 
+
+455
+00:09:37,600 --> 00:09:39,430
+cooks, the staff, and the guests. So,
+let's send the blocking and all four
+
+456
+00:09:39,430 --> 00:09:39,440
+let's send the blocking and all four
+ 
+
+457
+00:09:39,440 --> 00:09:41,750
+let's send the blocking and all four
+images to Astra. Then, ask it to build
+
+458
+00:09:41,750 --> 00:09:41,760
+images to Astra. Then, ask it to build
+ 
+
+459
+00:09:41,760 --> 00:09:44,550
+images to Astra. Then, ask it to build
+the CS2.5 prompt and generate the shot.
+
+460
+00:09:44,550 --> 00:09:44,560
+the CS2.5 prompt and generate the shot.
+ 
+
+461
+00:09:44,560 --> 00:09:51,990
+the CS2.5 prompt and generate the shot.
+And let's see what we got.
+
+462
+00:09:51,990 --> 00:09:52,000
+
+ 
+
+463
+00:09:52,000 --> 00:09:55,030
+
+>> Evening, sir.
+
+464
+00:09:55,030 --> 00:09:55,040
+>> Evening, sir.
+ 
+
+465
+00:09:55,040 --> 00:09:59,670
+>> Evening, sir.
+>> Good evening, Mr. And evening.
+
+466
+00:09:59,670 --> 00:09:59,680
+
+ 
+
+467
+00:09:59,680 --> 00:10:01,430
+
+>> Pass the salt, would you? Coming right
+
+468
+00:10:01,430 --> 00:10:01,440
+>> Pass the salt, would you? Coming right
+ 
+
+469
+00:10:01,440 --> 00:10:05,430
+>> Pass the salt, would you? Coming right
+up. Oh, I see. Yeah.
+
+470
+00:10:05,430 --> 00:10:05,440
+up. Oh, I see. Yeah.
+ 
+
+471
+00:10:05,440 --> 00:10:07,110
+up. Oh, I see. Yeah.
+>> Evening, Michael.
+
+472
+00:10:07,110 --> 00:10:07,120
+>> Evening, Michael.
+ 
+
+473
+00:10:07,120 --> 00:10:10,230
+>> Evening, Michael.
+>> You certainly know your way around.
+
+474
+00:10:10,230 --> 00:10:10,240
+>> You certainly know your way around.
+ 
+
+475
+00:10:10,240 --> 00:10:15,750
+>> You certainly know your way around.
+>> Let's see if our luck's in.
+
+476
+00:10:15,750 --> 00:10:15,760
+
+ 
+
+477
+00:10:15,760 --> 00:10:17,590
+
+>> Okay, the ride takes us from the street
+
+478
+00:10:17,590 --> 00:10:17,600
+>> Okay, the ride takes us from the street
+ 
+
+479
+00:10:17,600 --> 00:10:19,750
+>> Okay, the ride takes us from the street
+to their seats in 30 seconds. Planning
+
+480
+00:10:19,750 --> 00:10:19,760
+to their seats in 30 seconds. Planning
+ 
+
+481
+00:10:19,760 --> 00:10:21,670
+to their seats in 30 seconds. Planning
+that journey was the useful part here. I
+
+482
+00:10:21,670 --> 00:10:21,680
+that journey was the useful part here. I
+ 
+
+483
+00:10:21,680 --> 00:10:24,150
+that journey was the useful part here. I
+could adjust the entrances, turns, and
+
+484
+00:10:24,150 --> 00:10:24,160
+could adjust the entrances, turns, and
+ 
+
+485
+00:10:24,160 --> 00:10:26,550
+could adjust the entrances, turns, and
+opening reveal in the 3D scene. You're
+
+486
+00:10:26,550 --> 00:10:26,560
+opening reveal in the 3D scene. You're
+ 
+
+487
+00:10:26,560 --> 00:10:28,069
+opening reveal in the 3D scene. You're
+not just saving credits on endless
+
+488
+00:10:28,069 --> 00:10:28,079
+not just saving credits on endless
+ 
+
+489
+00:10:28,079 --> 00:10:30,230
+not just saving credits on endless
+rerolls. You're saving tons of time
+
+490
+00:10:30,230 --> 00:10:30,240
+rerolls. You're saving tons of time
+ 
+
+491
+00:10:30,240 --> 00:10:32,069
+rerolls. You're saving tons of time
+locking in the exact camera movement you
+
+492
+00:10:32,069 --> 00:10:32,079
+locking in the exact camera movement you
+ 
+
+493
+00:10:32,079 --> 00:10:34,150
+locking in the exact camera movement you
+want. And best of all, you don't need a
+
+494
+00:10:34,150 --> 00:10:34,160
+want. And best of all, you don't need a
+ 
+
+495
+00:10:34,160 --> 00:10:36,389
+want. And best of all, you don't need a
+crazy high-end PC or advanced Blender
+
+496
+00:10:36,389 --> 00:10:36,399
+crazy high-end PC or advanced Blender
+ 
+
+497
+00:10:36,399 --> 00:10:38,470
+crazy high-end PC or advanced Blender
+skills to do it. All right, let's keep
+
+498
+00:10:38,470 --> 00:10:38,480
+skills to do it. All right, let's keep
+ 
+
+499
+00:10:38,480 --> 00:10:40,870
+skills to do it. All right, let's keep
+going. Let's try a concert next. One
+
+500
+00:10:40,870 --> 00:10:40,880
+going. Let's try a concert next. One
+ 
+
+501
+00:10:40,880 --> 00:10:44,230
+going. Let's try a concert next. One
+singer, 66 dancers. The scene is super
+
+502
+00:10:44,230 --> 00:10:44,240
+singer, 66 dancers. The scene is super
+ 
+
+503
+00:10:44,240 --> 00:10:46,310
+singer, 66 dancers. The scene is super
+crowded. I'm using blocking to plan the
+
+504
+00:10:46,310 --> 00:10:46,320
+crowded. I'm using blocking to plan the
+ 
+
+505
+00:10:46,320 --> 00:10:48,790
+crowded. I'm using blocking to plan the
+formations and check how they look from
+
+506
+00:10:48,790 --> 00:10:48,800
+formations and check how they look from
+ 
+
+507
+00:10:48,800 --> 00:10:50,949
+formations and check how they look from
+each camera angle. So, I'm asking Astra
+
+508
+00:10:50,949 --> 00:10:50,959
+each camera angle. So, I'm asking Astra
+ 
+
+509
+00:10:50,959 --> 00:10:53,269
+each camera angle. So, I'm asking Astra
+for a 30 secondond sequence in Blender
+
+510
+00:10:53,269 --> 00:10:53,279
+for a 30 secondond sequence in Blender
+ 
+
+511
+00:10:53,279 --> 00:10:55,750
+for a 30 secondond sequence in Blender
+with the shots already cut together.
+
+512
+00:10:55,750 --> 00:10:55,760
+with the shots already cut together.
+ 
+
+513
+00:10:55,760 --> 00:10:58,790
+with the shots already cut together.
+Close-ups, wide shots, overheads, slow
+
+514
+00:10:58,790 --> 00:10:58,800
+Close-ups, wide shots, overheads, slow
+ 
+
+515
+00:10:58,800 --> 00:11:01,430
+Close-ups, wide shots, overheads, slow
+dolly moves, and quick pushets. The
+
+516
+00:11:01,430 --> 00:11:01,440
+dolly moves, and quick pushets. The
+ 
+
+517
+00:11:01,440 --> 00:11:03,670
+dolly moves, and quick pushets. The
+singer stands at the center surrounded
+
+518
+00:11:03,670 --> 00:11:03,680
+singer stands at the center surrounded
+ 
+
+519
+00:11:03,680 --> 00:11:05,430
+singer stands at the center surrounded
+by three rings of dancers and 10
+
+520
+00:11:05,430 --> 00:11:05,440
+by three rings of dancers and 10
+ 
+
+521
+00:11:05,440 --> 00:11:07,910
+by three rings of dancers and 10
+columns. The dancers are boxes, and the
+
+522
+00:11:07,910 --> 00:11:07,920
+columns. The dancers are boxes, and the
+ 
+
+523
+00:11:07,920 --> 00:11:10,150
+columns. The dancers are boxes, and the
+singer has a different shape, so the
+
+524
+00:11:10,150 --> 00:11:10,160
+singer has a different shape, so the
+ 
+
+525
+00:11:10,160 --> 00:11:12,150
+singer has a different shape, so the
+roles are easy to distinguish. And I
+
+526
+00:11:12,150 --> 00:11:12,160
+roles are easy to distinguish. And I
+ 
+
+527
+00:11:12,160 --> 00:11:14,550
+roles are easy to distinguish. And I
+love how it arranged the dancers. 10 in
+
+528
+00:11:14,550 --> 00:11:14,560
+love how it arranged the dancers. 10 in
+ 
+
+529
+00:11:14,560 --> 00:11:17,269
+love how it arranged the dancers. 10 in
+the inner circle, 20 in the middle, and
+
+530
+00:11:17,269 --> 00:11:17,279
+the inner circle, 20 in the middle, and
+ 
+
+531
+00:11:17,279 --> 00:11:20,150
+the inner circle, 20 in the middle, and
+36 on the outside. I like this move
+
+532
+00:11:20,150 --> 00:11:20,160
+36 on the outside. I like this move
+ 
+
+533
+00:11:20,160 --> 00:11:22,310
+36 on the outside. I like this move
+where the camera drops and then tilts
+
+534
+00:11:22,310 --> 00:11:22,320
+where the camera drops and then tilts
+ 
+
+535
+00:11:22,320 --> 00:11:24,949
+where the camera drops and then tilts
+up. I can check the framing in Blender
+
+536
+00:11:24,949 --> 00:11:24,959
+up. I can check the framing in Blender
+ 
+
+537
+00:11:24,959 --> 00:11:26,870
+up. I can check the framing in Blender
+before generating the final sequence.
+
+538
+00:11:26,870 --> 00:11:26,880
+before generating the final sequence.
+ 
+
+539
+00:11:26,880 --> 00:11:29,110
+before generating the final sequence.
+The boxes mark where the dancers stand
+
+540
+00:11:29,110 --> 00:11:29,120
+The boxes mark where the dancers stand
+ 
+
+541
+00:11:29,120 --> 00:11:31,030
+The boxes mark where the dancers stand
+and which way they're facing. I'm going
+
+542
+00:11:31,030 --> 00:11:31,040
+and which way they're facing. I'm going
+ 
+
+543
+00:11:31,040 --> 00:11:32,790
+and which way they're facing. I'm going
+to handle the actual choreography in the
+
+544
+00:11:32,790 --> 00:11:32,800
+to handle the actual choreography in the
+ 
+
+545
+00:11:32,800 --> 00:11:34,870
+to handle the actual choreography in the
+prompt so the model keeps their movement
+
+546
+00:11:34,870 --> 00:11:34,880
+prompt so the model keeps their movement
+ 
+
+547
+00:11:34,880 --> 00:11:36,630
+prompt so the model keeps their movement
+fluid instead of copying the stiff
+
+548
+00:11:36,630 --> 00:11:36,640
+fluid instead of copying the stiff
+ 
+
+549
+00:11:36,640 --> 00:11:38,389
+fluid instead of copying the stiff
+blocking. And I'm going to use my photo
+
+550
+00:11:38,389 --> 00:11:38,399
+blocking. And I'm going to use my photo
+ 
+
+551
+00:11:38,399 --> 00:11:40,870
+blocking. And I'm going to use my photo
+as the reference and ask Astra to
+
+552
+00:11:40,870 --> 00:11:40,880
+as the reference and ask Astra to
+ 
+
+553
+00:11:40,880 --> 00:11:43,110
+as the reference and ask Astra to
+generate the singer character sheet. I
+
+554
+00:11:43,110 --> 00:11:43,120
+generate the singer character sheet. I
+ 
+
+555
+00:11:43,120 --> 00:11:44,870
+generate the singer character sheet. I
+am going with this option for our
+
+556
+00:11:44,870 --> 00:11:44,880
+am going with this option for our
+ 
+
+557
+00:11:44,880 --> 00:11:48,310
+am going with this option for our
+artist. Next, I'm asking Soul Cinema to
+
+558
+00:11:48,310 --> 00:11:48,320
+artist. Next, I'm asking Soul Cinema to
+ 
+
+559
+00:11:48,320 --> 00:11:50,310
+artist. Next, I'm asking Soul Cinema to
+create the desert location with those
+
+560
+00:11:50,310 --> 00:11:50,320
+create the desert location with those
+ 
+
+561
+00:11:50,320 --> 00:11:52,310
+create the desert location with those
+mirrored columns,
+
+562
+00:11:52,310 --> 00:11:52,320
+mirrored columns,
+ 
+
+563
+00:11:52,320 --> 00:11:55,030
+mirrored columns,
+and it delivers the spot right here.
+
+564
+00:11:55,030 --> 00:11:55,040
+and it delivers the spot right here.
+ 
+
+565
+00:11:55,040 --> 00:11:56,630
+and it delivers the spot right here.
+Next, I'm going to ask Astra to generate
+
+566
+00:11:56,630 --> 00:11:56,640
+Next, I'm going to ask Astra to generate
+ 
+
+567
+00:11:56,640 --> 00:11:59,509
+Next, I'm going to ask Astra to generate
+the sequence with Cas 2.5 using the
+
+568
+00:11:59,509 --> 00:11:59,519
+the sequence with Cas 2.5 using the
+ 
+
+569
+00:11:59,519 --> 00:12:01,430
+the sequence with Cas 2.5 using the
+blocking location, and the character
+
+570
+00:12:01,430 --> 00:12:01,440
+blocking location, and the character
+ 
+
+571
+00:12:01,440 --> 00:12:03,030
+blocking location, and the character
+sheet. And I'm asking him to follow the
+
+572
+00:12:03,030 --> 00:12:03,040
+sheet. And I'm asking him to follow the
+ 
+
+573
+00:12:03,040 --> 00:12:05,030
+sheet. And I'm asking him to follow the
+camera moves and cuts, then add the
+
+574
+00:12:05,030 --> 00:12:05,040
+camera moves and cuts, then add the
+ 
+
+575
+00:12:05,040 --> 00:12:06,710
+camera moves and cuts, then add the
+choreography. I'm also going to include
+
+576
+00:12:06,710 --> 00:12:06,720
+choreography. I'm also going to include
+ 
+
+577
+00:12:06,720 --> 00:12:08,550
+choreography. I'm also going to include
+the music and vocal directions in the
+
+578
+00:12:08,550 --> 00:12:08,560
+the music and vocal directions in the
+ 
+
+579
+00:12:08,560 --> 00:12:10,949
+the music and vocal directions in the
+same request, so the track is generated
+
+580
+00:12:10,949 --> 00:12:10,959
+same request, so the track is generated
+ 
+
+581
+00:12:10,959 --> 00:12:16,389
+same request, so the track is generated
+with the video.
+
+582
+00:12:16,389 --> 00:12:16,399
+
+ 
+
+583
+00:12:16,399 --> 00:12:21,269
+
+I came to the edge of song. Every mirror
+
+584
+00:12:21,269 --> 00:12:21,279
+I came to the edge of song. Every mirror
+ 
+
+585
+00:12:21,279 --> 00:12:26,870
+I came to the edge of song. Every mirror
+here. So I sing.
+
+586
+00:12:26,870 --> 00:12:26,880
+
+ 
+
+587
+00:12:26,880 --> 00:12:41,910
+
+Yeah.
+
+588
+00:12:41,910 --> 00:12:41,920
+
+ 
+
+589
+00:12:41,920 --> 00:12:44,069
+
+Damn, that turned out massive. The
+
+590
+00:12:44,069 --> 00:12:44,079
+Damn, that turned out massive. The
+ 
+
+591
+00:12:44,079 --> 00:12:46,150
+Damn, that turned out massive. The
+dancers stay perfectly information
+
+592
+00:12:46,150 --> 00:12:46,160
+dancers stay perfectly information
+ 
+
+593
+00:12:46,160 --> 00:12:48,629
+dancers stay perfectly information
+across all those complex camera moves.
+
+594
+00:12:48,629 --> 00:12:48,639
+across all those complex camera moves.
+ 
+
+595
+00:12:48,639 --> 00:12:50,389
+across all those complex camera moves.
+This is where the pre-planned blocking
+
+596
+00:12:50,389 --> 00:12:50,399
+This is where the pre-planned blocking
+ 
+
+597
+00:12:50,399 --> 00:12:52,550
+This is where the pre-planned blocking
+really pays off. But we're not done yet.
+
+598
+00:12:52,550 --> 00:12:52,560
+really pays off. But we're not done yet.
+ 
+
+599
+00:12:52,560 --> 00:12:54,150
+really pays off. But we're not done yet.
+To wrap things up, let's make a
+
+600
+00:12:54,150 --> 00:12:54,160
+To wrap things up, let's make a
+ 
+
+601
+00:12:54,160 --> 00:12:56,069
+To wrap things up, let's make a
+commercial. For the final example, I'm
+
+602
+00:12:56,069 --> 00:12:56,079
+commercial. For the final example, I'm
+ 
+
+603
+00:12:56,079 --> 00:12:58,389
+commercial. For the final example, I'm
+turning a vacuum ad into a chase scene.
+
+604
+00:12:58,389 --> 00:12:58,399
+turning a vacuum ad into a chase scene.
+ 
+
+605
+00:12:58,399 --> 00:13:00,949
+turning a vacuum ad into a chase scene.
+Our hero is 10 cm tall, and the vacuum
+
+606
+00:13:00,949 --> 00:13:00,959
+Our hero is 10 cm tall, and the vacuum
+ 
+
+607
+00:13:00,959 --> 00:13:10,550
+Our hero is 10 cm tall, and the vacuum
+is coming straight for him.
+
+608
+00:13:10,550 --> 00:13:10,560
+
+ 
+
+609
+00:13:10,560 --> 00:13:13,750
+
+Oh my god. No. No. No.
+
+610
+00:13:13,750 --> 00:13:13,760
+Oh my god. No. No. No.
+ 
+
+611
+00:13:13,760 --> 00:13:17,750
+Oh my god. No. No. No.
+Please stop. Oh my god. Oh my god. Oh my
+
+612
+00:13:17,750 --> 00:13:17,760
+Please stop. Oh my god. Oh my god. Oh my
+ 
+
+613
+00:13:17,760 --> 00:13:27,350
+Please stop. Oh my god. Oh my god. Oh my
+god.
+
+614
+00:13:27,350 --> 00:13:27,360
+
+ 
+
+615
+00:13:27,360 --> 00:13:32,790
+
+Help.
+
+616
+00:13:32,790 --> 00:13:32,800
+
+ 
+
+617
+00:13:32,800 --> 00:13:34,629
+
+>> I pulled off a 30-second continuous
+
+618
+00:13:34,629 --> 00:13:34,639
+>> I pulled off a 30-second continuous
+ 
+
+619
+00:13:34,639 --> 00:13:36,550
+>> I pulled off a 30-second continuous
+commercial in one seamless take that
+
+620
+00:13:36,550 --> 00:13:36,560
+commercial in one seamless take that
+ 
+
+621
+00:13:36,560 --> 00:13:38,710
+commercial in one seamless take that
+transitions across multiple locations.
+
+622
+00:13:38,710 --> 00:13:38,720
+transitions across multiple locations.
+ 
+
+623
+00:13:38,720 --> 00:13:40,470
+transitions across multiple locations.
+By shifting camera sizes and focal
+
+624
+00:13:40,470 --> 00:13:40,480
+By shifting camera sizes and focal
+ 
+
+625
+00:13:40,480 --> 00:13:42,870
+By shifting camera sizes and focal
+lenses on the fly, we got ultra crisp
+
+626
+00:13:42,870 --> 00:13:42,880
+lenses on the fly, we got ultra crisp
+ 
+
+627
+00:13:42,880 --> 00:13:45,030
+lenses on the fly, we got ultra crisp
+macro shots and impossible transitions
+
+628
+00:13:45,030 --> 00:13:45,040
+macro shots and impossible transitions
+ 
+
+629
+00:13:45,040 --> 00:13:47,110
+macro shots and impossible transitions
+between scenes that would take weeks in
+
+630
+00:13:47,110 --> 00:13:47,120
+between scenes that would take weeks in
+ 
+
+631
+00:13:47,120 --> 00:13:49,590
+between scenes that would take weeks in
+post-prouction. Okay, now let me show
+
+632
+00:13:49,590 --> 00:13:49,600
+post-prouction. Okay, now let me show
+ 
+
+633
+00:13:49,600 --> 00:13:51,829
+post-prouction. Okay, now let me show
+you how I built it. So, I asked Astra to
+
+634
+00:13:51,829 --> 00:13:51,839
+you how I built it. So, I asked Astra to
+ 
+
+635
+00:13:51,839 --> 00:13:54,230
+you how I built it. So, I asked Astra to
+block out a 30-second chase in Blender
+
+636
+00:13:54,230 --> 00:13:54,240
+block out a 30-second chase in Blender
+ 
+
+637
+00:13:54,240 --> 00:13:56,629
+block out a 30-second chase in Blender
+and laid out the concept. Our tiny hero
+
+638
+00:13:56,629 --> 00:13:56,639
+and laid out the concept. Our tiny hero
+ 
+
+639
+00:13:56,639 --> 00:13:58,949
+and laid out the concept. Our tiny hero
+flees from a vacuum, gets sucked
+
+640
+00:13:58,949 --> 00:13:58,959
+flees from a vacuum, gets sucked
+ 
+
+641
+00:13:58,959 --> 00:14:00,870
+flees from a vacuum, gets sucked
+straight through the hose, and lands
+
+642
+00:14:00,870 --> 00:14:00,880
+straight through the hose, and lands
+ 
+
+643
+00:14:00,880 --> 00:14:03,110
+straight through the hose, and lands
+inside the dust bin. Then the camera
+
+644
+00:14:03,110 --> 00:14:03,120
+inside the dust bin. Then the camera
+ 
+
+645
+00:14:03,120 --> 00:14:05,350
+inside the dust bin. Then the camera
+pulls back through the clear plastic
+
+646
+00:14:05,350 --> 00:14:05,360
+pulls back through the clear plastic
+ 
+
+647
+00:14:05,360 --> 00:14:07,350
+pulls back through the clear plastic
+wall to reveal the final product. Now
+
+648
+00:14:07,350 --> 00:14:07,360
+wall to reveal the final product. Now
+ 
+
+649
+00:14:07,360 --> 00:14:08,790
+wall to reveal the final product. Now
+here it's setting up the room,
+
+650
+00:14:08,790 --> 00:14:08,800
+here it's setting up the room,
+ 
+
+651
+00:14:08,800 --> 00:14:11,430
+here it's setting up the room,
+furniture, and the vacuum around that
+
+652
+00:14:11,430 --> 00:14:11,440
+furniture, and the vacuum around that
+ 
+
+653
+00:14:11,440 --> 00:14:14,389
+furniture, and the vacuum around that
+route. All right, let's see what we got.
+
+654
+00:14:14,389 --> 00:14:14,399
+route. All right, let's see what we got.
+ 
+
+655
+00:14:14,399 --> 00:14:16,710
+route. All right, let's see what we got.
+There we go. The camera moves and
+
+656
+00:14:16,710 --> 00:14:16,720
+There we go. The camera moves and
+ 
+
+657
+00:14:16,720 --> 00:14:19,269
+There we go. The camera moves and
+transitions are right where I want them.
+
+658
+00:14:19,269 --> 00:14:19,279
+transitions are right where I want them.
+ 
+
+659
+00:14:19,279 --> 00:14:21,189
+transitions are right where I want them.
+Next, I'm going to ask Astra to generate
+
+660
+00:14:21,189 --> 00:14:21,199
+Next, I'm going to ask Astra to generate
+ 
+
+661
+00:14:21,199 --> 00:14:23,430
+Next, I'm going to ask Astra to generate
+references for the hero, the woman, and
+
+662
+00:14:23,430 --> 00:14:23,440
+references for the hero, the woman, and
+ 
+
+663
+00:14:23,440 --> 00:14:25,110
+references for the hero, the woman, and
+the vacuum. Again, I'm going to use my
+
+664
+00:14:25,110 --> 00:14:25,120
+the vacuum. Again, I'm going to use my
+ 
+
+665
+00:14:25,120 --> 00:14:27,110
+the vacuum. Again, I'm going to use my
+photo for the hero's character sheet.
+
+666
+00:14:27,110 --> 00:14:27,120
+photo for the hero's character sheet.
+ 
+
+667
+00:14:27,120 --> 00:14:29,269
+photo for the hero's character sheet.
+For the woman, I'm defining her outfit,
+
+668
+00:14:29,269 --> 00:14:29,279
+For the woman, I'm defining her outfit,
+ 
+
+669
+00:14:29,279 --> 00:14:31,430
+For the woman, I'm defining her outfit,
+including the striped pajamas and
+
+670
+00:14:31,430 --> 00:14:31,440
+including the striped pajamas and
+ 
+
+671
+00:14:31,440 --> 00:14:33,269
+including the striped pajamas and
+slippers. And this is the vacuum
+
+672
+00:14:33,269 --> 00:14:33,279
+slippers. And this is the vacuum
+ 
+
+673
+00:14:33,279 --> 00:14:35,269
+slippers. And this is the vacuum
+reference with a transparent dust
+
+674
+00:14:35,269 --> 00:14:35,279
+reference with a transparent dust
+ 
+
+675
+00:14:35,279 --> 00:14:37,189
+reference with a transparent dust
+compartment we'll reveal at the end.
+
+676
+00:14:37,189 --> 00:14:37,199
+compartment we'll reveal at the end.
+ 
+
+677
+00:14:37,199 --> 00:14:38,949
+compartment we'll reveal at the end.
+Now, I'm going to ask Astra to generate
+
+678
+00:14:38,949 --> 00:14:38,959
+Now, I'm going to ask Astra to generate
+ 
+
+679
+00:14:38,959 --> 00:14:42,310
+Now, I'm going to ask Astra to generate
+the ad to see 2.5 using the blocking and
+
+680
+00:14:42,310 --> 00:14:42,320
+the ad to see 2.5 using the blocking and
+ 
+
+681
+00:14:42,320 --> 00:14:44,710
+the ad to see 2.5 using the blocking and
+all the references. And there it is. The
+
+682
+00:14:44,710 --> 00:14:44,720
+all the references. And there it is. The
+ 
+
+683
+00:14:44,720 --> 00:14:47,189
+all the references. And there it is. The
+scale and the camera move together. And
+
+684
+00:14:47,189 --> 00:14:47,199
+scale and the camera move together. And
+ 
+
+685
+00:14:47,199 --> 00:14:49,189
+scale and the camera move together. And
+we end on the product. If the client
+
+686
+00:14:49,189 --> 00:14:49,199
+we end on the product. If the client
+ 
+
+687
+00:14:49,199 --> 00:14:50,870
+we end on the product. If the client
+needs changes, I mean, I've got the
+
+688
+00:14:50,870 --> 00:14:50,880
+needs changes, I mean, I've got the
+ 
+
+689
+00:14:50,880 --> 00:14:53,110
+needs changes, I mean, I've got the
+blocking right here, ready to revise.
+
+690
+00:14:53,110 --> 00:14:53,120
+blocking right here, ready to revise.
+ 
+
+691
+00:14:53,120 --> 00:14:54,949
+blocking right here, ready to revise.
+After our last Blender video, you guys
+
+692
+00:14:54,949 --> 00:14:54,959
+After our last Blender video, you guys
+ 
+
+693
+00:14:54,959 --> 00:14:56,389
+After our last Blender video, you guys
+made some seriously impressive stuff
+
+694
+00:14:56,389 --> 00:14:56,399
+made some seriously impressive stuff
+ 
+
+695
+00:14:56,399 --> 00:14:58,550
+made some seriously impressive stuff
+using the blocking we shared. Grab the
+
+696
+00:14:58,550 --> 00:14:58,560
+using the blocking we shared. Grab the
+ 
+
+697
+00:14:58,560 --> 00:15:00,389
+using the blocking we shared. Grab the
+master file in the description. Try
+
+698
+00:15:00,389 --> 00:15:00,399
+master file in the description. Try
+ 
+
+699
+00:15:00,399 --> 00:15:02,230
+master file in the description. Try
+these scenes yourself and share your
+
+700
+00:15:02,230 --> 00:15:02,240
+these scenes yourself and share your
+ 
+
+701
+00:15:02,240 --> 00:15:04,069
+these scenes yourself and share your
+versions in Discord. I'd love to see
+
+702
+00:15:04,069 --> 00:15:04,079
+versions in Discord. I'd love to see
+ 
+
+703
+00:15:04,079 --> 00:15:05,829
+versions in Discord. I'd love to see
+what you come up with this time. Every
+
+704
+00:15:05,829 --> 00:15:05,839
+what you come up with this time. Every
+ 
+
+705
+00:15:05,839 --> 00:15:07,430
+what you come up with this time. Every
+scene today had something that's hard to
+
+706
+00:15:07,430 --> 00:15:07,440
+scene today had something that's hard to
+ 
+
+707
+00:15:07,440 --> 00:15:09,350
+scene today had something that's hard to
+get from text alone. We worked out the
+
+708
+00:15:09,350 --> 00:15:09,360
+get from text alone. We worked out the
+ 
+
+709
+00:15:09,360 --> 00:15:11,590
+get from text alone. We worked out the
+camera and timing in 3D first, then let
+
+710
+00:15:11,590 --> 00:15:11,600
+camera and timing in 3D first, then let
+ 
+
+711
+00:15:11,600 --> 00:15:13,430
+camera and timing in 3D first, then let
+Astra bring it to life through Hixel
+
+712
+00:15:13,430 --> 00:15:13,440
+Astra bring it to life through Hixel
+ 
+
+713
+00:15:13,440 --> 00:15:15,990
+Astra bring it to life through Hixel
+MCP. I directed the whole thing from a
+
+714
+00:15:15,990 --> 00:15:16,000
+MCP. I directed the whole thing from a
+ 
+
+715
+00:15:16,000 --> 00:15:18,389
+MCP. I directed the whole thing from a
+single chat while Astra handled Blender
+
+716
+00:15:18,389 --> 00:15:18,399
+single chat while Astra handled Blender
+ 
+
+717
+00:15:18,399 --> 00:15:20,629
+single chat while Astra handled Blender
+and Hixold without me building anything
+
+718
+00:15:20,629 --> 00:15:20,639
+and Hixold without me building anything
+ 
+
+719
+00:15:20,639 --> 00:15:22,310
+and Hixold without me building anything
+by hand. And there's a lot more Astro
+
+720
+00:15:22,310 --> 00:15:22,320
+by hand. And there's a lot more Astro
+ 
+
+721
+00:15:22,320 --> 00:15:23,990
+by hand. And there's a lot more Astro
+can do on its own. Let me know in the
+
+722
+00:15:23,990 --> 00:15:24,000
+can do on its own. Let me know in the
+ 
+
+723
+00:15:24,000 --> 00:15:25,750
+can do on its own. Let me know in the
+comments what you'd like me to try next.
+
+724
+00:15:25,750 --> 00:15:25,760
+comments what you'd like me to try next.
+ 
+
+725
+00:15:25,760 --> 00:15:27,350
+comments what you'd like me to try next.
+And as always, if you found this video
+
+726
+00:15:27,350 --> 00:15:27,360
+And as always, if you found this video
+ 
+
+727
+00:15:27,360 --> 00:15:29,829
+And as always, if you found this video
+helpful, hit the like button, subscribe,
+
+728
+00:15:29,829 --> 00:15:29,839
+helpful, hit the like button, subscribe,
+ 
+
+729
+00:15:29,839 --> 00:15:34,279
+helpful, hit the like button, subscribe,
+and I'll see you guys in the next one.
+

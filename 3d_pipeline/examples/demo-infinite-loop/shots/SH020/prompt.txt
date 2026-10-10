@@ -1,0 +1,85 @@
+# FINAL GENERATION PROMPT — SH020
+# project: demo-infinite-loop  ·  spec v1
+# generated from shot.json by make_prompt.py — regenerate, do not hand-edit
+# sections: 13 (the house grammar requires all of them; a missing
+# section fails in a specific, predictable way)
+
+
+SCENE CONTEXT
+15 seconds, 16:9.
+One continuous take that opens and closes on the same composition, locked off, so the clip can replay without a seam. The only movement in the shot is inside the frame.
+ONE SINGLE UNBROKEN SHOT.
+On screen: lead (lead).
+
+ACTIVE REFERENCES
+TODO — no reference pack manifest supplied. Run again with --references references.json, or the identity and location will be invented by the model.
+Nothing else from the previz is inherited — not its grey proxy materials; proxy geometry proportions beyond the camera-path intent; previz lighting; any on-screen overlay, marker or path geometry.
+
+LOCATION MAP
+An old mansion study at night: dark oak panelling, deep green damask above the wainscot, a coffered ceiling, a worn Persian rug over dark boards, floor-to-ceiling bookshelves, heavy velvet curtains framing a tall sash window, a brass wall sconce, and a large carved mahogany desk carrying a green-shaded brass lamp that is the key light.
+study (primary): 8.0 m x 8.0 m x 3.2 m, floor at z=0.00 m, ceiling at z=3.20 m.
+The space contains only: lead. No other people, no crowd, no background extras.
+
+FIRST FRAME AND SPATIAL BLOCKING
+The first visible frame is already the intended framing; no establishing wide.
+Frame map at 0.0s (loop_open): camera 0.9 m from its target, looking north, level. Head down over the open ledger, one hand flat on the page, warm lamplight on the side of his face. This is the exact frame the shot will return to.
+Frame map at 4.0s (lift): camera 0.9 m from its target, looking north, level. He lifts his head slowly off the page, eyes narrowing, listening for something.
+Frame map at 7.0s (turn): camera 0.9 m from its target, looking north, level. He turns his head to look off toward the left of frame, out past the lamp, and holds the look. This is the shot's only dramatic event.
+Frame map at 11.0s (settle): camera 0.9 m from its target, looking north, level. He releases the look, unhurried, and lowers his head back toward the page.
+Frame map at 15.0s (loop_close): camera 0.9 m from its target, looking north, level. He has settled back into the opening pose and the frame is identical to 0.0s.
+TODO — x/y percentage occupancy per beat must be added from a previz review. The spec supplies geometry; only a frame read supplies percentages.
+
+FORMAT MODE
+ONE SINGLE UNBROKEN SHOT for the entire 15 seconds, 16:9. One continuous take with absolutely no cuts, no edits, no transitions, no dissolves, no wipes and no flash frames. Real time throughout; no speed ramps, no slow motion, no freeze frames.
+
+OPTICS
+47° diagonal field of view held for the entire shot.
+standard normal lens, natural facial proportions, no distortion
+Focus: shallow but honest — the man's face is sharp, the room behind him falls off gently.
+Camera starts 0.9 m from its target, closes to 0.9 m at the nearest point, and finishes 0.9 m away.
+Clean lens, no flares.
+
+CAMERA
+CAMERA = locked.
+Camera height: 1.25 m.
+0.0s to 7.5s: the camera holds position (in place, 0.00 m travelled). mid — camera unmoved
+7.5s to 15.0s: the camera holds position (in place, 0.00 m travelled). closing frame — LOOP KEY: identical framing, camera never moved
+Constraint: the camera is completely locked off: it never moves, never pans, never tilts, never zooms, never breathes, never drifts.
+Constraint: the framing at 0.0s and 15.0s is identical.
+Constraint: all movement in the shot comes from inside the frame, never from the camera.
+The rig is never visible.
+
+THE PERFORMANCE
+LEAD (lead):
+  seated at the desk throughout. Head down over an open ledger at the start, lifts his head at about 4 seconds, turns to look off toward the left of frame at about 7 seconds, holds the look, then lowers his head again and settles back to the opening pose by 15 seconds. The loop returns him exactly to the opening pose, so the written page never turns and he never leaves the chair.
+  Rooted — does not travel.
+  TODO — performance detail (body, head, eyes, hands) must be authored per project. The blockout holds position and orientation only.
+
+ACTION TIMING
+0.0s (loop_open): Head down over the open ledger, one hand flat on the page, warm lamplight on the side of his face. This is the exact frame the shot will return to. Camera at (0.00, -1.65, 1.25) looking north.
+4.0s (lift): He lifts his head slowly off the page, eyes narrowing, listening for something. Camera at (0.00, -1.65, 1.25) looking north.
+7.0s (turn): He turns his head to look off toward the left of frame, out past the lamp, and holds the look. This is the shot's only dramatic event. Camera at (0.00, -1.65, 1.25) looking north.
+11.0s (settle): He releases the look, unhurried, and lowers his head back toward the page. Camera at (0.00, -1.65, 1.25) looking north.
+15.0s (loop_close): He has settled back into the opening pose and the frame is identical to 0.0s. Camera at (0.00, -1.65, 1.25) looking north.
+
+PHYSICS
+TODO — describe how fabric, hair, smoke, dust and liquid should move. This section is skipped most often and its absence is a predictable failure: garments and hair go rigid or drift unnaturally.
+
+LIGHTING
+TODO — state where the light is motivated from, its direction, and how it falls on faces. The previz lighting is NOT inherited.
+
+AUDIO
+Audio mode: room tone. No music track, no beat, no score, no discernible dialogue. Quiet room tone only.
+
+POSITIVE CONSTRAINTS
+- The finished shot holds 47° diagonal field of view throughout.
+- The shot runs 15 seconds at 16:9 in real time.
+- Every performer keeps their specified position and orientation.
+- The camera path is exactly as described above.
+- The result is one continuous take with no cuts of any kind.
+- The closing frame matches the opening frame so the clip can loop without a seam.
+- The look of the finished shot comes entirely from the supplied references, never from the blockout.
+------------------------------------------------------------------------------
+# REVIEW: 5 TODO marker(s) remain. Each one is a section the spec
+# does not yet supply detail for. Resolve them from a previz review before spending
+# credits — that is cheaper than discovering the gap in a generated take.

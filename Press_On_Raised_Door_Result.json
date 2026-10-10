@@ -1,0 +1,99 @@
+{
+  "results": [
+    {
+      "id": "0ca78a7d-3724-475c-bdbd-5bf7df90b9df",
+      "type": "image",
+      "status": "completed",
+      "model": "seedream_v5_pro",
+      "params": {
+        "prompt": "SECTION 1 — Image\nRender one 16:9 photographic empty train vestibule looking outward through its open passenger doorway to the station platform at blue hour.\n\nSECTION 2 — Boarding Levels\nFollow <<<02b28d81-bea9-4ee4-9983-0b04a0eaf632>>> for geometry and camera. The vestibule floor and threshold are 55 cm ABOVE the platform paving. One intermediate boarding tread is 27.5 cm above platform level and 27.5 cm BELOW the threshold. From the camera, the floor ends at the threshold, then steps DOWN to the intermediate tread, then DOWN again to the platform. Show these three distinct elevations clearly, with visible tread surfaces, separated nosing edges and shadows below the edges. Preserve the 1.10 m wide, 2.20 m high single-passenger door opening. The lower platform paving begins beyond the boarding tread.\n\nSECTION 3 — Camera and Door\nCamera inside the vestibule facing outward, centered perpendicular to the train side. Use the guide's downward viewing angle to show the lower tread beyond the raised threshold. Include the door head, both jambs and the vestibule floor in the foreground. Use <<<9d1266a7-0744-46f4-a3a9-71120945e5f8>>> for door design, trim and hardware, with the door fully open. Finish the interior in walnut and brass.\n\nSECTION 4 — Station\nUse <<<e05721e0-4f10-4df2-845e-c9f03a7627b4>>> for the station architecture across the platform. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for blue-hour light. Keep the platform physically below the train floor; retain the guide's height difference when adding photographic surfaces.\n\nSECTION 5 — Output\nEmpty architectural photograph. Clear boarding passage. Train stationary. Prioritize the raised train floor, lower boarding tread and lower platform as three separate levels. Photographic surface detail, natural contact shadows, sharp threshold and tread edges. Frame for review before adding a person.",
+        "aspect_ratio": "16:9",
+        "medias": [],
+        "batch_size": 1,
+        "width": 2720,
+        "height": 1536,
+        "resolution": "2k",
+        "seed": 54202,
+        "is_inpaint": false,
+        "remove_bg": false,
+        "reference_elements": [
+          {
+            "id": "02b28d81-bea9-4ee4-9983-0b04a0eaf632",
+            "name": "PressOn_Raised_Door_Guide",
+            "medias": [
+              {
+                "id": "2b180a0c-8e85-4517-a525-4fe5946d4525",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/2b180a0c-8e85-4517-a525-4fe5946d4525.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "Geometry-only guide. Platform z0, tread z0.275m, vestibule z0.55m. Opening 1.10x2.20m. Camera inside facing outward, tilted down to show descending levels. Supersedes previous guide camera.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+            "name": "Platform_morn",
+            "medias": [
+              {
+                "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+                "type": "media_input",
+                "width": 4116,
+                "height": 2761
+              }
+            ],
+            "category": "auto:prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "9d1266a7-0744-46f4-a3a9-71120945e5f8",
+            "name": "Train-door",
+            "medias": [
+              {
+                "id": "227a62d5-a535-466c-a4ee-d4b4004c585b",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/227a62d5-a535-466c-a4ee-d4b4004c585b.png",
+                "type": "media_input",
+                "width": 3800,
+                "height": 2120
+              }
+            ],
+            "category": "prop",
+            "description": null,
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+            "name": "PressOn_Verse1_Platform",
+            "medias": [
+              {
+                "id": "cc722d8a-162a-4797-8076-9438d5288416",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+            "ip_detected": null,
+            "video_medias": []
+          }
+        ]
+      },
+      "results": {
+        "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_053003_0ca78a7d-3724-475c-bdbd-5bf7df90b9df.png",
+        "minUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_053003_0ca78a7d-3724-475c-bdbd-5bf7df90b9df_min.webp"
+      },
+      "createdAt": 1789623003.790104
+    }
+  ]
+}

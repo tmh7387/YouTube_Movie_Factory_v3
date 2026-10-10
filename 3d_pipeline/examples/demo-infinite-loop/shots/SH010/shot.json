@@ -1,0 +1,96 @@
+{
+  "shot_id": "SH010",
+  "project": "demo-infinite-loop",
+  "version": 1,
+
+  "duration_s": 15.0,
+  "fps": 24,
+  "aspect": "16:9",
+  "resolution": [1280, 720],
+
+  "intent": "One continuous take that ends on a frame identical to its first, so the clip can replay without a seam.",
+  "format_mode": "ONE SINGLE UNBROKEN SHOT",
+  "audio": {
+    "mode": "music",
+    "notes": "single sustained sub-bass bed; no dialogue; no percussion so the loop seam stays inaudible"
+  },
+
+  "optic": {
+    "fov_diagonal_deg": 47.0,
+    "character": "standard normal lens, natural proportions, no distortion",
+    "dof": "deep focus — the miniature reveal at the end must read sharp"
+  },
+
+  "camera": {
+    "rig": "handheld",
+    "handheld_drift_m": 0.015,
+    "height_m": 1.55,
+    "path": [
+      { "t": 0.0,  "pos": [0.0, -2.60, 1.55], "target": [0.0, -0.80, 1.20], "note": "opening frame — LOOP KEY: closing frame must match this exactly" },
+      { "t": 3.75, "pos": [0.35, -1.90, 1.50], "target": [0.10, -0.70, 1.15], "note": "settle into the push" },
+      { "t": 7.50, "pos": [0.85, -0.60, 1.42], "target": [0.40,  0.10, 1.05], "note": "mid — closest to the lead, tension peaks" },
+      { "t": 11.25, "pos": [0.20, 1.70, 1.30], "target": [0.00,  0.00, 1.00], "note": "pull back begins; inner room starts to read as an object" },
+      { "t": 15.0, "pos": [0.0, -2.60, 1.55], "target": [0.0, -0.80, 1.20], "note": "closing frame — LOOP KEY: must MATCH t=0 exactly" }
+    ],
+    "constraints": [
+      "camera passes through nothing: no wall, no floor, no ceiling, no prop",
+      "nothing passes through the camera",
+      "constant unhurried speed; the camera never stops, never reverses, never zooms",
+      "camera height stays between 1.20 m and 1.70 m throughout"
+    ]
+  },
+
+  "set": {
+    "description": "An old mansion study rendered as a nested miniature: the room we are in is itself a model of the same room, sitting on a table inside a larger copy of itself. The conceit is only legible on the final pull-back, so the inner room must be complete on all six sides.",
+    "volumes": [
+      { "id": "room_inner", "min": [-3.5, -3.5, 0.0], "max": [3.5, 3.5, 3.0], "role": "primary" },
+      { "id": "room_outer", "min": [-7.0, -7.0, -1.2], "max": [7.0, 7.0, 5.6], "role": "reveal" }
+    ]
+  },
+
+  "cast": [
+    {
+      "id": "lead",
+      "role": "lead",
+      "proxy": "capsule",
+      "height_m": 1.78,
+      "radius_m": 0.26,
+      "start": [0.0, -0.80, 0.0],
+      "facing_deg": 0.0,
+      "motion": "rooted at the desk for the whole take: sits, lifts his head, turns to look at the wardrobe, then rises and steps toward it — but the loop returns him to the desk, so the travel is performed by the CAMERA pulling back, not by the performer leaving the frame. Keep him within about one metre of the desk."
+    },
+    {
+      "id": "wardrobe",
+      "role": "prop",
+      "proxy": "box",
+      "height_m": 2.10,
+      "radius_m": 0.45,
+      "start": [0.0, 3.10, 0.0],
+      "motion": "static — the destination of the cross, and the thing the reveal recontextualises"
+    },
+    {
+      "id": "desk",
+      "role": "prop",
+      "proxy": "box",
+      "height_m": 0.75,
+      "radius_m": 0.70,
+      "start": [-2.30, 0.60, 0.0],
+      "motion": "static"
+    }
+  ],
+
+  "beats": [
+    { "t": 0.0,  "label": "loop_open",  "action": "Frame is already tight on the lead at the desk. No establishing wide. Identical to the closing frame." },
+    { "t": 3.75, "label": "turn",       "action": "The lead's head comes up off the desk; attention goes to the wardrobe." },
+    { "t": 7.50, "label": "cross",      "action": "The lead crosses the room. Camera is closest here and the framing tightens." },
+    { "t": 11.25, "label": "reach",     "action": "The lead arrives at the wardrobe as the camera begins its pull-back." },
+    { "t": 15.0, "label": "loop_close", "action": "Pull-back completes: the inner room is revealed as a miniature on a table inside a larger copy. Camera returns to the opening composition." }
+  ],
+
+  "exclude_from_realisation": [
+    "grey proxy materials",
+    "proxy geometry proportions beyond the camera-path intent",
+    "previz lighting",
+    "the wireframe set-volume boxes and the camera path curve, which exist only for review"
+  ]
+}

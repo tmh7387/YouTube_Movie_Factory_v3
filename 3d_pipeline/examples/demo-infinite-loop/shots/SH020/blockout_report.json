@@ -1,0 +1,181 @@
+{
+  "shot_id": "SH020",
+  "built_at": "2026-09-13T15:13:50",
+  "blender_version": "5.2.1 LTS",
+  "spec": {
+    "duration_s": 15.0,
+    "fps": 24,
+    "total_frames": 360,
+    "frame_start": 1,
+    "frame_end": 360,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "aspect": "16:9"
+  },
+  "objects": [
+    {
+      "name": "SET_study",
+      "kind": "set_volume",
+      "centre": [
+        0.0,
+        0.0,
+        1.6
+      ],
+      "size": [
+        8.0,
+        8.0,
+        3.2
+      ],
+      "role": "primary",
+      "rendered": true
+    },
+    {
+      "name": "SET_floor_reference",
+      "kind": "ground_plane",
+      "z": 0.0,
+      "rendered": true
+    },
+    {
+      "name": "CAST_lead",
+      "kind": "cast_proxy",
+      "cast_id": "lead",
+      "role": "lead",
+      "proxy": "capsule",
+      "start": [
+        0.0,
+        -0.8,
+        0.0
+      ],
+      "end": null,
+      "travelling": false
+    }
+  ],
+  "camera": {
+    "keyframes_retimed": 18,
+    "endpoints_clamped": 12,
+    "beat_markers": [
+      {
+        "label": "loop_open",
+        "t": 0.0,
+        "frame": 1,
+        "action": "Head down over the open ledger, one hand flat on the page, warm lamplight on the side of his face. This is the exact frame the shot will return to."
+      },
+      {
+        "label": "lift",
+        "t": 4.0,
+        "frame": 97,
+        "action": "He lifts his head slowly off the page, eyes narrowing, listening for something."
+      },
+      {
+        "label": "turn",
+        "t": 7.0,
+        "frame": 169,
+        "action": "He turns his head to look off toward the left of frame, out past the lamp, and holds the look. This is the shot's only dramatic event."
+      },
+      {
+        "label": "settle",
+        "t": 11.0,
+        "frame": 265,
+        "action": "He releases the look, unhurried, and lowers his head back toward the page."
+      },
+      {
+        "label": "loop_close",
+        "t": 15.0,
+        "frame": 360,
+        "action": "He has settled back into the opening pose and the frame is identical to 0.0s."
+      }
+    ],
+    "keyframes": [
+      {
+        "t": 0.0,
+        "frame": 1,
+        "pos": [
+          0.0,
+          -1.65,
+          1.25
+        ],
+        "target": [
+          0.0,
+          -0.8,
+          1.15
+        ],
+        "note": "opening frame \u2014 LOOP KEY: closing frame matches this exactly"
+      },
+      {
+        "t": 7.5,
+        "frame": 181,
+        "pos": [
+          0.0,
+          -1.65,
+          1.25
+        ],
+        "target": [
+          0.0,
+          -0.8,
+          1.15
+        ],
+        "note": "mid \u2014 camera unmoved"
+      },
+      {
+        "t": 15.0,
+        "frame": 360,
+        "pos": [
+          0.0,
+          -1.65,
+          1.25
+        ],
+        "target": [
+          0.0,
+          -0.8,
+          1.15
+        ],
+        "note": "closing frame \u2014 LOOP KEY: identical framing, camera never moved"
+      }
+    ],
+    "rig": "locked",
+    "fov_diagonal_deg": 47.0
+  },
+  "warnings": [],
+  "errors": [],
+  "shading_requested": "flat",
+  "shading_effective": "flat",
+  "render_engine": "BLENDER_EEVEE",
+  "spec_problems": [],
+  "clearance_warnings": [],
+  "outputs": {
+    "blend": "D:\\App development\\YouTube_Movie_Factory_v3\\3d_pipeline\\examples\\demo-infinite-loop\\shots\\SH020\\shot.v1.blend",
+    "glb": "D:\\App development\\YouTube_Movie_Factory_v3\\3d_pipeline\\examples\\demo-infinite-loop\\shots\\SH020\\shot.v1.glb",
+    "previz_clean": "D:\\App development\\YouTube_Movie_Factory_v3\\3d_pipeline\\examples\\demo-infinite-loop\\shots\\SH020\\previz_SH020.mp4",
+    "previz_annotated": "D:\\App development\\YouTube_Movie_Factory_v3\\3d_pipeline\\examples\\demo-infinite-loop\\shots\\SH020\\previz_SH020_annot.mp4"
+  },
+  "render_mode": "full_animation",
+  "render_seconds": 88.53,
+  "readability": {
+    "sampled": 12,
+    "mean_luminance": 0.5114,
+    "min_luminance": 0.5114,
+    "max_luminance": 0.5114,
+    "verdict": "readable",
+    "role_pixel_share": {
+      "lead": 0.79427,
+      "crowd": 0.0002,
+      "set": 0.20464
+    },
+    "colour_verdict": "all expected cast colours present (lead)"
+  },
+  "loop_seam": {
+    "checked": true,
+    "first_frame": 1,
+    "last_frame": 360,
+    "mean_abs_difference": 0.0,
+    "worst_channel_difference": 0.0,
+    "share_of_pixels_differing": 0.0,
+    "verdict": "seamless"
+  },
+  "measurements": {
+    "previz_clean_duration_s": 15.0,
+    "previz_clean_frames": 360
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "results": [
+    {
+      "id": "c95c5617-198e-4308-89a8-be8d0f9168c1",
+      "type": "image",
+      "status": "completed",
+      "model": "gpt_image_2_5",
+      "params": {
+        "prompt": "SECTION 1 — Film DNA\nRender one 16:9 photographic cinematic environment still. Arri Alexa 65, Panavision C Series Anamorphic; subtle organic film grain. Empty train vestibule looking outward through the open passenger doorway to the departure platform at blue hour.\n\nSECTION 2 — Door Geometry and Camera\nUse <<<51c98532-bce3-4a49-98b3-7213f6426e42>>> as the controlling composition. Preserve its camera position, level optical axis, perspective, left and right aperture edges, door head and sill positions. The opening is 1.10 metres wide and 2.20 metres high: width equals half the height. Show the complete opening with both jambs, head and sill visible. Keep its narrow single-passenger proportions.\nThe camera is inside the train vestibule, centered on the opening and looking perpendicular to the train side, outward across the platform. Keep vertical jambs upright and parallel. Preserve the guide's framing; render its surfaces photographically.\n\nSECTION 3 — Door Design and Interior\nUse <<<9d1266a7-0744-46f4-a3a9-71120945e5f8>>> as the sole door-design reference. Show that passenger doorway in its fully open state, with the passage clear. Preserve its frame profile, metal trim and hardware design. Keep the door leaf clear of the aperture. Fit all door detailing to the geometry guide's opening dimensions.\nFinish the interior jamb surrounds in walnut with brass trim and warm practical illumination. Keep the vestibule floor and threshold unobstructed.\n\nSECTION 4 — Platform Background\nUse <<<e05721e0-4f10-4df2-845e-c9f03a7627b4>>> for station architecture, columns, windows, lamps and platform paving. Reconstruct the portion seen through the opening at the camera angle of <<<51c98532-bce3-4a49-98b3-7213f6426e42>>>. The station facade stands across the platform, beyond the doorway. Use <<<12f0524f-6481-47fc-8175-9022c53a1bc6>>> for blue-hour exterior lighting. Keep the station recognizable and in sufficient focus to review the architecture.\n\nSECTION 5 — Output\nOne empty architectural photograph, with no people, mannequins, luggage or platform-number signs. Keep the train stationary. Prioritize the exact aperture proportions and inside-to-platform camera direction. Door geometry comes from the Blender guide; door design comes from <<<9d1266a7-0744-46f4-a3a9-71120945e5f8>>>; station appearance comes from the station Elements.",
+        "aspect_ratio": "16:9",
+        "medias": [],
+        "width": 3840,
+        "height": 2160,
+        "quality": "high",
+        "resolution": "4k",
+        "model": "sunburst",
+        "remove_bg": false,
+        "reference_elements": [
+          {
+            "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+            "name": "Platform_morn",
+            "medias": [
+              {
+                "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+                "type": "media_input",
+                "width": 4116,
+                "height": 2761
+              }
+            ],
+            "category": "auto:prop",
+            "description": null,
+            "ip_detected": false,
+            "video_medias": []
+          },
+          {
+            "id": "51c98532-bce3-4a49-98b3-7213f6426e42",
+            "name": "PressOn_Empty_Door_Geometry",
+            "medias": [
+              {
+                "id": "35844aaa-0d06-481e-ad6c-fe0b871f91f3",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/35844aaa-0d06-481e-ad6c-fe0b871f91f3.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "Blender geometry guide only, 17 September 2026. Existing 1.10m wide by 2.20m high aperture unchanged; reverse level camera inside vestibule looks perpendicular outward. No people. Not an approved photographic plate.",
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "9d1266a7-0744-46f4-a3a9-71120945e5f8",
+            "name": "Train-door",
+            "medias": [
+              {
+                "id": "227a62d5-a535-466c-a4ee-d4b4004c585b",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/227a62d5-a535-466c-a4ee-d4b4004c585b.png",
+                "type": "media_input",
+                "width": 3800,
+                "height": 2120
+              }
+            ],
+            "category": "prop",
+            "description": null,
+            "ip_detected": null,
+            "video_medias": []
+          },
+          {
+            "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+            "name": "PressOn_Verse1_Platform",
+            "medias": [
+              {
+                "id": "cc722d8a-162a-4797-8076-9438d5288416",
+                "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+                "type": "media_input",
+                "width": null,
+                "height": null,
+                "duration": null
+              }
+            ],
+            "category": "auto:environment",
+            "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+            "ip_detected": null,
+            "video_medias": []
+          }
+        ]
+      },
+      "results": {
+        "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_042917_c95c5617-198e-4308-89a8-be8d0f9168c1.png",
+        "minUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260917_042917_c95c5617-198e-4308-89a8-be8d0f9168c1_min.webp"
+      },
+      "createdAt": 1789619357.156729
+    }
+  ]
+}

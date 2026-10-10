@@ -1,0 +1,257 @@
+{
+  "shot_id": "SH010",
+  "built_at": "2026-09-13T14:41:50",
+  "blender_version": "5.2.1 LTS",
+  "spec": {
+    "duration_s": 15.0,
+    "fps": 24,
+    "total_frames": 360,
+    "frame_start": 1,
+    "frame_end": 360,
+    "resolution": [
+      1280,
+      720
+    ],
+    "aspect": "16:9"
+  },
+  "objects": [
+    {
+      "name": "SET_room_inner",
+      "kind": "set_volume",
+      "centre": [
+        0.0,
+        0.0,
+        1.5
+      ],
+      "size": [
+        7.0,
+        7.0,
+        3.0
+      ],
+      "role": "primary",
+      "rendered": true
+    },
+    {
+      "name": "SET_room_outer",
+      "kind": "set_volume",
+      "centre": [
+        0.0,
+        0.0,
+        2.1999999999999997
+      ],
+      "size": [
+        14.0,
+        14.0,
+        6.8
+      ],
+      "role": "reveal",
+      "rendered": false
+    },
+    {
+      "name": "SET_floor_reference",
+      "kind": "ground_plane",
+      "z": -1.2,
+      "rendered": true
+    },
+    {
+      "name": "CAST_lead",
+      "kind": "cast_proxy",
+      "cast_id": "lead",
+      "role": "lead",
+      "proxy": "capsule",
+      "start": [
+        0.0,
+        -0.8,
+        0.0
+      ],
+      "end": null,
+      "travelling": false
+    },
+    {
+      "name": "CAST_wardrobe",
+      "kind": "cast_proxy",
+      "cast_id": "wardrobe",
+      "role": "prop",
+      "proxy": "box",
+      "start": [
+        0.0,
+        3.1,
+        0.0
+      ],
+      "end": null,
+      "travelling": false
+    },
+    {
+      "name": "CAST_desk",
+      "kind": "cast_proxy",
+      "cast_id": "desk",
+      "role": "prop",
+      "proxy": "box",
+      "start": [
+        -2.3,
+        0.6,
+        0.0
+      ],
+      "end": null,
+      "travelling": false
+    }
+  ],
+  "camera": {
+    "keyframes_retimed": 30,
+    "endpoints_clamped": 12,
+    "handheld_drift_m": 0.015,
+    "beat_markers": [
+      {
+        "label": "loop_open",
+        "t": 0.0,
+        "frame": 1,
+        "action": "Frame is already tight on the lead at the desk. No establishing wide. Identical to the closing frame."
+      },
+      {
+        "label": "turn",
+        "t": 3.75,
+        "frame": 91,
+        "action": "The lead's head comes up off the desk; attention goes to the wardrobe."
+      },
+      {
+        "label": "cross",
+        "t": 7.5,
+        "frame": 181,
+        "action": "The lead crosses the room. Camera is closest here and the framing tightens."
+      },
+      {
+        "label": "reach",
+        "t": 11.25,
+        "frame": 271,
+        "action": "The lead arrives at the wardrobe as the camera begins its pull-back."
+      },
+      {
+        "label": "loop_close",
+        "t": 15.0,
+        "frame": 360,
+        "action": "Pull-back completes: the inner room is revealed as a miniature on a table inside a larger copy. Camera returns to the opening composition."
+      }
+    ],
+    "keyframes": [
+      {
+        "t": 0.0,
+        "frame": 1,
+        "pos": [
+          0.0,
+          -2.6,
+          1.55
+        ],
+        "target": [
+          0.0,
+          -0.8,
+          1.2
+        ],
+        "note": "opening frame \u2014 LOOP KEY: closing frame must match this exactly"
+      },
+      {
+        "t": 3.75,
+        "frame": 91,
+        "pos": [
+          0.35,
+          -1.9,
+          1.5
+        ],
+        "target": [
+          0.1,
+          -0.7,
+          1.15
+        ],
+        "note": "settle into the push"
+      },
+      {
+        "t": 7.5,
+        "frame": 181,
+        "pos": [
+          0.85,
+          -0.6,
+          1.42
+        ],
+        "target": [
+          0.4,
+          0.1,
+          1.05
+        ],
+        "note": "mid \u2014 closest to the lead, tension peaks"
+      },
+      {
+        "t": 11.25,
+        "frame": 271,
+        "pos": [
+          0.2,
+          1.7,
+          1.3
+        ],
+        "target": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "note": "pull back begins; inner room starts to read as an object"
+      },
+      {
+        "t": 15.0,
+        "frame": 360,
+        "pos": [
+          0.0,
+          -2.6,
+          1.55
+        ],
+        "target": [
+          0.0,
+          -0.8,
+          1.2
+        ],
+        "note": "closing frame \u2014 LOOP KEY: must MATCH t=0 exactly"
+      }
+    ],
+    "rig": "handheld",
+    "fov_diagonal_deg": 47.0
+  },
+  "warnings": [],
+  "errors": [],
+  "shading_requested": "flat",
+  "shading_effective": "flat",
+  "render_engine": "BLENDER_EEVEE",
+  "spec_problems": [],
+  "clearance_warnings": [],
+  "outputs": {
+    "blend": "D:\\App development\\YouTube_Movie_Factory_v3\\3d_pipeline\\examples\\demo-infinite-loop\\shots\\SH010\\shot.v1.blend",
+    "glb": "D:\\App development\\YouTube_Movie_Factory_v3\\3d_pipeline\\examples\\demo-infinite-loop\\shots\\SH010\\shot.v1.glb",
+    "previz_clean": "D:\\App development\\YouTube_Movie_Factory_v3\\3d_pipeline\\examples\\demo-infinite-loop\\shots\\SH010\\previz_SH010.mp4",
+    "previz_annotated": "D:\\App development\\YouTube_Movie_Factory_v3\\3d_pipeline\\examples\\demo-infinite-loop\\shots\\SH010\\previz_SH010_annot.mp4"
+  },
+  "render_mode": "full_animation",
+  "render_seconds": 56.21,
+  "readability": {
+    "sampled": 12,
+    "mean_luminance": 0.5215,
+    "min_luminance": 0.5,
+    "max_luminance": 0.5597,
+    "verdict": "readable",
+    "role_pixel_share": {
+      "lead": 0.33864,
+      "crowd": 0.00018,
+      "prop": 0.06367,
+      "set": 0.59606
+    },
+    "colour_verdict": "all expected cast colours present (lead, prop)"
+  },
+  "loop_seam": {
+    "checked": true,
+    "first_frame": 1,
+    "last_frame": 360,
+    "mean_abs_difference": 0.0,
+    "worst_channel_difference": 0.0,
+    "share_of_pixels_differing": 0.0,
+    "verdict": "seamless"
+  },
+  "measurements": {
+    "previz_clean_duration_s": 15.0,
+    "previz_clean_frames": 360
+  }
+}

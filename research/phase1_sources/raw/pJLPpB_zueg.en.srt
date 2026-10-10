@@ -1,0 +1,2835 @@
+1
+00:00:00,000 --> 00:00:01,870
+
+I've been playing around with GPT-6
+
+2
+00:00:01,870 --> 00:00:01,880
+I've been playing around with GPT-6
+ 
+
+3
+00:00:01,880 --> 00:00:04,030
+I've been playing around with GPT-6
+Astra for motion graphics and it will
+
+4
+00:00:04,030 --> 00:00:04,040
+Astra for motion graphics and it will
+ 
+
+5
+00:00:04,040 --> 00:00:06,390
+Astra for motion graphics and it will
+build you an entire 3D environment off
+
+6
+00:00:06,390 --> 00:00:06,400
+build you an entire 3D environment off
+ 
+
+7
+00:00:06,400 --> 00:00:07,990
+build you an entire 3D environment off
+of a single prompt. [music] Once it's
+
+8
+00:00:07,990 --> 00:00:08,000
+of a single prompt. [music] Once it's
+ 
+
+9
+00:00:08,000 --> 00:00:09,830
+of a single prompt. [music] Once it's
+generated, you can edit anything you
+
+10
+00:00:09,830 --> 00:00:09,840
+generated, you can edit anything you
+ 
+
+11
+00:00:09,840 --> 00:00:11,870
+generated, you can edit anything you
+want, making it easy to reuse [music]
+
+12
+00:00:11,870 --> 00:00:11,880
+want, making it easy to reuse [music]
+ 
+
+13
+00:00:11,880 --> 00:00:13,630
+want, making it easy to reuse [music]
+the same environment over and over
+
+14
+00:00:13,630 --> 00:00:13,640
+the same environment over and over
+ 
+
+15
+00:00:13,640 --> 00:00:15,470
+the same environment over and over
+again. To show you how in-depth this
+
+16
+00:00:15,470 --> 00:00:15,480
+again. To show you how in-depth this
+ 
+
+17
+00:00:15,480 --> 00:00:16,790
+again. To show you how in-depth this
+goes, this is me [music] scrolling
+
+18
+00:00:16,790 --> 00:00:16,800
+goes, this is me [music] scrolling
+ 
+
+19
+00:00:16,800 --> 00:00:18,270
+goes, this is me [music] scrolling
+through all of the layers it's built in
+
+20
+00:00:18,270 --> 00:00:18,280
+through all of the layers it's built in
+ 
+
+21
+00:00:18,280 --> 00:00:20,470
+through all of the layers it's built in
+the 3D software in under 5 minutes.
+
+22
+00:00:20,470 --> 00:00:20,480
+the 3D software in under 5 minutes.
+ 
+
+23
+00:00:20,480 --> 00:00:21,590
+the 3D software in under 5 minutes.
+You've probably seen a lot of people
+
+24
+00:00:21,590 --> 00:00:21,600
+You've probably seen a lot of people
+ 
+
+25
+00:00:21,600 --> 00:00:23,570
+You've probably seen a lot of people
+using this to build out video games,
+
+26
+00:00:23,570 --> 00:00:23,580
+using this to build out video games,
+ 
+
+27
+00:00:23,580 --> 00:00:23,590
+using this to build out video games,
+>> [music]
+
+28
+00:00:23,590 --> 00:00:23,600
+>> [music]
+ 
+
+29
+00:00:23,600 --> 00:00:25,590
+>> [music]
+>> but I'm more interested in motion
+
+30
+00:00:25,590 --> 00:00:25,600
+>> but I'm more interested in motion
+ 
+
+31
+00:00:25,600 --> 00:00:27,110
+>> but I'm more interested in motion
+graphics. So, once you have everything
+
+32
+00:00:27,110 --> 00:00:27,120
+graphics. So, once you have everything
+ 
+
+33
+00:00:27,120 --> 00:00:28,870
+graphics. So, once you have everything
+set to your liking, including the camera
+
+34
+00:00:28,870 --> 00:00:28,880
+set to your liking, including the camera
+ 
+
+35
+00:00:28,880 --> 00:00:30,590
+set to your liking, including the camera
+movement, you can send it another prompt
+
+36
+00:00:30,590 --> 00:00:30,600
+movement, you can send it another prompt
+ 
+
+37
+00:00:30,600 --> 00:00:31,910
+movement, you can send it another prompt
+and ask it to render it out into a
+
+38
+00:00:31,910 --> 00:00:31,920
+and ask it to render it out into a
+ 
+
+39
+00:00:31,920 --> 00:00:34,270
+and ask it to render it out into a
+polished, fully textured 3D scene. And
+
+40
+00:00:34,270 --> 00:00:34,280
+polished, fully textured 3D scene. And
+ 
+
+41
+00:00:34,280 --> 00:00:35,670
+polished, fully textured 3D scene. And
+if you have this plugin for DaVinci
+
+42
+00:00:35,670 --> 00:00:35,680
+if you have this plugin for DaVinci
+ 
+
+43
+00:00:35,680 --> 00:00:37,470
+if you have this plugin for DaVinci
+Resolve, which I already did a video on,
+
+44
+00:00:37,470 --> 00:00:37,480
+Resolve, which I already did a video on,
+ 
+
+45
+00:00:37,480 --> 00:00:38,670
+Resolve, which I already did a video on,
+you can drop it straight into your
+
+46
+00:00:38,670 --> 00:00:38,680
+you can drop it straight into your
+ 
+
+47
+00:00:38,680 --> 00:00:40,550
+you can drop it straight into your
+timeline. There's not really a debate
+
+48
+00:00:40,550 --> 00:00:40,560
+timeline. There's not really a debate
+ 
+
+49
+00:00:40,560 --> 00:00:42,270
+timeline. There's not really a debate
+anymore [music] if this looks like AI
+
+50
+00:00:42,270 --> 00:00:42,280
+anymore [music] if this looks like AI
+ 
+
+51
+00:00:42,280 --> 00:00:43,750
+anymore [music] if this looks like AI
+because it's building using the same
+
+52
+00:00:43,750 --> 00:00:43,760
+because it's building using the same
+ 
+
+53
+00:00:43,760 --> 00:00:45,510
+because it's building using the same
+tools a human would. So, in this video,
+
+54
+00:00:45,510 --> 00:00:45,520
+tools a human would. So, in this video,
+ 
+
+55
+00:00:45,520 --> 00:00:46,710
+tools a human would. So, in this video,
+I'm going to walk you through how I've
+
+56
+00:00:46,710 --> 00:00:46,720
+I'm going to walk you through how I've
+ 
+
+57
+00:00:46,720 --> 00:00:48,270
+I'm going to walk you through how I've
+been getting the best results after
+
+58
+00:00:48,270 --> 00:00:48,280
+been getting the best results after
+ 
+
+59
+00:00:48,280 --> 00:00:50,390
+been getting the best results after
+spending a load of credits so that
+
+60
+00:00:50,390 --> 00:00:50,400
+spending a load of credits so that
+ 
+
+61
+00:00:50,400 --> 00:00:51,670
+spending a load of credits so that
+you don't have to. Now, I know you
+
+62
+00:00:51,670 --> 00:00:51,680
+you don't have to. Now, I know you
+ 
+
+63
+00:00:51,680 --> 00:00:53,390
+you don't have to. Now, I know you
+probably have two questions in your head
+
+64
+00:00:53,390 --> 00:00:53,400
+probably have two questions in your head
+ 
+
+65
+00:00:53,400 --> 00:00:55,430
+probably have two questions in your head
+right now, with the first one being, how
+
+66
+00:00:55,430 --> 00:00:55,440
+right now, with the first one being, how
+ 
+
+67
+00:00:55,440 --> 00:00:56,870
+right now, with the first one being, how
+much does this cost? [music] So, a
+
+68
+00:00:56,870 --> 00:00:56,880
+much does this cost? [music] So, a
+ 
+
+69
+00:00:56,880 --> 00:00:58,390
+much does this cost? [music] So, a
+little bit later in the video, I'm going
+
+70
+00:00:58,390 --> 00:00:58,400
+little bit later in the video, I'm going
+ 
+
+71
+00:00:58,400 --> 00:01:00,110
+little bit later in the video, I'm going
+to break down how much everything costed
+
+72
+00:01:00,110 --> 00:01:00,120
+to break down how much everything costed
+ 
+
+73
+00:01:00,120 --> 00:01:01,560
+to break down how much everything costed
+me. And the second question being,
+
+74
+00:01:01,560 --> 00:01:01,570
+me. And the second question being,
+ 
+
+75
+00:01:01,570 --> 00:01:02,830
+me. And the second question being,
+[music] is it even worth it to learn
+
+76
+00:01:02,830 --> 00:01:02,840
+[music] is it even worth it to learn
+ 
+
+77
+00:01:02,840 --> 00:01:05,110
+[music] is it even worth it to learn
+editing anymore if AI can do everything?
+
+78
+00:01:05,110 --> 00:01:05,120
+editing anymore if AI can do everything?
+ 
+
+79
+00:01:05,120 --> 00:01:06,590
+editing anymore if AI can do everything?
+The answer is yes, and let me give you a
+
+80
+00:01:06,590 --> 00:01:06,600
+The answer is yes, and let me give you a
+ 
+
+81
+00:01:06,600 --> 00:01:08,670
+The answer is yes, and let me give you a
+quick example. I was recently editing a
+
+82
+00:01:08,670 --> 00:01:08,680
+quick example. I was recently editing a
+ 
+
+83
+00:01:08,680 --> 00:01:10,710
+quick example. I was recently editing a
+video for my Instagram where I catch a
+
+84
+00:01:10,710 --> 00:01:10,720
+video for my Instagram where I catch a
+ 
+
+85
+00:01:10,720 --> 00:01:12,630
+video for my Instagram where I catch a
+predator. This was over 3 hours of
+
+86
+00:01:12,630 --> 00:01:12,640
+predator. This was over 3 hours of
+ 
+
+87
+00:01:12,640 --> 00:01:14,870
+predator. This was over 3 hours of
+footage with multiple camera angles, and
+
+88
+00:01:14,870 --> 00:01:14,880
+footage with multiple camera angles, and
+ 
+
+89
+00:01:14,880 --> 00:01:16,750
+footage with multiple camera angles, and
+I turned it into a 3-minute edit.
+
+90
+00:01:16,750 --> 00:01:16,760
+I turned it into a 3-minute edit.
+ 
+
+91
+00:01:16,760 --> 00:01:18,310
+I turned it into a 3-minute edit.
+There's a lot more to video editing than
+
+92
+00:01:18,310 --> 00:01:18,320
+There's a lot more to video editing than
+ 
+
+93
+00:01:18,320 --> 00:01:20,270
+There's a lot more to video editing than
+just manual work. So, a tool like this
+
+94
+00:01:20,270 --> 00:01:20,280
+just manual work. So, a tool like this
+ 
+
+95
+00:01:20,280 --> 00:01:21,910
+just manual work. So, a tool like this
+just frees up a lot of time that you can
+
+96
+00:01:21,910 --> 00:01:21,920
+just frees up a lot of time that you can
+ 
+
+97
+00:01:21,920 --> 00:01:24,030
+just frees up a lot of time that you can
+spend on creative work. So, to build all
+
+98
+00:01:24,030 --> 00:01:24,040
+spend on creative work. So, to build all
+ 
+
+99
+00:01:24,040 --> 00:01:25,550
+spend on creative work. So, to build all
+this, we're going to be using Astra
+
+100
+00:01:25,550 --> 00:01:25,560
+this, we're going to be using Astra
+ 
+
+101
+00:01:25,560 --> 00:01:27,150
+this, we're going to be using Astra
+inside [music] of Higgsfield because
+
+102
+00:01:27,150 --> 00:01:27,160
+inside [music] of Higgsfield because
+ 
+
+103
+00:01:27,160 --> 00:01:29,350
+inside [music] of Higgsfield because
+they made the process super easy. Yes, I
+
+104
+00:01:29,350 --> 00:01:29,360
+they made the process super easy. Yes, I
+ 
+
+105
+00:01:29,360 --> 00:01:31,110
+they made the process super easy. Yes, I
+do have an affiliate link down below, so
+
+106
+00:01:31,110 --> 00:01:31,120
+do have an affiliate link down below, so
+ 
+
+107
+00:01:31,120 --> 00:01:32,750
+do have an affiliate link down below, so
+please click on that. But, this honestly
+
+108
+00:01:32,750 --> 00:01:32,760
+please click on that. But, this honestly
+ 
+
+109
+00:01:32,760 --> 00:01:34,990
+please click on that. But, this honestly
+is just the easiest way I found to use
+
+110
+00:01:34,990 --> 00:01:35,000
+is just the easiest way I found to use
+ 
+
+111
+00:01:35,000 --> 00:01:36,750
+is just the easiest way I found to use
+Astra. So, essentially, we can upload a
+
+112
+00:01:36,750 --> 00:01:36,760
+Astra. So, essentially, we can upload a
+ 
+
+113
+00:01:36,760 --> 00:01:38,590
+Astra. So, essentially, we can upload a
+photo of anything we want and it will
+
+114
+00:01:38,590 --> 00:01:38,600
+photo of anything we want and it will
+ 
+
+115
+00:01:38,600 --> 00:01:39,750
+photo of anything we want and it will
+generate [music] it into a 3D
+
+116
+00:01:39,750 --> 00:01:39,760
+generate [music] it into a 3D
+ 
+
+117
+00:01:39,760 --> 00:01:42,150
+generate [music] it into a 3D
+environment, or we can upload a .glb
+
+118
+00:01:42,150 --> 00:01:42,160
+environment, or we can upload a .glb
+ 
+
+119
+00:01:42,160 --> 00:01:44,190
+environment, or we can upload a .glb
+file of a 3D object, and then it will
+
+120
+00:01:44,190 --> 00:01:44,200
+file of a 3D object, and then it will
+ 
+
+121
+00:01:44,200 --> 00:01:46,230
+file of a 3D object, and then it will
+implement that into our 3D scene. So, we
+
+122
+00:01:46,230 --> 00:01:46,240
+implement that into our 3D scene. So, we
+ 
+
+123
+00:01:46,240 --> 00:01:48,190
+implement that into our 3D scene. So, we
+can go to a website like CGTrader with a
+
+124
+00:01:48,190 --> 00:01:48,200
+can go to a website like CGTrader with a
+ 
+
+125
+00:01:48,200 --> 00:01:49,670
+can go to a website like CGTrader with a
+bunch of free models, and then we can
+
+126
+00:01:49,670 --> 00:01:49,680
+bunch of free models, and then we can
+ 
+
+127
+00:01:49,680 --> 00:01:51,590
+bunch of free models, and then we can
+download anything we want as long as
+
+128
+00:01:51,590 --> 00:01:51,600
+download anything we want as long as
+ 
+
+129
+00:01:51,600 --> 00:01:53,961
+download anything we want as long as
+it's a .glb file, and then we can upload
+
+130
+00:01:53,961 --> 00:01:53,971
+it's a .glb file, and then we can upload
+ 
+
+131
+00:01:53,971 --> 00:01:55,190
+it's a .glb file, and then we can upload
+[music] and animate it into our
+
+132
+00:01:55,190 --> 00:01:55,200
+[music] and animate it into our
+ 
+
+133
+00:01:55,200 --> 00:01:57,070
+[music] and animate it into our
+environment. I've been using Astra in a
+
+134
+00:01:57,070 --> 00:01:57,080
+environment. I've been using Astra in a
+ 
+
+135
+00:01:57,080 --> 00:01:59,870
+environment. I've been using Astra in a
+tab called 3D Jitsu right here, and it's
+
+136
+00:01:59,870 --> 00:01:59,880
+tab called 3D Jitsu right here, and it's
+ 
+
+137
+00:01:59,880 --> 00:02:01,150
+tab called 3D Jitsu right here, and it's
+built everything I've wanted so far
+
+138
+00:02:01,150 --> 00:02:01,160
+built everything I've wanted so far
+ 
+
+139
+00:02:01,160 --> 00:02:02,990
+built everything I've wanted so far
+perfectly. But, you can also plug Astra
+
+140
+00:02:02,990 --> 00:02:03,000
+perfectly. But, you can also plug Astra
+ 
+
+141
+00:02:03,000 --> 00:02:04,510
+perfectly. But, you can also plug Astra
+directly into DaVinci Resolve or
+
+142
+00:02:04,510 --> 00:02:04,520
+directly into DaVinci Resolve or
+ 
+
+143
+00:02:04,520 --> 00:02:06,070
+directly into DaVinci Resolve or
+Blender. So, I'll do a video on that
+
+144
+00:02:06,070 --> 00:02:06,080
+Blender. So, I'll do a video on that
+ 
+
+145
+00:02:06,080 --> 00:02:07,710
+Blender. So, I'll do a video on that
+soon. I just want to master it first so
+
+146
+00:02:07,710 --> 00:02:07,720
+soon. I just want to master it first so
+ 
+
+147
+00:02:07,720 --> 00:02:08,749
+soon. I just want to master it first so
+that it's not just like a quick
+
+148
+00:02:08,749 --> 00:02:08,759
+that it's not just like a quick
+ 
+
+149
+00:02:08,759 --> 00:02:10,350
+that it's not just like a quick
+overview. But, essentially, it can take
+
+150
+00:02:10,350 --> 00:02:10,360
+overview. But, essentially, it can take
+ 
+
+151
+00:02:10,360 --> 00:02:11,990
+overview. But, essentially, it can take
+multiple files from your timeline and
+
+152
+00:02:11,990 --> 00:02:12,000
+multiple files from your timeline and
+ 
+
+153
+00:02:12,000 --> 00:02:13,870
+multiple files from your timeline and
+edit it for you. And so, this works good
+
+154
+00:02:13,870 --> 00:02:13,880
+edit it for you. And so, this works good
+ 
+
+155
+00:02:13,880 --> 00:02:15,910
+edit it for you. And so, this works good
+for scripted videos like client videos.
+
+156
+00:02:15,910 --> 00:02:15,920
+for scripted videos like client videos.
+ 
+
+157
+00:02:15,920 --> 00:02:17,590
+for scripted videos like client videos.
+But, if your edit involves storytelling,
+
+158
+00:02:17,590 --> 00:02:17,600
+But, if your edit involves storytelling,
+ 
+
+159
+00:02:17,600 --> 00:02:19,350
+But, if your edit involves storytelling,
+I prefer to just do it myself still.
+
+160
+00:02:19,350 --> 00:02:19,360
+I prefer to just do it myself still.
+ 
+
+161
+00:02:19,360 --> 00:02:20,310
+I prefer to just do it myself still.
+But, in this video, we're just going to
+
+162
+00:02:20,310 --> 00:02:20,320
+But, in this video, we're just going to
+ 
+
+163
+00:02:20,320 --> 00:02:22,190
+But, in this video, we're just going to
+focus on 3D. This is literally like
+
+164
+00:02:22,190 --> 00:02:22,200
+focus on 3D. This is literally like
+ 
+
+165
+00:02:22,200 --> 00:02:24,070
+focus on 3D. This is literally like
+hiring your own professional 3D artist.
+
+166
+00:02:24,070 --> 00:02:24,080
+hiring your own professional 3D artist.
+ 
+
+167
+00:02:24,080 --> 00:02:25,790
+hiring your own professional 3D artist.
+So, I'm going to show you how it works.
+
+168
+00:02:25,790 --> 00:02:25,800
+So, I'm going to show you how it works.
+ 
+
+169
+00:02:25,800 --> 00:02:27,110
+So, I'm going to show you how it works.
+So, what I'll do is come to Pinterest
+
+170
+00:02:27,110 --> 00:02:27,120
+So, what I'll do is come to Pinterest
+ 
+
+171
+00:02:27,120 --> 00:02:29,190
+So, what I'll do is come to Pinterest
+here, and I'll search forest 3D scene.
+
+172
+00:02:29,190 --> 00:02:29,200
+here, and I'll search forest 3D scene.
+ 
+
+173
+00:02:29,200 --> 00:02:31,110
+here, and I'll search forest 3D scene.
+And then, I can scroll and find one that
+
+174
+00:02:31,110 --> 00:02:31,120
+And then, I can scroll and find one that
+ 
+
+175
+00:02:31,120 --> 00:02:32,830
+And then, I can scroll and find one that
+I like. And so, once we upload that
+
+176
+00:02:32,830 --> 00:02:32,840
+I like. And so, once we upload that
+ 
+
+177
+00:02:32,840 --> 00:02:34,590
+I like. And so, once we upload that
+photo, I can say, "Generate me a 3D
+
+178
+00:02:34,590 --> 00:02:34,600
+photo, I can say, "Generate me a 3D
+ 
+
+179
+00:02:34,600 --> 00:02:36,350
+photo, I can say, "Generate me a 3D
+scene based off this image. Spend lots
+
+180
+00:02:36,350 --> 00:02:36,360
+scene based off this image. Spend lots
+ 
+
+181
+00:02:36,360 --> 00:02:38,110
+scene based off this image. Spend lots
+of time on details. I want there to be a
+
+182
+00:02:38,110 --> 00:02:38,120
+of time on details. I want there to be a
+ 
+
+183
+00:02:38,120 --> 00:02:39,830
+of time on details. I want there to be a
+little human holding a flashlight
+
+184
+00:02:39,830 --> 00:02:39,840
+little human holding a flashlight
+ 
+
+185
+00:02:39,840 --> 00:02:41,430
+little human holding a flashlight
+pointed at a big rock shaped like a
+
+186
+00:02:41,430 --> 00:02:41,440
+pointed at a big rock shaped like a
+ 
+
+187
+00:02:41,440 --> 00:02:43,630
+pointed at a big rock shaped like a
+skull. After that, I want you to animate
+
+188
+00:02:43,630 --> 00:02:43,640
+skull. After that, I want you to animate
+ 
+
+189
+00:02:43,640 --> 00:02:45,051
+skull. After that, I want you to animate
+me a camera slowly panning through
+
+190
+00:02:45,051 --> 00:02:45,061
+me a camera slowly panning through
+ 
+
+191
+00:02:45,061 --> 00:02:46,830
+me a camera slowly panning through
+[music] the trees and then zooming in on
+
+192
+00:02:46,830 --> 00:02:46,840
+[music] the trees and then zooming in on
+ 
+
+193
+00:02:46,840 --> 00:02:48,390
+[music] the trees and then zooming in on
+the human." And now, we can select our
+
+194
+00:02:48,390 --> 00:02:48,400
+the human." And now, we can select our
+ 
+
+195
+00:02:48,400 --> 00:02:51,230
+the human." And now, we can select our
+time duration. I'm going to select uh 9
+
+196
+00:02:51,230 --> 00:02:51,240
+time duration. I'm going to select uh 9
+ 
+
+197
+00:02:51,240 --> 00:02:52,910
+time duration. I'm going to select uh 9
+seconds. And then, of course, make sure
+
+198
+00:02:52,910 --> 00:02:52,920
+seconds. And then, of course, make sure
+ 
+
+199
+00:02:52,920 --> 00:02:55,949
+seconds. And then, of course, make sure
+we're on GPT-6 Astra and 16 by 9. And
+
+200
+00:02:55,949 --> 00:02:55,959
+we're on GPT-6 Astra and 16 by 9. And
+ 
+
+201
+00:02:55,959 --> 00:02:57,230
+we're on GPT-6 Astra and 16 by 9. And
+then, just to fast-forward for you, it
+
+202
+00:02:57,230 --> 00:02:57,240
+then, just to fast-forward for you, it
+ 
+
+203
+00:02:57,240 --> 00:02:58,550
+then, just to fast-forward for you, it
+originally generated me something like
+
+204
+00:02:58,550 --> 00:02:58,560
+originally generated me something like
+ 
+
+205
+00:02:58,560 --> 00:03:00,030
+originally generated me something like
+this, [music] not super realistic. Then,
+
+206
+00:03:00,030 --> 00:03:00,040
+this, [music] not super realistic. Then,
+ 
+
+207
+00:03:00,040 --> 00:03:01,190
+this, [music] not super realistic. Then,
+I asked to make the trees a little bit
+
+208
+00:03:01,190 --> 00:03:01,200
+I asked to make the trees a little bit
+ 
+
+209
+00:03:01,200 --> 00:03:02,550
+I asked to make the trees a little bit
+more realistic. And then, I asked for
+
+210
+00:03:02,550 --> 00:03:02,560
+more realistic. And then, I asked for
+ 
+
+211
+00:03:02,560 --> 00:03:04,229
+more realistic. And then, I asked for
+the skull to have more shape and detail.
+
+212
+00:03:04,229 --> 00:03:04,239
+the skull to have more shape and detail.
+ 
+
+213
+00:03:04,239 --> 00:03:05,870
+the skull to have more shape and detail.
+And then again, the little human ended
+
+214
+00:03:05,870 --> 00:03:05,880
+And then again, the little human ended
+ 
+
+215
+00:03:05,880 --> 00:03:06,990
+And then again, the little human ended
+up just looking like a bunch of little
+
+216
+00:03:06,990 --> 00:03:07,000
+up just looking like a bunch of little
+ 
+
+217
+00:03:07,000 --> 00:03:08,830
+up just looking like a bunch of little
+shapes. Then, I said, uh "Let's [music]
+
+218
+00:03:08,830 --> 00:03:08,840
+shapes. Then, I said, uh "Let's [music]
+ 
+
+219
+00:03:08,840 --> 00:03:10,229
+shapes. Then, I said, uh "Let's [music]
+make the human more realistic and
+
+220
+00:03:10,229 --> 00:03:10,239
+make the human more realistic and
+ 
+
+221
+00:03:10,239 --> 00:03:11,670
+make the human more realistic and
+polished." And then, it ended up giving
+
+222
+00:03:11,670 --> 00:03:11,680
+polished." And then, it ended up giving
+ 
+
+223
+00:03:11,680 --> 00:03:13,430
+polished." And then, it ended up giving
+me something that looks like this. And
+
+224
+00:03:13,430 --> 00:03:13,440
+me something that looks like this. And
+ 
+
+225
+00:03:13,440 --> 00:03:14,710
+me something that looks like this. And
+now, we can always come in and select
+
+226
+00:03:14,710 --> 00:03:14,720
+now, we can always come in and select
+ 
+
+227
+00:03:14,720 --> 00:03:16,509
+now, we can always come in and select
+the individual parts [music] like this
+
+228
+00:03:16,509 --> 00:03:16,519
+the individual parts [music] like this
+ 
+
+229
+00:03:16,519 --> 00:03:18,350
+the individual parts [music] like this
+and move the bushes around to how we
+
+230
+00:03:18,350 --> 00:03:18,360
+and move the bushes around to how we
+ 
+
+231
+00:03:18,360 --> 00:03:20,070
+and move the bushes around to how we
+want them. And so now, if we select this
+
+232
+00:03:20,070 --> 00:03:20,080
+want them. And so now, if we select this
+ 
+
+233
+00:03:20,080 --> 00:03:21,550
+want them. And so now, if we select this
+button up here, it's going to show us
+
+234
+00:03:21,550 --> 00:03:21,560
+button up here, it's going to show us
+ 
+
+235
+00:03:21,560 --> 00:03:23,310
+button up here, it's going to show us
+our camera angle. And so, we can press
+
+236
+00:03:23,310 --> 00:03:23,320
+our camera angle. And so, we can press
+ 
+
+237
+00:03:23,320 --> 00:03:25,310
+our camera angle. And so, we can press
+play. And so, here it's giving us a look
+
+238
+00:03:25,310 --> 00:03:25,320
+play. And so, here it's giving us a look
+ 
+
+239
+00:03:25,320 --> 00:03:26,990
+play. And so, here it's giving us a look
+at what it's going to look like once uh
+
+240
+00:03:26,990 --> 00:03:27,000
+at what it's going to look like once uh
+ 
+
+241
+00:03:27,000 --> 00:03:28,670
+at what it's going to look like once uh
+everything's rendered out. And we can
+
+242
+00:03:28,670 --> 00:03:28,680
+everything's rendered out. And we can
+ 
+
+243
+00:03:28,680 --> 00:03:30,350
+everything's rendered out. And we can
+always adjust the camera angle. So, we
+
+244
+00:03:30,350 --> 00:03:30,360
+always adjust the camera angle. So, we
+ 
+
+245
+00:03:30,360 --> 00:03:31,430
+always adjust the camera angle. So, we
+can just place it where we want it to
+
+246
+00:03:31,430 --> 00:03:31,440
+can just place it where we want it to
+ 
+
+247
+00:03:31,440 --> 00:03:32,949
+can just place it where we want it to
+start [music] and place it where we want
+
+248
+00:03:32,949 --> 00:03:32,959
+start [music] and place it where we want
+ 
+
+249
+00:03:32,959 --> 00:03:34,710
+start [music] and place it where we want
+it to end. So, now we have something
+
+250
+00:03:34,710 --> 00:03:34,720
+it to end. So, now we have something
+ 
+
+251
+00:03:34,720 --> 00:03:36,150
+it to end. So, now we have something
+that looks like this. I think for our
+
+252
+00:03:36,150 --> 00:03:36,160
+that looks like this. I think for our
+ 
+
+253
+00:03:36,160 --> 00:03:37,910
+that looks like this. I think for our
+use case, this will do. And now, I can
+
+254
+00:03:37,910 --> 00:03:37,920
+use case, this will do. And now, I can
+ 
+
+255
+00:03:37,920 --> 00:03:39,590
+use case, this will do. And now, I can
+come to the chat here. So, I'm going to
+
+256
+00:03:39,590 --> 00:03:39,600
+come to the chat here. So, I'm going to
+ 
+
+257
+00:03:39,600 --> 00:03:41,229
+come to the chat here. So, I'm going to
+say, "Great. I want you to render this
+
+258
+00:03:41,229 --> 00:03:41,239
+say, "Great. I want you to render this
+ 
+
+259
+00:03:41,239 --> 00:03:43,190
+say, "Great. I want you to render this
+out with cinematic lighting and add
+
+260
+00:03:43,190 --> 00:03:43,200
+out with cinematic lighting and add
+ 
+
+261
+00:03:43,200 --> 00:03:45,150
+out with cinematic lighting and add
+texture [music] to all of the 3D objects
+
+262
+00:03:45,150 --> 00:03:45,160
+texture [music] to all of the 3D objects
+ 
+
+263
+00:03:45,160 --> 00:03:46,550
+texture [music] to all of the 3D objects
+so that this looks like a professional
+
+264
+00:03:46,550 --> 00:03:46,560
+so that this looks like a professional
+ 
+
+265
+00:03:46,560 --> 00:03:48,630
+so that this looks like a professional
+3D artist did it. Render me one version
+
+266
+00:03:48,630 --> 00:03:48,640
+3D artist did it. Render me one version
+ 
+
+267
+00:03:48,640 --> 00:03:50,430
+3D artist did it. Render me one version
+using the actual 3D objects [music] and
+
+268
+00:03:50,430 --> 00:03:50,440
+using the actual 3D objects [music] and
+ 
+
+269
+00:03:50,440 --> 00:03:52,550
+using the actual 3D objects [music] and
+the camera, and then one version with C
+
+270
+00:03:52,550 --> 00:03:52,560
+the camera, and then one version with C
+ 
+
+271
+00:03:52,560 --> 00:03:54,550
+the camera, and then one version with C
+dance 2.5 using the exact positioning
+
+272
+00:03:54,550 --> 00:03:54,560
+dance 2.5 using the exact positioning
+ 
+
+273
+00:03:54,560 --> 00:03:56,430
+dance 2.5 using the exact positioning
+and motion from the camera. [music] So,
+
+274
+00:03:56,430 --> 00:03:56,440
+and motion from the camera. [music] So,
+ 
+
+275
+00:03:56,440 --> 00:03:57,590
+and motion from the camera. [music] So,
+here just finished, we're going to get
+
+276
+00:03:57,590 --> 00:03:57,600
+here just finished, we're going to get
+ 
+
+277
+00:03:57,600 --> 00:03:59,550
+here just finished, we're going to get
+something that looks like this.
+
+278
+00:03:59,550 --> 00:03:59,560
+something that looks like this.
+ 
+
+279
+00:03:59,560 --> 00:04:01,032
+something that looks like this.
+Basically, not even in the same category
+
+280
+00:04:01,032 --> 00:04:01,042
+Basically, not even in the same category
+ 
+
+281
+00:04:01,042 --> 00:04:03,390
+Basically, not even in the same category
+[music] as like AI video anymore. Like,
+
+282
+00:04:03,390 --> 00:04:03,400
+[music] as like AI video anymore. Like,
+ 
+
+283
+00:04:03,400 --> 00:04:04,630
+[music] as like AI video anymore. Like,
+you can full on start your own
+
+284
+00:04:04,630 --> 00:04:04,640
+you can full on start your own
+ 
+
+285
+00:04:04,640 --> 00:04:06,550
+you can full on start your own
+documentary channel, use 3D motion
+
+286
+00:04:06,550 --> 00:04:06,560
+documentary channel, use 3D motion
+ 
+
+287
+00:04:06,560 --> 00:04:08,390
+documentary channel, use 3D motion
+graphics, and no one would ever be able
+
+288
+00:04:08,390 --> 00:04:08,400
+graphics, and no one would ever be able
+ 
+
+289
+00:04:08,400 --> 00:04:10,030
+graphics, and no one would ever be able
+to tell. Now, keep in mind, once this is
+
+290
+00:04:10,030 --> 00:04:10,040
+to tell. Now, keep in mind, once this is
+ 
+
+291
+00:04:10,040 --> 00:04:11,470
+to tell. Now, keep in mind, once this is
+actually built, we can change out
+
+292
+00:04:11,470 --> 00:04:11,480
+actually built, we can change out
+ 
+
+293
+00:04:11,480 --> 00:04:13,477
+actually built, we can change out
+objects, add in new objects, and we can
+
+294
+00:04:13,477 --> 00:04:13,487
+objects, add in new objects, and we can
+ 
+
+295
+00:04:13,487 --> 00:04:15,230
+objects, add in new objects, and we can
+[music] reuse this 3D scene. You can get
+
+296
+00:04:15,230 --> 00:04:15,240
+[music] reuse this 3D scene. You can get
+ 
+
+297
+00:04:15,240 --> 00:04:17,110
+[music] reuse this 3D scene. You can get
+like six to eight clips out of this one
+
+298
+00:04:17,110 --> 00:04:17,120
+like six to eight clips out of this one
+ 
+
+299
+00:04:17,120 --> 00:04:18,910
+like six to eight clips out of this one
+environment. And everything I just said,
+
+300
+00:04:18,910 --> 00:04:18,920
+environment. And everything I just said,
+ 
+
+301
+00:04:18,920 --> 00:04:20,030
+environment. And everything I just said,
+you do by just [music] typing in this
+
+302
+00:04:20,030 --> 00:04:20,040
+you do by just [music] typing in this
+ 
+
+303
+00:04:20,040 --> 00:04:21,750
+you do by just [music] typing in this
+box and it does it for you. So, now we
+
+304
+00:04:21,750 --> 00:04:21,760
+box and it does it for you. So, now we
+ 
+
+305
+00:04:21,760 --> 00:04:23,070
+box and it does it for you. So, now we
+can come back to Pinterest and I can
+
+306
+00:04:23,070 --> 00:04:23,080
+can come back to Pinterest and I can
+ 
+
+307
+00:04:23,080 --> 00:04:24,590
+can come back to Pinterest and I can
+search something like 3D environment
+
+308
+00:04:24,590 --> 00:04:24,600
+search something like 3D environment
+ 
+
+309
+00:04:24,600 --> 00:04:25,950
+search something like 3D environment
+with buildings. Now, we can scroll
+
+310
+00:04:25,950 --> 00:04:25,960
+with buildings. Now, we can scroll
+ 
+
+311
+00:04:25,960 --> 00:04:26,990
+with buildings. Now, we can scroll
+through all this and get some
+
+312
+00:04:26,990 --> 00:04:27,000
+through all this and get some
+ 
+
+313
+00:04:27,000 --> 00:04:27,909
+through all this and get some
+inspiration. [music]
+
+314
+00:04:27,909 --> 00:04:27,919
+inspiration. [music]
+ 
+
+315
+00:04:27,919 --> 00:04:29,830
+inspiration. [music]
+Using my reference, generate me a 3D
+
+316
+00:04:29,830 --> 00:04:29,840
+Using my reference, generate me a 3D
+ 
+
+317
+00:04:29,840 --> 00:04:31,470
+Using my reference, generate me a 3D
+environment. Spend lots of time with the
+
+318
+00:04:31,470 --> 00:04:31,480
+environment. Spend lots of time with the
+ 
+
+319
+00:04:31,480 --> 00:04:32,710
+environment. Spend lots of time with the
+detail of the buildings and the
+
+320
+00:04:32,710 --> 00:04:32,720
+detail of the buildings and the
+ 
+
+321
+00:04:32,720 --> 00:04:34,350
+detail of the buildings and the
+individual cars. Now, I put this
+
+322
+00:04:34,350 --> 00:04:34,360
+individual cars. Now, I put this
+ 
+
+323
+00:04:34,360 --> 00:04:35,590
+individual cars. Now, I put this
+sentence in here because if you just
+
+324
+00:04:35,590 --> 00:04:35,600
+sentence in here because if you just
+ 
+
+325
+00:04:35,600 --> 00:04:37,790
+sentence in here because if you just
+tell it to generate you a 3D scene, it's
+
+326
+00:04:37,790 --> 00:04:37,800
+tell it to generate you a 3D scene, it's
+ 
+
+327
+00:04:37,800 --> 00:04:39,710
+tell it to generate you a 3D scene, it's
+usually pretty basic. So, I try and get
+
+328
+00:04:39,710 --> 00:04:39,720
+usually pretty basic. So, I try and get
+ 
+
+329
+00:04:39,720 --> 00:04:41,070
+usually pretty basic. So, I try and get
+all of that in the first prompt, so I
+
+330
+00:04:41,070 --> 00:04:41,080
+all of that in the first prompt, so I
+ 
+
+331
+00:04:41,080 --> 00:04:42,830
+all of that in the first prompt, so I
+don't have to keep re-prompting it once
+
+332
+00:04:42,830 --> 00:04:42,840
+don't have to keep re-prompting it once
+ 
+
+333
+00:04:42,840 --> 00:04:44,510
+don't have to keep re-prompting it once
+it generates it. I'm going to finish the
+
+334
+00:04:44,510 --> 00:04:44,520
+it generates it. I'm going to finish the
+ 
+
+335
+00:04:44,520 --> 00:04:46,270
+it generates it. I'm going to finish the
+prompt with animate a camera starting
+
+336
+00:04:46,270 --> 00:04:46,280
+prompt with animate a camera starting
+ 
+
+337
+00:04:46,280 --> 00:04:47,630
+prompt with animate a camera starting
+zoomed out and then it slowly [music]
+
+338
+00:04:47,630 --> 00:04:47,640
+zoomed out and then it slowly [music]
+ 
+
+339
+00:04:47,640 --> 00:04:49,630
+zoomed out and then it slowly [music]
+pans forward into the streets. So, just
+
+340
+00:04:49,630 --> 00:04:49,640
+pans forward into the streets. So, just
+ 
+
+341
+00:04:49,640 --> 00:04:51,070
+pans forward into the streets. So, just
+a fast forward here, it kind of started
+
+342
+00:04:51,070 --> 00:04:51,080
+a fast forward here, it kind of started
+ 
+
+343
+00:04:51,080 --> 00:04:52,750
+a fast forward here, it kind of started
+out like this, not much detail. So, then
+
+344
+00:04:52,750 --> 00:04:52,760
+out like this, not much detail. So, then
+ 
+
+345
+00:04:52,760 --> 00:04:54,310
+out like this, not much detail. So, then
+I ended up asking it to generate more
+
+346
+00:04:54,310 --> 00:04:54,320
+I ended up asking it to generate more
+ 
+
+347
+00:04:54,320 --> 00:04:56,909
+I ended up asking it to generate more
+detail, and as you can see, it did a
+
+348
+00:04:56,909 --> 00:04:56,919
+detail, and as you can see, it did a
+ 
+
+349
+00:04:56,919 --> 00:04:58,673
+detail, and as you can see, it did a
+very good job. And then if we switch
+
+350
+00:04:58,673 --> 00:04:58,683
+very good job. And then if we switch
+ 
+
+351
+00:04:58,683 --> 00:05:00,110
+very good job. And then if we switch
+[music] to the camera mode and press
+
+352
+00:05:00,110 --> 00:05:00,120
+[music] to the camera mode and press
+ 
+
+353
+00:05:00,120 --> 00:05:01,390
+[music] to the camera mode and press
+play,
+
+354
+00:05:01,390 --> 00:05:01,400
+play,
+ 
+
+355
+00:05:01,400 --> 00:05:03,190
+play,
+you can see the animation it has built
+
+356
+00:05:03,190 --> 00:05:03,200
+you can see the animation it has built
+ 
+
+357
+00:05:03,200 --> 00:05:04,909
+you can see the animation it has built
+out for us like this.
+
+358
+00:05:04,909 --> 00:05:04,919
+out for us like this.
+ 
+
+359
+00:05:04,919 --> 00:05:06,150
+out for us like this.
+And so, now I can come to the chat here
+
+360
+00:05:06,150 --> 00:05:06,160
+And so, now I can come to the chat here
+ 
+
+361
+00:05:06,160 --> 00:05:07,470
+And so, now I can come to the chat here
+and say, "Great, I want you to render
+
+362
+00:05:07,470 --> 00:05:07,480
+and say, "Great, I want you to render
+ 
+
+363
+00:05:07,480 --> 00:05:09,030
+and say, "Great, I want you to render
+this out with high quality textures,
+
+364
+00:05:09,030 --> 00:05:09,040
+this out with high quality textures,
+ 
+
+365
+00:05:09,040 --> 00:05:11,030
+this out with high quality textures,
+realistic cinematic light, and then keep
+
+366
+00:05:11,030 --> 00:05:11,040
+realistic cinematic light, and then keep
+ 
+
+367
+00:05:11,040 --> 00:05:12,909
+realistic cinematic light, and then keep
+the camera movement the same." And so,
+
+368
+00:05:12,909 --> 00:05:12,919
+the camera movement the same." And so,
+ 
+
+369
+00:05:12,919 --> 00:05:14,390
+the camera movement the same." And so,
+here we have a side-by-side of the
+
+370
+00:05:14,390 --> 00:05:14,400
+here we have a side-by-side of the
+ 
+
+371
+00:05:14,400 --> 00:05:16,230
+here we have a side-by-side of the
+original versus the rendered out
+
+372
+00:05:16,230 --> 00:05:16,240
+original versus the rendered out
+ 
+
+373
+00:05:16,240 --> 00:05:20,310
+original versus the rendered out
+version.
+
+374
+00:05:20,310 --> 00:05:20,320
+
+ 
+
+375
+00:05:20,320 --> 00:05:21,470
+
+So, now we're going to do an example
+
+376
+00:05:21,470 --> 00:05:21,480
+So, now we're going to do an example
+ 
+
+377
+00:05:21,480 --> 00:05:23,270
+So, now we're going to do an example
+where I actually upload my own 3D
+
+378
+00:05:23,270 --> 00:05:23,280
+where I actually upload my own 3D
+ 
+
+379
+00:05:23,280 --> 00:05:24,830
+where I actually upload my own 3D
+object. And so, for this scene, I said
+
+380
+00:05:24,830 --> 00:05:24,840
+object. And so, for this scene, I said
+ 
+
+381
+00:05:24,840 --> 00:05:26,430
+object. And so, for this scene, I said
+that I want a room with two men holding
+
+382
+00:05:26,430 --> 00:05:26,440
+that I want a room with two men holding
+ 
+
+383
+00:05:26,440 --> 00:05:28,150
+that I want a room with two men holding
+flashlights. I want there to be a window
+
+384
+00:05:28,150 --> 00:05:28,160
+flashlights. I want there to be a window
+ 
+
+385
+00:05:28,160 --> 00:05:29,950
+flashlights. I want there to be a window
+with a police car behind them, and I
+
+386
+00:05:29,950 --> 00:05:29,960
+with a police car behind them, and I
+ 
+
+387
+00:05:29,960 --> 00:05:31,430
+with a police car behind them, and I
+want there to be papers scattered
+
+388
+00:05:31,430 --> 00:05:31,440
+want there to be papers scattered
+ 
+
+389
+00:05:31,440 --> 00:05:32,750
+want there to be papers scattered
+everywhere. And so, now I'm going to
+
+390
+00:05:32,750 --> 00:05:32,760
+everywhere. And so, now I'm going to
+ 
+
+391
+00:05:32,760 --> 00:05:36,070
+everywhere. And so, now I'm going to
+drag in a .glb file, and this is a great
+
+392
+00:05:36,070 --> 00:05:36,080
+drag in a .glb file, and this is a great
+ 
+
+393
+00:05:36,080 --> 00:05:37,750
+drag in a .glb file, and this is a great
+way for getting the 3D objects to look
+
+394
+00:05:37,750 --> 00:05:37,760
+way for getting the 3D objects to look
+ 
+
+395
+00:05:37,760 --> 00:05:39,630
+way for getting the 3D objects to look
+exactly how you want them to. And I got
+
+396
+00:05:39,630 --> 00:05:39,640
+exactly how you want them to. And I got
+ 
+
+397
+00:05:39,640 --> 00:05:41,790
+exactly how you want them to. And I got
+this one off of CGTrader. So, I'm just
+
+398
+00:05:41,790 --> 00:05:41,800
+this one off of CGTrader. So, I'm just
+ 
+
+399
+00:05:41,800 --> 00:05:42,909
+this one off of CGTrader. So, I'm just
+going to write, "I want you to animate a
+
+400
+00:05:42,909 --> 00:05:42,919
+going to write, "I want you to animate a
+ 
+
+401
+00:05:42,919 --> 00:05:44,870
+going to write, "I want you to animate a
+camera panning slowly around the men."
+
+402
+00:05:44,870 --> 00:05:44,880
+camera panning slowly around the men."
+ 
+
+403
+00:05:44,880 --> 00:05:46,270
+camera panning slowly around the men."
+And then I can [music] hit generate on
+
+404
+00:05:46,270 --> 00:05:46,280
+And then I can [music] hit generate on
+ 
+
+405
+00:05:46,280 --> 00:05:48,390
+And then I can [music] hit generate on
+that. So, here's the 3D model I uploaded
+
+406
+00:05:48,390 --> 00:05:48,400
+that. So, here's the 3D model I uploaded
+ 
+
+407
+00:05:48,400 --> 00:05:50,110
+that. So, here's the 3D model I uploaded
+and as you can see it added its own
+
+408
+00:05:50,110 --> 00:05:50,120
+and as you can see it added its own
+ 
+
+409
+00:05:50,120 --> 00:05:51,073
+and as you can see it added its own
+light sources.
+
+410
+00:05:51,073 --> 00:05:51,083
+light sources.
+ 
+
+411
+00:05:51,083 --> 00:05:51,110
+light sources.
+>> [music]
+
+412
+00:05:51,110 --> 00:05:51,120
+>> [music]
+ 
+
+413
+00:05:51,120 --> 00:05:53,470
+>> [music]
+>> If we scroll up here,
+
+414
+00:05:53,470 --> 00:05:53,480
+>> If we scroll up here,
+ 
+
+415
+00:05:53,480 --> 00:05:55,150
+>> If we scroll up here,
+you can see that we have the police car
+
+416
+00:05:55,150 --> 00:05:55,160
+you can see that we have the police car
+ 
+
+417
+00:05:55,160 --> 00:05:57,310
+you can see that we have the police car
+behind the window here. And so, now I
+
+418
+00:05:57,310 --> 00:05:57,320
+behind the window here. And so, now I
+ 
+
+419
+00:05:57,320 --> 00:05:59,070
+behind the window here. And so, now I
+can select my camera mode and I can
+
+420
+00:05:59,070 --> 00:05:59,080
+can select my camera mode and I can
+ 
+
+421
+00:05:59,080 --> 00:06:00,830
+can select my camera mode and I can
+press play
+
+422
+00:06:00,830 --> 00:06:00,840
+press play
+ 
+
+423
+00:06:00,840 --> 00:06:02,270
+press play
+and make sure that everything is how I
+
+424
+00:06:02,270 --> 00:06:02,280
+and make sure that everything is how I
+ 
+
+425
+00:06:02,280 --> 00:06:03,590
+and make sure that everything is how I
+want it.
+
+426
+00:06:03,590 --> 00:06:03,600
+want it.
+ 
+
+427
+00:06:03,600 --> 00:06:04,790
+want it.
+So, I'm just going to say great, I want
+
+428
+00:06:04,790 --> 00:06:04,800
+So, I'm just going to say great, I want
+ 
+
+429
+00:06:04,800 --> 00:06:06,070
+So, I'm just going to say great, I want
+you to render this out now so that it
+
+430
+00:06:06,070 --> 00:06:06,080
+you to render this out now so that it
+ 
+
+431
+00:06:06,080 --> 00:06:07,950
+you to render this out now so that it
+looks like a professional 3D scene. I
+
+432
+00:06:07,950 --> 00:06:07,960
+looks like a professional 3D scene. I
+ 
+
+433
+00:06:07,960 --> 00:06:09,350
+looks like a professional 3D scene. I
+want it to be darker in the room so that
+
+434
+00:06:09,350 --> 00:06:09,360
+want it to be darker in the room so that
+ 
+
+435
+00:06:09,360 --> 00:06:10,950
+want it to be darker in the room so that
+the flashing lights from the police car
+
+436
+00:06:10,950 --> 00:06:10,960
+the flashing lights from the police car
+ 
+
+437
+00:06:10,960 --> 00:06:13,590
+the flashing lights from the police car
+are easily seen. Then I can hit render.
+
+438
+00:06:13,590 --> 00:06:13,600
+are easily seen. Then I can hit render.
+ 
+
+439
+00:06:13,600 --> 00:06:14,990
+are easily seen. Then I can hit render.
+So, this one is a good example to be
+
+440
+00:06:14,990 --> 00:06:15,000
+So, this one is a good example to be
+ 
+
+441
+00:06:15,000 --> 00:06:16,750
+So, this one is a good example to be
+used for something like a documentary
+
+442
+00:06:16,750 --> 00:06:16,760
+used for something like a documentary
+ 
+
+443
+00:06:16,760 --> 00:06:17,909
+used for something like a documentary
+and it literally looks like you pulled
+
+444
+00:06:17,909 --> 00:06:17,919
+and it literally looks like you pulled
+ 
+
+445
+00:06:17,919 --> 00:06:19,430
+and it literally looks like you pulled
+it straight out of a 3D rendering
+
+446
+00:06:19,430 --> 00:06:19,440
+it straight out of a 3D rendering
+ 
+
+447
+00:06:19,440 --> 00:06:20,550
+it straight out of a 3D rendering
+software. [music] So, I'm just going to
+
+448
+00:06:20,550 --> 00:06:20,560
+software. [music] So, I'm just going to
+ 
+
+449
+00:06:20,560 --> 00:06:22,990
+software. [music] So, I'm just going to
+write 3D environment desk cinematic and
+
+450
+00:06:22,990 --> 00:06:23,000
+write 3D environment desk cinematic and
+ 
+
+451
+00:06:23,000 --> 00:06:24,470
+write 3D environment desk cinematic and
+now we can go through these and get some
+
+452
+00:06:24,470 --> 00:06:24,480
+now we can go through these and get some
+ 
+
+453
+00:06:24,480 --> 00:06:26,270
+now we can go through these and get some
+good examples. So, this one's pretty
+
+454
+00:06:26,270 --> 00:06:26,280
+good examples. So, this one's pretty
+ 
+
+455
+00:06:26,280 --> 00:06:28,110
+good examples. So, this one's pretty
+cool. It has like a robot with a few
+
+456
+00:06:28,110 --> 00:06:28,120
+cool. It has like a robot with a few
+ 
+
+457
+00:06:28,120 --> 00:06:29,190
+cool. It has like a robot with a few
+game controllers, looks pretty
+
+458
+00:06:29,190 --> 00:06:29,200
+game controllers, looks pretty
+ 
+
+459
+00:06:29,200 --> 00:06:31,030
+game controllers, looks pretty
+cinematic. So, now I can say generate me
+
+460
+00:06:31,030 --> 00:06:31,040
+cinematic. So, now I can say generate me
+ 
+
+461
+00:06:31,040 --> 00:06:32,750
+cinematic. So, now I can say generate me
+a 3D environment of a desk setup with
+
+462
+00:06:32,750 --> 00:06:32,760
+a 3D environment of a desk setup with
+ 
+
+463
+00:06:32,760 --> 00:06:34,550
+a 3D environment of a desk setup with
+game controllers, a keyboard, a monitor,
+
+464
+00:06:34,550 --> 00:06:34,560
+game controllers, a keyboard, a monitor,
+ 
+
+465
+00:06:34,560 --> 00:06:36,190
+game controllers, a keyboard, a monitor,
+and a robot standing on top of it. And
+
+466
+00:06:36,190 --> 00:06:36,200
+and a robot standing on top of it. And
+ 
+
+467
+00:06:36,200 --> 00:06:37,470
+and a robot standing on top of it. And
+I'm going to find some more references
+
+468
+00:06:37,470 --> 00:06:37,480
+I'm going to find some more references
+ 
+
+469
+00:06:37,480 --> 00:06:38,550
+I'm going to find some more references
+to [music] feed it just so that I can
+
+470
+00:06:38,550 --> 00:06:38,560
+to [music] feed it just so that I can
+ 
+
+471
+00:06:38,560 --> 00:06:40,390
+to [music] feed it just so that I can
+get it exactly how I want it. And so,
+
+472
+00:06:40,390 --> 00:06:40,400
+get it exactly how I want it. And so,
+ 
+
+473
+00:06:40,400 --> 00:06:42,990
+get it exactly how I want it. And so,
+here is what it has built me and we can
+
+474
+00:06:42,990 --> 00:06:43,000
+here is what it has built me and we can
+ 
+
+475
+00:06:43,000 --> 00:06:46,990
+here is what it has built me and we can
+select our camera viewer.
+
+476
+00:06:46,990 --> 00:06:47,000
+
+ 
+
+477
+00:06:47,000 --> 00:06:48,550
+
+Looks pretty good. And so again, this is
+
+478
+00:06:48,550 --> 00:06:48,560
+Looks pretty good. And so again, this is
+ 
+
+479
+00:06:48,560 --> 00:06:50,470
+Looks pretty good. And so again, this is
+just a robot for example, but we can
+
+480
+00:06:50,470 --> 00:06:50,480
+just a robot for example, but we can
+ 
+
+481
+00:06:50,480 --> 00:06:52,230
+just a robot for example, but we can
+come to CGTrader [music]
+
+482
+00:06:52,230 --> 00:06:52,240
+come to CGTrader [music]
+ 
+
+483
+00:06:52,240 --> 00:06:54,830
+come to CGTrader [music]
+and find any object we want that's free
+
+484
+00:06:54,830 --> 00:06:54,840
+and find any object we want that's free
+ 
+
+485
+00:06:54,840 --> 00:06:56,470
+and find any object we want that's free
+and then upload that into here and it
+
+486
+00:06:56,470 --> 00:06:56,480
+and then upload that into here and it
+ 
+
+487
+00:06:56,480 --> 00:06:58,390
+and then upload that into here and it
+will replace it with whatever you want.
+
+488
+00:06:58,390 --> 00:06:58,400
+will replace it with whatever you want.
+ 
+
+489
+00:06:58,400 --> 00:06:59,470
+will replace it with whatever you want.
+And then again, keep in mind you can
+
+490
+00:06:59,470 --> 00:06:59,480
+And then again, keep in mind you can
+ 
+
+491
+00:06:59,480 --> 00:07:00,830
+And then again, keep in mind you can
+select anything you want [music] and
+
+492
+00:07:00,830 --> 00:07:00,840
+select anything you want [music] and
+ 
+
+493
+00:07:00,840 --> 00:07:02,190
+select anything you want [music] and
+adjust the position of it. I'm just
+
+494
+00:07:02,190 --> 00:07:02,200
+adjust the position of it. I'm just
+ 
+
+495
+00:07:02,200 --> 00:07:03,550
+adjust the position of it. I'm just
+going to write great, the camera
+
+496
+00:07:03,550 --> 00:07:03,560
+going to write great, the camera
+ 
+
+497
+00:07:03,560 --> 00:07:05,230
+going to write great, the camera
+movement is perfect. Let's render this
+
+498
+00:07:05,230 --> 00:07:05,240
+movement is perfect. Let's render this
+ 
+
+499
+00:07:05,240 --> 00:07:07,150
+movement is perfect. Let's render this
+out with high quality textures and
+
+500
+00:07:07,150 --> 00:07:07,160
+out with high quality textures and
+ 
+
+501
+00:07:07,160 --> 00:07:08,870
+out with high quality textures and
+cinematic [music] lighting.
+
+502
+00:07:08,870 --> 00:07:08,880
+cinematic [music] lighting.
+ 
+
+503
+00:07:08,880 --> 00:07:10,310
+cinematic [music] lighting.
+And so now it's given us something that
+
+504
+00:07:10,310 --> 00:07:10,320
+And so now it's given us something that
+ 
+
+505
+00:07:10,320 --> 00:07:11,510
+And so now it's given us something that
+looks like this that we can drop
+
+506
+00:07:11,510 --> 00:07:11,520
+looks like this that we can drop
+ 
+
+507
+00:07:11,520 --> 00:07:13,870
+looks like this that we can drop
+straight into our editing timeline.
+
+508
+00:07:13,870 --> 00:07:13,880
+straight into our editing timeline.
+ 
+
+509
+00:07:13,880 --> 00:07:15,870
+straight into our editing timeline.
+Here's another cool scene I built if you
+
+510
+00:07:15,870 --> 00:07:15,880
+Here's another cool scene I built if you
+ 
+
+511
+00:07:15,880 --> 00:07:17,830
+Here's another cool scene I built if you
+were doing a video on insects or
+
+512
+00:07:17,830 --> 00:07:17,840
+were doing a video on insects or
+ 
+
+513
+00:07:17,840 --> 00:07:19,550
+were doing a video on insects or
+something. If we click [music] the
+
+514
+00:07:19,550 --> 00:07:19,560
+something. If we click [music] the
+ 
+
+515
+00:07:19,560 --> 00:07:21,630
+something. If we click [music] the
+camera viewer here and press play, as
+
+516
+00:07:21,630 --> 00:07:21,640
+camera viewer here and press play, as
+ 
+
+517
+00:07:21,640 --> 00:07:23,030
+camera viewer here and press play, as
+you can see I prompted it that the
+
+518
+00:07:23,030 --> 00:07:23,040
+you can see I prompted it that the
+ 
+
+519
+00:07:23,040 --> 00:07:24,550
+you can see I prompted it that the
+little ants come forward and give the
+
+520
+00:07:24,550 --> 00:07:24,560
+little ants come forward and give the
+ 
+
+521
+00:07:24,560 --> 00:07:26,470
+little ants come forward and give the
+big ant little [music] pieces of food
+
+522
+00:07:26,470 --> 00:07:26,480
+big ant little [music] pieces of food
+ 
+
+523
+00:07:26,480 --> 00:07:28,790
+big ant little [music] pieces of food
+while the main camera is panning around.
+
+524
+00:07:28,790 --> 00:07:28,800
+while the main camera is panning around.
+ 
+
+525
+00:07:28,800 --> 00:07:30,270
+while the main camera is panning around.
+So, actually generating the 3D
+
+526
+00:07:30,270 --> 00:07:30,280
+So, actually generating the 3D
+ 
+
+527
+00:07:30,280 --> 00:07:31,790
+So, actually generating the 3D
+environments didn't actually cost me
+
+528
+00:07:31,790 --> 00:07:31,800
+environments didn't actually cost me
+ 
+
+529
+00:07:31,800 --> 00:07:33,110
+environments didn't actually cost me
+that much. Most of the time it was like
+
+530
+00:07:33,110 --> 00:07:33,120
+that much. Most of the time it was like
+ 
+
+531
+00:07:33,120 --> 00:07:34,670
+that much. Most of the time it was like
+50 to 100 credits per [music]
+
+532
+00:07:34,670 --> 00:07:34,680
+50 to 100 credits per [music]
+ 
+
+533
+00:07:34,680 --> 00:07:36,190
+50 to 100 credits per [music]
+environment. What actually ended up
+
+534
+00:07:36,190 --> 00:07:36,200
+environment. What actually ended up
+ 
+
+535
+00:07:36,200 --> 00:07:38,070
+environment. What actually ended up
+costing more for me was just rendering
+
+536
+00:07:38,070 --> 00:07:38,080
+costing more for me was just rendering
+ 
+
+537
+00:07:38,080 --> 00:07:39,950
+costing more for me was just rendering
+them out with the textures and sometimes
+
+538
+00:07:39,950 --> 00:07:39,960
+them out with the textures and sometimes
+ 
+
+539
+00:07:39,960 --> 00:07:42,390
+them out with the textures and sometimes
+using C does 2.5 20 seconds it can get
+
+540
+00:07:42,390 --> 00:07:42,400
+using C does 2.5 20 seconds it can get
+ 
+
+541
+00:07:42,400 --> 00:07:43,950
+using C does 2.5 20 seconds it can get
+up to like 200 credits and that's where
+
+542
+00:07:43,950 --> 00:07:43,960
+up to like 200 credits and that's where
+ 
+
+543
+00:07:43,960 --> 00:07:45,670
+up to like 200 credits and that's where
+I saw most of my credits going. So if I
+
+544
+00:07:45,670 --> 00:07:45,680
+I saw most of my credits going. So if I
+ 
+
+545
+00:07:45,680 --> 00:07:48,190
+I saw most of my credits going. So if I
+look at my files here, I generated 17 3D
+
+546
+00:07:48,190 --> 00:07:48,200
+look at my files here, I generated 17 3D
+ 
+
+547
+00:07:48,200 --> 00:07:50,870
+look at my files here, I generated 17 3D
+videos for this tutorial.
+
+548
+00:07:50,870 --> 00:07:50,880
+videos for this tutorial.
+ 
+
+549
+00:07:50,880 --> 00:07:52,670
+videos for this tutorial.
+And so if I bring up my calculator here,
+
+550
+00:07:52,670 --> 00:07:52,680
+And so if I bring up my calculator here,
+ 
+
+551
+00:07:52,680 --> 00:07:54,950
+And so if I bring up my calculator here,
+and so the 17 videos costed me 3,000
+
+552
+00:07:54,950 --> 00:07:54,960
+and so the 17 videos costed me 3,000
+ 
+
+553
+00:07:54,960 --> 00:07:57,230
+and so the 17 videos costed me 3,000
+credits which totals about 200 seconds
+
+554
+00:07:57,230 --> 00:07:57,240
+credits which totals about 200 seconds
+ 
+
+555
+00:07:57,240 --> 00:07:58,990
+credits which totals about 200 seconds
+of video. But that's also keeping in
+
+556
+00:07:58,990 --> 00:07:59,000
+of video. But that's also keeping in
+ 
+
+557
+00:07:59,000 --> 00:08:01,030
+of video. But that's also keeping in
+mind that I generated an entirely new
+
+558
+00:08:01,030 --> 00:08:01,040
+mind that I generated an entirely new
+ 
+
+559
+00:08:01,040 --> 00:08:02,950
+mind that I generated an entirely new
+environment for every scene. It would be
+
+560
+00:08:02,950 --> 00:08:02,960
+environment for every scene. It would be
+ 
+
+561
+00:08:02,960 --> 00:08:04,670
+environment for every scene. It would be
+a lot cheaper if you just stuck to the
+
+562
+00:08:04,670 --> 00:08:04,680
+a lot cheaper if you just stuck to the
+ 
+
+563
+00:08:04,680 --> 00:08:06,750
+a lot cheaper if you just stuck to the
+same environment. So let me know down
+
+564
+00:08:06,750 --> 00:08:06,760
+same environment. So let me know down
+ 
+
+565
+00:08:06,760 --> 00:08:08,630
+same environment. So let me know down
+below in the comments what 3D videos you
+
+566
+00:08:08,630 --> 00:08:08,640
+below in the comments what 3D videos you
+ 
+
+567
+00:08:08,640 --> 00:08:11,720
+below in the comments what 3D videos you
+were able to generate.
+

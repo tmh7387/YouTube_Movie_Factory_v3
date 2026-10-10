@@ -1,0 +1,14 @@
+SECTION 1 — Image
+Render one 16:9 photographic cinematic empty train vestibule. Arri Alexa 65, Panavision C Series Anamorphic. Warm interior practical lighting and blue-hour station light.
+
+SECTION 2 — Connected Layout and Camera
+Use @PressOn_Connected_Vestibule for the actual connected floor plan and framing. Camera inside the vestibule looks outward through the open boarding doorway, with the internal passenger-corridor doorway visible on screen-left. Show the corridor continuing through that open internal doorway. Hold its glass door leaf fully open against the corridor wall so the walkable passage is plainly visible. The route enters from the platform, steps up into the vestibule, then turns right from the boarding person's perspective into the screen-left corridor. Keep both openings and the connecting floor visible.
+
+SECTION 3 — Boarding Door and Steps
+Use @Train-door for exterior door design, trim and hardware. Preserve the 1.10-metre-wide and 2.20-metre-high aperture in the connected geometry guide. Show the door fully open. The vestibule floor is elevated above the platform. Show its threshold, the intermediate boarding tread below it, and the platform below that tread. Use @PressOn_Raised_Door_Guide only to clarify this stepped relationship; use the connected guide for the room layout and camera. Keep the step edges and contact shadows readable.
+
+SECTION 4 — Photographic Station Reference
+Use @PressOn_Verse1_Platform as the station-design authority: reproduce its ornate iron columns, arched decorative panels, tall glazing, warm lamps and pale platform paving in the portion visible through the boarding doorway. Reproject this station into the doorway camera view. Use @Platform_morn for blue-hour illumination. The 3D guide supplies spatial placement only; finish the station with the photographic reference architecture and materials.
+
+SECTION 5 — Finish
+One empty photographic environment. Walnut and brass vestibule surfaces; realistic metal and glazing. Keep the boarding opening, lower steps, platform architecture and open screen-left corridor entrance sharp enough to inspect. The passenger passage remains physically connected and clear. Train stationary.

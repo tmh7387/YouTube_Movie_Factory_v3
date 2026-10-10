@@ -1,0 +1,2765 @@
+1
+00:00:01,839 --> 00:00:03,429
+
+So, if you're a filmmaker or you're into
+
+2
+00:00:03,429 --> 00:00:03,439
+So, if you're a filmmaker or you're into
+ 
+
+3
+00:00:03,439 --> 00:00:04,950
+So, if you're a filmmaker or you're into
+animation and you're looking for a quick
+
+4
+00:00:04,950 --> 00:00:04,960
+animation and you're looking for a quick
+ 
+
+5
+00:00:04,960 --> 00:00:06,789
+animation and you're looking for a quick
+process that you can use to previsualize
+
+6
+00:00:06,789 --> 00:00:06,799
+process that you can use to previsualize
+ 
+
+7
+00:00:06,799 --> 00:00:08,549
+process that you can use to previsualize
+or bring your concept to life, then you
+
+8
+00:00:08,549 --> 00:00:08,559
+or bring your concept to life, then you
+ 
+
+9
+00:00:08,559 --> 00:00:09,750
+or bring your concept to life, then you
+can actually go ahead and start
+
+10
+00:00:09,750 --> 00:00:09,760
+can actually go ahead and start
+ 
+
+11
+00:00:09,760 --> 00:00:11,509
+can actually go ahead and start
+exploring these beautiful workflow that
+
+12
+00:00:11,509 --> 00:00:11,519
+exploring these beautiful workflow that
+ 
+
+13
+00:00:11,519 --> 00:00:13,190
+exploring these beautiful workflow that
+the folks at Higfield are now doing with
+
+14
+00:00:13,190 --> 00:00:13,200
+the folks at Higfield are now doing with
+ 
+
+15
+00:00:13,200 --> 00:00:14,870
+the folks at Higfield are now doing with
+Blender. It is quite interesting what
+
+16
+00:00:14,870 --> 00:00:14,880
+Blender. It is quite interesting what
+ 
+
+17
+00:00:14,880 --> 00:00:16,790
+Blender. It is quite interesting what
+this can now do. All you need to do is
+
+18
+00:00:16,790 --> 00:00:16,800
+this can now do. All you need to do is
+ 
+
+19
+00:00:16,800 --> 00:00:18,390
+this can now do. All you need to do is
+put a couple of props in place right
+
+20
+00:00:18,390 --> 00:00:18,400
+put a couple of props in place right
+ 
+
+21
+00:00:18,400 --> 00:00:20,070
+put a couple of props in place right
+inside of Blender with a few movement
+
+22
+00:00:20,070 --> 00:00:20,080
+inside of Blender with a few movement
+ 
+
+23
+00:00:20,080 --> 00:00:21,750
+inside of Blender with a few movement
+and camera tweaks and automatically
+
+24
+00:00:21,750 --> 00:00:21,760
+and camera tweaks and automatically
+ 
+
+25
+00:00:21,760 --> 00:00:23,509
+and camera tweaks and automatically
+Hicksfield plugs into Blender and
+
+26
+00:00:23,509 --> 00:00:23,519
+Hicksfield plugs into Blender and
+ 
+
+27
+00:00:23,519 --> 00:00:25,349
+Hicksfield plugs into Blender and
+creates very realistic looking scene.
+
+28
+00:00:25,349 --> 00:00:25,359
+creates very realistic looking scene.
+ 
+
+29
+00:00:25,359 --> 00:00:26,950
+creates very realistic looking scene.
+Now, if you're into film making or
+
+30
+00:00:26,950 --> 00:00:26,960
+Now, if you're into film making or
+ 
+
+31
+00:00:26,960 --> 00:00:29,189
+Now, if you're into film making or
+you're into concept creation or possibly
+
+32
+00:00:29,189 --> 00:00:29,199
+you're into concept creation or possibly
+ 
+
+33
+00:00:29,199 --> 00:00:30,710
+you're into concept creation or possibly
+you're trying to visualize your idea
+
+34
+00:00:30,710 --> 00:00:30,720
+you're trying to visualize your idea
+ 
+
+35
+00:00:30,720 --> 00:00:32,549
+you're trying to visualize your idea
+before you start making the animation,
+
+36
+00:00:32,549 --> 00:00:32,559
+before you start making the animation,
+ 
+
+37
+00:00:32,559 --> 00:00:33,910
+before you start making the animation,
+then this is going to be a wonderful
+
+38
+00:00:33,910 --> 00:00:33,920
+then this is going to be a wonderful
+ 
+
+39
+00:00:33,920 --> 00:00:35,750
+then this is going to be a wonderful
+process that you should start exploring.
+
+40
+00:00:35,750 --> 00:00:35,760
+process that you should start exploring.
+ 
+
+41
+00:00:35,760 --> 00:00:36,950
+process that you should start exploring.
+And today, we're going to take a look at
+
+42
+00:00:36,950 --> 00:00:36,960
+And today, we're going to take a look at
+ 
+
+43
+00:00:36,960 --> 00:00:38,069
+And today, we're going to take a look at
+how you can get started with this
+
+44
+00:00:38,069 --> 00:00:38,079
+how you can get started with this
+ 
+
+45
+00:00:38,079 --> 00:00:39,510
+how you can get started with this
+workflow. And with that said, let's dive
+
+46
+00:00:39,510 --> 00:00:39,520
+workflow. And with that said, let's dive
+ 
+
+47
+00:00:39,520 --> 00:00:42,069
+workflow. And with that said, let's dive
+right into it.
+
+48
+00:00:42,069 --> 00:00:42,079
+right into it.
+ 
+
+49
+00:00:42,079 --> 00:00:43,590
+right into it.
+So, for those who like to get started
+
+50
+00:00:43,590 --> 00:00:43,600
+So, for those who like to get started
+ 
+
+51
+00:00:43,600 --> 00:00:44,869
+So, for those who like to get started
+with this, all you need to do is go over
+
+52
+00:00:44,869 --> 00:00:44,879
+with this, all you need to do is go over
+ 
+
+53
+00:00:44,879 --> 00:00:46,069
+with this, all you need to do is go over
+to the link in the description that will
+
+54
+00:00:46,069 --> 00:00:46,079
+to the link in the description that will
+ 
+
+55
+00:00:46,079 --> 00:00:47,430
+to the link in the description that will
+bring you right here where you can start
+
+56
+00:00:47,430 --> 00:00:47,440
+bring you right here where you can start
+ 
+
+57
+00:00:47,440 --> 00:00:49,350
+bring you right here where you can start
+exploring Hicksfield. So, by default,
+
+58
+00:00:49,350 --> 00:00:49,360
+exploring Hicksfield. So, by default,
+ 
+
+59
+00:00:49,360 --> 00:00:51,670
+exploring Hicksfield. So, by default,
+Hicksfield offers a ton of stuff. And
+
+60
+00:00:51,670 --> 00:00:51,680
+Hicksfield offers a ton of stuff. And
+ 
+
+61
+00:00:51,680 --> 00:00:53,590
+Hicksfield offers a ton of stuff. And
+recently, the folks at Antropics did
+
+62
+00:00:53,590 --> 00:00:53,600
+recently, the folks at Antropics did
+ 
+
+63
+00:00:53,600 --> 00:00:55,830
+recently, the folks at Antropics did
+create an MCP that plugs directly into
+
+64
+00:00:55,830 --> 00:00:55,840
+create an MCP that plugs directly into
+ 
+
+65
+00:00:55,840 --> 00:00:57,590
+create an MCP that plugs directly into
+Blender. And the folks at Hicksfield are
+
+66
+00:00:57,590 --> 00:00:57,600
+Blender. And the folks at Hicksfield are
+ 
+
+67
+00:00:57,600 --> 00:00:59,189
+Blender. And the folks at Hicksfield are
+taking advantage of that to bring a lot
+
+68
+00:00:59,189 --> 00:00:59,199
+taking advantage of that to bring a lot
+ 
+
+69
+00:00:59,199 --> 00:01:00,950
+taking advantage of that to bring a lot
+of creative power to Blender while
+
+70
+00:01:00,950 --> 00:01:00,960
+of creative power to Blender while
+ 
+
+71
+00:01:00,960 --> 00:01:03,029
+of creative power to Blender while
+working handinhand with Cloud. And we
+
+72
+00:01:03,029 --> 00:01:03,039
+working handinhand with Cloud. And we
+ 
+
+73
+00:01:03,039 --> 00:01:04,310
+working handinhand with Cloud. And we
+already demoed how you can get started
+
+74
+00:01:04,310 --> 00:01:04,320
+already demoed how you can get started
+ 
+
+75
+00:01:04,320 --> 00:01:05,830
+already demoed how you can get started
+with Cloud previously, but in this
+
+76
+00:01:05,830 --> 00:01:05,840
+with Cloud previously, but in this
+ 
+
+77
+00:01:05,840 --> 00:01:07,190
+with Cloud previously, but in this
+video, we're simply going to go ahead
+
+78
+00:01:07,190 --> 00:01:07,200
+video, we're simply going to go ahead
+ 
+
+79
+00:01:07,200 --> 00:01:09,270
+video, we're simply going to go ahead
+and take a look at how you can plug all
+
+80
+00:01:09,270 --> 00:01:09,280
+and take a look at how you can plug all
+ 
+
+81
+00:01:09,280 --> 00:01:11,429
+and take a look at how you can plug all
+three together to get very nice looking
+
+82
+00:01:11,429 --> 00:01:11,439
+three together to get very nice looking
+ 
+
+83
+00:01:11,439 --> 00:01:12,950
+three together to get very nice looking
+result. So, once you go over to
+
+84
+00:01:12,950 --> 00:01:12,960
+result. So, once you go over to
+ 
+
+85
+00:01:12,960 --> 00:01:14,550
+result. So, once you go over to
+Hicksfield, you need to go ahead and
+
+86
+00:01:14,550 --> 00:01:14,560
+Hicksfield, you need to go ahead and
+ 
+
+87
+00:01:14,560 --> 00:01:16,149
+Hicksfield, you need to go ahead and
+find the Blender plugin. Now, of course,
+
+88
+00:01:16,149 --> 00:01:16,159
+find the Blender plugin. Now, of course,
+ 
+
+89
+00:01:16,159 --> 00:01:17,190
+find the Blender plugin. Now, of course,
+you can go ahead and download the
+
+90
+00:01:17,190 --> 00:01:17,200
+you can go ahead and download the
+ 
+
+91
+00:01:17,200 --> 00:01:18,630
+you can go ahead and download the
+Blender plugin. And the next thing you
+
+92
+00:01:18,630 --> 00:01:18,640
+Blender plugin. And the next thing you
+ 
+
+93
+00:01:18,640 --> 00:01:20,390
+Blender plugin. And the next thing you
+need to do is to scroll all the way down
+
+94
+00:01:20,390 --> 00:01:20,400
+need to do is to scroll all the way down
+ 
+
+95
+00:01:20,400 --> 00:01:22,950
+need to do is to scroll all the way down
+and copy the bridge URL. Now the bridge
+
+96
+00:01:22,950 --> 00:01:22,960
+and copy the bridge URL. Now the bridge
+ 
+
+97
+00:01:22,960 --> 00:01:25,030
+and copy the bridge URL. Now the bridge
+URL would act as an agent that will work
+
+98
+00:01:25,030 --> 00:01:25,040
+URL would act as an agent that will work
+ 
+
+99
+00:01:25,040 --> 00:01:27,590
+URL would act as an agent that will work
+handinhand with both Cloud and Blender.
+
+100
+00:01:27,590 --> 00:01:27,600
+handinhand with both Cloud and Blender.
+ 
+
+101
+00:01:27,600 --> 00:01:29,590
+handinhand with both Cloud and Blender.
+So go over to Cloud, click on the plus
+
+102
+00:01:29,590 --> 00:01:29,600
+So go over to Cloud, click on the plus
+ 
+
+103
+00:01:29,600 --> 00:01:31,270
+So go over to Cloud, click on the plus
+sign to add a connector. And in this
+
+104
+00:01:31,270 --> 00:01:31,280
+sign to add a connector. And in this
+ 
+
+105
+00:01:31,280 --> 00:01:32,789
+sign to add a connector. And in this
+case, we already added Blender. If you
+
+106
+00:01:32,789 --> 00:01:32,799
+case, we already added Blender. If you
+ 
+
+107
+00:01:32,799 --> 00:01:34,310
+case, we already added Blender. If you
+would like to add a brand new connector,
+
+108
+00:01:34,310 --> 00:01:34,320
+would like to add a brand new connector,
+ 
+
+109
+00:01:34,320 --> 00:01:36,069
+would like to add a brand new connector,
+simply go over to add connector, click
+
+110
+00:01:36,069 --> 00:01:36,079
+simply go over to add connector, click
+ 
+
+111
+00:01:36,079 --> 00:01:37,910
+simply go over to add connector, click
+on browse connectors, and you can search
+
+112
+00:01:37,910 --> 00:01:37,920
+on browse connectors, and you can search
+ 
+
+113
+00:01:37,920 --> 00:01:39,990
+on browse connectors, and you can search
+for Blender and add it. In this case, we
+
+114
+00:01:39,990 --> 00:01:40,000
+for Blender and add it. In this case, we
+ 
+
+115
+00:01:40,000 --> 00:01:41,270
+for Blender and add it. In this case, we
+already added Blender. So we would like
+
+116
+00:01:41,270 --> 00:01:41,280
+already added Blender. So we would like
+ 
+
+117
+00:01:41,280 --> 00:01:43,350
+already added Blender. So we would like
+to add the new one, which is the
+
+118
+00:01:43,350 --> 00:01:43,360
+to add the new one, which is the
+ 
+
+119
+00:01:43,360 --> 00:01:45,109
+to add the new one, which is the
+Hicksfield one. We can now simply go
+
+120
+00:01:45,109 --> 00:01:45,119
+Hicksfield one. We can now simply go
+ 
+
+121
+00:01:45,119 --> 00:01:46,870
+Hicksfield one. We can now simply go
+ahead and add a new connector. Click on
+
+122
+00:01:46,870 --> 00:01:46,880
+ahead and add a new connector. Click on
+ 
+
+123
+00:01:46,880 --> 00:01:48,870
+ahead and add a new connector. Click on
+add connector. Add custom connector. And
+
+124
+00:01:48,870 --> 00:01:48,880
+add connector. Add custom connector. And
+ 
+
+125
+00:01:48,880 --> 00:01:50,469
+add connector. Add custom connector. And
+we're simply going to paste the MCP
+
+126
+00:01:50,469 --> 00:01:50,479
+we're simply going to paste the MCP
+ 
+
+127
+00:01:50,479 --> 00:01:52,630
+we're simply going to paste the MCP
+link. And then type in Hickfield as the
+
+128
+00:01:52,630 --> 00:01:52,640
+link. And then type in Hickfield as the
+ 
+
+129
+00:01:52,640 --> 00:01:54,310
+link. And then type in Hickfield as the
+name. Click on continue to get things
+
+130
+00:01:54,310 --> 00:01:54,320
+name. Click on continue to get things
+ 
+
+131
+00:01:54,320 --> 00:01:56,230
+name. Click on continue to get things
+going. And then we can click on add to
+
+132
+00:01:56,230 --> 00:01:56,240
+going. And then we can click on add to
+ 
+
+133
+00:01:56,240 --> 00:01:58,310
+going. And then we can click on add to
+add it. This will require you to sign
+
+134
+00:01:58,310 --> 00:01:58,320
+add it. This will require you to sign
+ 
+
+135
+00:01:58,320 --> 00:02:00,149
+add it. This will require you to sign
+into your Hickfield account. And once
+
+136
+00:02:00,149 --> 00:02:00,159
+into your Hickfield account. And once
+ 
+
+137
+00:02:00,159 --> 00:02:02,230
+into your Hickfield account. And once
+you do that, that is all. And for a
+
+138
+00:02:02,230 --> 00:02:02,240
+you do that, that is all. And for a
+ 
+
+139
+00:02:02,240 --> 00:02:03,670
+you do that, that is all. And for a
+Blender plug-in, all you need to do is
+
+140
+00:02:03,670 --> 00:02:03,680
+Blender plug-in, all you need to do is
+ 
+
+141
+00:02:03,680 --> 00:02:05,270
+Blender plug-in, all you need to do is
+to drag and drop the Blender plugin that
+
+142
+00:02:05,270 --> 00:02:05,280
+to drag and drop the Blender plugin that
+ 
+
+143
+00:02:05,280 --> 00:02:07,270
+to drag and drop the Blender plugin that
+we downloaded right into Blender. And
+
+144
+00:02:07,270 --> 00:02:07,280
+we downloaded right into Blender. And
+ 
+
+145
+00:02:07,280 --> 00:02:09,270
+we downloaded right into Blender. And
+this is going to install. Then to
+
+146
+00:02:09,270 --> 00:02:09,280
+this is going to install. Then to
+ 
+
+147
+00:02:09,280 --> 00:02:10,550
+this is going to install. Then to
+confirm that this has been installed,
+
+148
+00:02:10,550 --> 00:02:10,560
+confirm that this has been installed,
+ 
+
+149
+00:02:10,560 --> 00:02:11,910
+confirm that this has been installed,
+simply go over to edit, go over to
+
+150
+00:02:11,910 --> 00:02:11,920
+simply go over to edit, go over to
+ 
+
+151
+00:02:11,920 --> 00:02:13,910
+simply go over to edit, go over to
+preference, go over to add-ons, and then
+
+152
+00:02:13,910 --> 00:02:13,920
+preference, go over to add-ons, and then
+ 
+
+153
+00:02:13,920 --> 00:02:15,589
+preference, go over to add-ons, and then
+type in the word Hicksfield to confirm
+
+154
+00:02:15,589 --> 00:02:15,599
+type in the word Hicksfield to confirm
+ 
+
+155
+00:02:15,599 --> 00:02:17,510
+type in the word Hicksfield to confirm
+that Hickfield is installed. Once you
+
+156
+00:02:17,510 --> 00:02:17,520
+that Hickfield is installed. Once you
+ 
+
+157
+00:02:17,520 --> 00:02:18,790
+that Hickfield is installed. Once you
+have that, click on the bugger menu,
+
+158
+00:02:18,790 --> 00:02:18,800
+have that, click on the bugger menu,
+ 
+
+159
+00:02:18,800 --> 00:02:20,550
+have that, click on the bugger menu,
+save your preference, and close the
+
+160
+00:02:20,550 --> 00:02:20,560
+save your preference, and close the
+ 
+
+161
+00:02:20,560 --> 00:02:22,470
+save your preference, and close the
+window. You would also need to sign into
+
+162
+00:02:22,470 --> 00:02:22,480
+window. You would also need to sign into
+ 
+
+163
+00:02:22,480 --> 00:02:24,710
+window. You would also need to sign into
+Hickfield to get things going. And once
+
+164
+00:02:24,710 --> 00:02:24,720
+Hickfield to get things going. And once
+ 
+
+165
+00:02:24,720 --> 00:02:26,229
+Hickfield to get things going. And once
+we've signed into Hickfield and have it
+
+166
+00:02:26,229 --> 00:02:26,239
+we've signed into Hickfield and have it
+ 
+
+167
+00:02:26,239 --> 00:02:27,990
+we've signed into Hickfield and have it
+connected, if we tap in on the keyboard,
+
+168
+00:02:27,990 --> 00:02:28,000
+connected, if we tap in on the keyboard,
+ 
+
+169
+00:02:28,000 --> 00:02:29,110
+connected, if we tap in on the keyboard,
+you would notice that I've got
+
+170
+00:02:29,110 --> 00:02:29,120
+you would notice that I've got
+ 
+
+171
+00:02:29,120 --> 00:02:30,790
+you would notice that I've got
+Hicksfield right here. And from here,
+
+172
+00:02:30,790 --> 00:02:30,800
+Hicksfield right here. And from here,
+ 
+
+173
+00:02:30,800 --> 00:02:32,229
+Hicksfield right here. And from here,
+you can find out a couple of things.
+
+174
+00:02:32,229 --> 00:02:32,239
+you can find out a couple of things.
+ 
+
+175
+00:02:32,239 --> 00:02:33,670
+you can find out a couple of things.
+Now, if we simply go over here as well,
+
+176
+00:02:33,670 --> 00:02:33,680
+Now, if we simply go over here as well,
+ 
+
+177
+00:02:33,680 --> 00:02:35,270
+Now, if we simply go over here as well,
+you would also notice that I've got some
+
+178
+00:02:35,270 --> 00:02:35,280
+you would also notice that I've got some
+ 
+
+179
+00:02:35,280 --> 00:02:37,750
+you would also notice that I've got some
+stuff. If you do have assets, right here
+
+180
+00:02:37,750 --> 00:02:37,760
+stuff. If you do have assets, right here
+ 
+
+181
+00:02:37,760 --> 00:02:39,270
+stuff. If you do have assets, right here
+is where you can find all of your recent
+
+182
+00:02:39,270 --> 00:02:39,280
+is where you can find all of your recent
+ 
+
+183
+00:02:39,280 --> 00:02:41,350
+is where you can find all of your recent
+asset and you can find recent assets
+
+184
+00:02:41,350 --> 00:02:41,360
+asset and you can find recent assets
+ 
+
+185
+00:02:41,360 --> 00:02:43,350
+asset and you can find recent assets
+from here as well. Interestingly, if you
+
+186
+00:02:43,350 --> 00:02:43,360
+from here as well. Interestingly, if you
+ 
+
+187
+00:02:43,360 --> 00:02:44,949
+from here as well. Interestingly, if you
+like to play with various models, if you
+
+188
+00:02:44,949 --> 00:02:44,959
+like to play with various models, if you
+ 
+
+189
+00:02:44,959 --> 00:02:46,550
+like to play with various models, if you
+go over to the scene build, you'll be
+
+190
+00:02:46,550 --> 00:02:46,560
+go over to the scene build, you'll be
+ 
+
+191
+00:02:46,560 --> 00:02:48,229
+go over to the scene build, you'll be
+able to find all the models that you can
+
+192
+00:02:48,229 --> 00:02:48,239
+able to find all the models that you can
+ 
+
+193
+00:02:48,239 --> 00:02:49,990
+able to find all the models that you can
+play with. Over here within the 3D model
+
+194
+00:02:49,990 --> 00:02:50,000
+play with. Over here within the 3D model
+ 
+
+195
+00:02:50,000 --> 00:02:51,350
+play with. Over here within the 3D model
+section, we can also select any of the
+
+196
+00:02:51,350 --> 00:02:51,360
+section, we can also select any of the
+ 
+
+197
+00:02:51,360 --> 00:02:52,949
+section, we can also select any of the
+3D models that would like to work with.
+
+198
+00:02:52,949 --> 00:02:52,959
+3D models that would like to work with.
+ 
+
+199
+00:02:52,959 --> 00:02:54,630
+3D models that would like to work with.
+We can also select parameters for the
+
+200
+00:02:54,630 --> 00:02:54,640
+We can also select parameters for the
+ 
+
+201
+00:02:54,640 --> 00:02:57,830
+We can also select parameters for the
+character animation, images, video, and
+
+202
+00:02:57,830 --> 00:02:57,840
+character animation, images, video, and
+ 
+
+203
+00:02:57,840 --> 00:02:59,670
+character animation, images, video, and
+camera. And of course for the camera, if
+
+204
+00:02:59,670 --> 00:02:59,680
+camera. And of course for the camera, if
+ 
+
+205
+00:02:59,680 --> 00:03:01,190
+camera. And of course for the camera, if
+you like to use your very own mobile
+
+206
+00:03:01,190 --> 00:03:01,200
+you like to use your very own mobile
+ 
+
+207
+00:03:01,200 --> 00:03:03,430
+you like to use your very own mobile
+device to capture the camera movement of
+
+208
+00:03:03,430 --> 00:03:03,440
+device to capture the camera movement of
+ 
+
+209
+00:03:03,440 --> 00:03:05,509
+device to capture the camera movement of
+your scene, you can scan the QR code and
+
+210
+00:03:05,509 --> 00:03:05,519
+your scene, you can scan the QR code and
+ 
+
+211
+00:03:05,519 --> 00:03:07,030
+your scene, you can scan the QR code and
+get started with tape. Now, with this
+
+212
+00:03:07,030 --> 00:03:07,040
+get started with tape. Now, with this
+ 
+
+213
+00:03:07,040 --> 00:03:08,470
+get started with tape. Now, with this
+out of the way, how you get started with
+
+214
+00:03:08,470 --> 00:03:08,480
+out of the way, how you get started with
+ 
+
+215
+00:03:08,480 --> 00:03:10,790
+out of the way, how you get started with
+building stuff right here is very easy.
+
+216
+00:03:10,790 --> 00:03:10,800
+building stuff right here is very easy.
+ 
+
+217
+00:03:10,800 --> 00:03:12,149
+building stuff right here is very easy.
+So, first off, if you like to build
+
+218
+00:03:12,149 --> 00:03:12,159
+So, first off, if you like to build
+ 
+
+219
+00:03:12,159 --> 00:03:13,910
+So, first off, if you like to build
+anything, all you need to do is to
+
+220
+00:03:13,910 --> 00:03:13,920
+anything, all you need to do is to
+ 
+
+221
+00:03:13,920 --> 00:03:16,390
+anything, all you need to do is to
+describe exactly what you want. So, for
+
+222
+00:03:16,390 --> 00:03:16,400
+describe exactly what you want. So, for
+ 
+
+223
+00:03:16,400 --> 00:03:18,229
+describe exactly what you want. So, for
+example, like to describe the scene, we
+
+224
+00:03:18,229 --> 00:03:18,239
+example, like to describe the scene, we
+ 
+
+225
+00:03:18,239 --> 00:03:19,589
+example, like to describe the scene, we
+can either describe the scene right
+
+226
+00:03:19,589 --> 00:03:19,599
+can either describe the scene right
+ 
+
+227
+00:03:19,599 --> 00:03:21,589
+can either describe the scene right
+here, or you can simply use Cloud Fable
+
+228
+00:03:21,589 --> 00:03:21,599
+here, or you can simply use Cloud Fable
+ 
+
+229
+00:03:21,599 --> 00:03:23,430
+here, or you can simply use Cloud Fable
+5 to describe it. Now, with this said,
+
+230
+00:03:23,430 --> 00:03:23,440
+5 to describe it. Now, with this said,
+ 
+
+231
+00:03:23,440 --> 00:03:24,710
+5 to describe it. Now, with this said,
+there's actually something that is very
+
+232
+00:03:24,710 --> 00:03:24,720
+there's actually something that is very
+ 
+
+233
+00:03:24,720 --> 00:03:26,710
+there's actually something that is very
+interesting that the folks at Hickfield
+
+234
+00:03:26,710 --> 00:03:26,720
+interesting that the folks at Hickfield
+ 
+
+235
+00:03:26,720 --> 00:03:28,630
+interesting that the folks at Hickfield
+are doing with all of these, especially
+
+236
+00:03:28,630 --> 00:03:28,640
+are doing with all of these, especially
+ 
+
+237
+00:03:28,640 --> 00:03:29,750
+are doing with all of these, especially
+when it comes to dealing with
+
+238
+00:03:29,750 --> 00:03:29,760
+when it comes to dealing with
+ 
+
+239
+00:03:29,760 --> 00:03:31,430
+when it comes to dealing with
+connectors. And that can be seen when
+
+240
+00:03:31,430 --> 00:03:31,440
+connectors. And that can be seen when
+ 
+
+241
+00:03:31,440 --> 00:03:33,350
+connectors. And that can be seen when
+you work with co-work right inside of
+
+242
+00:03:33,350 --> 00:03:33,360
+you work with co-work right inside of
+ 
+
+243
+00:03:33,360 --> 00:03:35,430
+you work with co-work right inside of
+Cloud because we now have Hicksfield,
+
+244
+00:03:35,430 --> 00:03:35,440
+Cloud because we now have Hicksfield,
+ 
+
+245
+00:03:35,440 --> 00:03:37,670
+Cloud because we now have Hicksfield,
+Blender, and Cloud all connected. And
+
+246
+00:03:37,670 --> 00:03:37,680
+Blender, and Cloud all connected. And
+ 
+
+247
+00:03:37,680 --> 00:03:39,589
+Blender, and Cloud all connected. And
+right here, you also need to set this to
+
+248
+00:03:39,589 --> 00:03:39,599
+right here, you also need to set this to
+ 
+
+249
+00:03:39,599 --> 00:03:41,670
+right here, you also need to set this to
+Fable 5.1. Of course, you can use any of
+
+250
+00:03:41,670 --> 00:03:41,680
+Fable 5.1. Of course, you can use any of
+ 
+
+251
+00:03:41,680 --> 00:03:43,670
+Fable 5.1. Of course, you can use any of
+these ones that exist. However, Fable
+
+252
+00:03:43,670 --> 00:03:43,680
+these ones that exist. However, Fable
+ 
+
+253
+00:03:43,680 --> 00:03:45,509
+these ones that exist. However, Fable
+5.1 is the most recent model that the
+
+254
+00:03:45,509 --> 00:03:45,519
+5.1 is the most recent model that the
+ 
+
+255
+00:03:45,519 --> 00:03:47,430
+5.1 is the most recent model that the
+folks at Antropic have put together.
+
+256
+00:03:47,430 --> 00:03:47,440
+folks at Antropic have put together.
+ 
+
+257
+00:03:47,440 --> 00:03:49,110
+folks at Antropic have put together.
+Then, from here, we can start defining
+
+258
+00:03:49,110 --> 00:03:49,120
+Then, from here, we can start defining
+ 
+
+259
+00:03:49,120 --> 00:03:51,110
+Then, from here, we can start defining
+exactly what we want. And in this case,
+
+260
+00:03:51,110 --> 00:03:51,120
+exactly what we want. And in this case,
+ 
+
+261
+00:03:51,120 --> 00:03:53,110
+exactly what we want. And in this case,
+we can actually tell CLA to connect to
+
+262
+00:03:53,110 --> 00:03:53,120
+we can actually tell CLA to connect to
+ 
+
+263
+00:03:53,120 --> 00:03:54,949
+we can actually tell CLA to connect to
+Blender through Hicksfield Bridge and
+
+264
+00:03:54,949 --> 00:03:54,959
+Blender through Hicksfield Bridge and
+ 
+
+265
+00:03:54,959 --> 00:03:57,110
+Blender through Hicksfield Bridge and
+build a 30 seconds chase in a single
+
+266
+00:03:57,110 --> 00:03:57,120
+build a 30 seconds chase in a single
+ 
+
+267
+00:03:57,120 --> 00:03:58,949
+build a 30 seconds chase in a single
+scene. We're also going to describe the
+
+268
+00:03:58,949 --> 00:03:58,959
+scene. We're also going to describe the
+ 
+
+269
+00:03:58,959 --> 00:04:00,390
+scene. We're also going to describe the
+kind of vehicle that we want. In this
+
+270
+00:04:00,390 --> 00:04:00,400
+kind of vehicle that we want. In this
+ 
+
+271
+00:04:00,400 --> 00:04:02,229
+kind of vehicle that we want. In this
+case, we like a black sports car that
+
+272
+00:04:02,229 --> 00:04:02,239
+case, we like a black sports car that
+ 
+
+273
+00:04:02,239 --> 00:04:04,630
+case, we like a black sports car that
+speeds through a wet city at night while
+
+274
+00:04:04,630 --> 00:04:04,640
+speeds through a wet city at night while
+ 
+
+275
+00:04:04,640 --> 00:04:06,630
+speeds through a wet city at night while
+a dark police car follows closely
+
+276
+00:04:06,630 --> 00:04:06,640
+a dark police car follows closely
+ 
+
+277
+00:04:06,640 --> 00:04:07,990
+a dark police car follows closely
+behind. We would like to have some
+
+278
+00:04:07,990 --> 00:04:08,000
+behind. We would like to have some
+ 
+
+279
+00:04:08,000 --> 00:04:09,750
+behind. We would like to have some
+buildings, some street lights, the wet
+
+280
+00:04:09,750 --> 00:04:09,760
+buildings, some street lights, the wet
+ 
+
+281
+00:04:09,760 --> 00:04:11,270
+buildings, some street lights, the wet
+road. We're simply going to define all
+
+282
+00:04:11,270 --> 00:04:11,280
+road. We're simply going to define all
+ 
+
+283
+00:04:11,280 --> 00:04:13,190
+road. We're simply going to define all
+of that, including the headlights, tire
+
+284
+00:04:13,190 --> 00:04:13,200
+of that, including the headlights, tire
+ 
+
+285
+00:04:13,200 --> 00:04:15,509
+of that, including the headlights, tire
+smoke, and realistic vehicle movements.
+
+286
+00:04:15,509 --> 00:04:15,519
+smoke, and realistic vehicle movements.
+ 
+
+287
+00:04:15,519 --> 00:04:16,949
+smoke, and realistic vehicle movements.
+And something which is very interesting
+
+288
+00:04:16,949 --> 00:04:16,959
+And something which is very interesting
+ 
+
+289
+00:04:16,959 --> 00:04:18,949
+And something which is very interesting
+is because we are sort of describing
+
+290
+00:04:18,949 --> 00:04:18,959
+is because we are sort of describing
+ 
+
+291
+00:04:18,959 --> 00:04:20,629
+is because we are sort of describing
+what we want. We can also tell it to use
+
+292
+00:04:20,629 --> 00:04:20,639
+what we want. We can also tell it to use
+ 
+
+293
+00:04:20,639 --> 00:04:22,950
+what we want. We can also tell it to use
+dynamic chase cameras to follow the cars
+
+294
+00:04:22,950 --> 00:04:22,960
+dynamic chase cameras to follow the cars
+ 
+
+295
+00:04:22,960 --> 00:04:24,629
+dynamic chase cameras to follow the cars
+from behind. We can literally describe
+
+296
+00:04:24,629 --> 00:04:24,639
+from behind. We can literally describe
+ 
+
+297
+00:04:24,639 --> 00:04:26,469
+from behind. We can literally describe
+how we like the cameras to behave and
+
+298
+00:04:26,469 --> 00:04:26,479
+how we like the cameras to behave and
+ 
+
+299
+00:04:26,479 --> 00:04:28,150
+how we like the cameras to behave and
+cloud will go to work and build our
+
+300
+00:04:28,150 --> 00:04:28,160
+cloud will go to work and build our
+ 
+
+301
+00:04:28,160 --> 00:04:29,830
+cloud will go to work and build our
+scene based off every single thing that
+
+302
+00:04:29,830 --> 00:04:29,840
+scene based off every single thing that
+ 
+
+303
+00:04:29,840 --> 00:04:31,590
+scene based off every single thing that
+we've just told it to do. And once we're
+
+304
+00:04:31,590 --> 00:04:31,600
+we've just told it to do. And once we're
+ 
+
+305
+00:04:31,600 --> 00:04:33,189
+we've just told it to do. And once we're
+done typing, we can press the enter key
+
+306
+00:04:33,189 --> 00:04:33,199
+done typing, we can press the enter key
+ 
+
+307
+00:04:33,199 --> 00:04:34,950
+done typing, we can press the enter key
+and this will start building our scene.
+
+308
+00:04:34,950 --> 00:04:34,960
+and this will start building our scene.
+ 
+
+309
+00:04:34,960 --> 00:04:36,550
+and this will start building our scene.
+In various instances, this is going to
+
+310
+00:04:36,550 --> 00:04:36,560
+In various instances, this is going to
+ 
+
+311
+00:04:36,560 --> 00:04:38,230
+In various instances, this is going to
+ask you to allow permission for various
+
+312
+00:04:38,230 --> 00:04:38,240
+ask you to allow permission for various
+ 
+
+313
+00:04:38,240 --> 00:04:40,150
+ask you to allow permission for various
+stuff. And you can actually go ahead and
+
+314
+00:04:40,150 --> 00:04:40,160
+stuff. And you can actually go ahead and
+ 
+
+315
+00:04:40,160 --> 00:04:41,510
+stuff. And you can actually go ahead and
+allow it. So, we're simply going to
+
+316
+00:04:41,510 --> 00:04:41,520
+allow it. So, we're simply going to
+ 
+
+317
+00:04:41,520 --> 00:04:42,870
+allow it. So, we're simply going to
+allow all of the permissions that it
+
+318
+00:04:42,870 --> 00:04:42,880
+allow all of the permissions that it
+ 
+
+319
+00:04:42,880 --> 00:04:44,950
+allow all of the permissions that it
+requires us to and simply watch this
+
+320
+00:04:44,950 --> 00:04:44,960
+requires us to and simply watch this
+ 
+
+321
+00:04:44,960 --> 00:04:47,030
+requires us to and simply watch this
+build our scene from scratch. And once
+
+322
+00:04:47,030 --> 00:04:47,040
+build our scene from scratch. And once
+ 
+
+323
+00:04:47,040 --> 00:04:49,110
+build our scene from scratch. And once
+this is done, this is what we have. We
+
+324
+00:04:49,110 --> 00:04:49,120
+this is done, this is what we have. We
+ 
+
+325
+00:04:49,120 --> 00:04:51,110
+this is done, this is what we have. We
+do have a couple of renders. And if you
+
+326
+00:04:51,110 --> 00:04:51,120
+do have a couple of renders. And if you
+ 
+
+327
+00:04:51,120 --> 00:04:52,790
+do have a couple of renders. And if you
+simply click on this button and go over
+
+328
+00:04:52,790 --> 00:04:52,800
+simply click on this button and go over
+ 
+
+329
+00:04:52,800 --> 00:04:55,030
+simply click on this button and go over
+to show in folder, this going to open up
+
+330
+00:04:55,030 --> 00:04:55,040
+to show in folder, this going to open up
+ 
+
+331
+00:04:55,040 --> 00:04:56,870
+to show in folder, this going to open up
+the folder where you can preview
+
+332
+00:04:56,870 --> 00:04:56,880
+the folder where you can preview
+ 
+
+333
+00:04:56,880 --> 00:04:59,670
+the folder where you can preview
+individual render shots that this has
+
+334
+00:04:59,670 --> 00:04:59,680
+individual render shots that this has
+ 
+
+335
+00:04:59,680 --> 00:05:01,909
+individual render shots that this has
+done and things are looking pretty nice.
+
+336
+00:05:01,909 --> 00:05:01,919
+done and things are looking pretty nice.
+ 
+
+337
+00:05:01,919 --> 00:05:03,110
+done and things are looking pretty nice.
+Now, let's take a look at what we have
+
+338
+00:05:03,110 --> 00:05:03,120
+Now, let's take a look at what we have
+ 
+
+339
+00:05:03,120 --> 00:05:04,790
+Now, let's take a look at what we have
+inside of Blender. If we jump right
+
+340
+00:05:04,790 --> 00:05:04,800
+inside of Blender. If we jump right
+ 
+
+341
+00:05:04,800 --> 00:05:06,469
+inside of Blender. If we jump right
+inside of Blender and press playback
+
+342
+00:05:06,469 --> 00:05:06,479
+inside of Blender and press playback
+ 
+
+343
+00:05:06,479 --> 00:05:08,790
+inside of Blender and press playback
+button, you'll notice that we have the
+
+344
+00:05:08,790 --> 00:05:08,800
+button, you'll notice that we have the
+ 
+
+345
+00:05:08,800 --> 00:05:10,870
+button, you'll notice that we have the
+scene fully built. We've got the street
+
+346
+00:05:10,870 --> 00:05:10,880
+scene fully built. We've got the street
+ 
+
+347
+00:05:10,880 --> 00:05:12,629
+scene fully built. We've got the street
+lights. We've got vehicles. We've got
+
+348
+00:05:12,629 --> 00:05:12,639
+lights. We've got vehicles. We've got
+ 
+
+349
+00:05:12,639 --> 00:05:15,110
+lights. We've got vehicles. We've got
+the camera animation. And you can notice
+
+350
+00:05:15,110 --> 00:05:15,120
+the camera animation. And you can notice
+ 
+
+351
+00:05:15,120 --> 00:05:17,350
+the camera animation. And you can notice
+that we have various elements that has
+
+352
+00:05:17,350 --> 00:05:17,360
+that we have various elements that has
+ 
+
+353
+00:05:17,360 --> 00:05:18,870
+that we have various elements that has
+been built to give us that
+
+354
+00:05:18,870 --> 00:05:18,880
+been built to give us that
+ 
+
+355
+00:05:18,880 --> 00:05:21,110
+been built to give us that
+previsisualized view of what the
+
+356
+00:05:21,110 --> 00:05:21,120
+previsisualized view of what the
+ 
+
+357
+00:05:21,120 --> 00:05:23,510
+previsisualized view of what the
+original idea that we have is going to
+
+358
+00:05:23,510 --> 00:05:23,520
+original idea that we have is going to
+ 
+
+359
+00:05:23,520 --> 00:05:25,670
+original idea that we have is going to
+look like when we start building. We can
+
+360
+00:05:25,670 --> 00:05:25,680
+look like when we start building. We can
+ 
+
+361
+00:05:25,680 --> 00:05:27,350
+look like when we start building. We can
+actually jump out of the camera view,
+
+362
+00:05:27,350 --> 00:05:27,360
+actually jump out of the camera view,
+ 
+
+363
+00:05:27,360 --> 00:05:30,310
+actually jump out of the camera view,
+inspect this entire cool city that this
+
+364
+00:05:30,310 --> 00:05:30,320
+inspect this entire cool city that this
+ 
+
+365
+00:05:30,320 --> 00:05:32,550
+inspect this entire cool city that this
+has put together. All modeling,
+
+366
+00:05:32,550 --> 00:05:32,560
+has put together. All modeling,
+ 
+
+367
+00:05:32,560 --> 00:05:35,430
+has put together. All modeling,
+lighting, every single thing was simply
+
+368
+00:05:35,430 --> 00:05:35,440
+lighting, every single thing was simply
+ 
+
+369
+00:05:35,440 --> 00:05:38,230
+lighting, every single thing was simply
+done. So all we need to do is to confirm
+
+370
+00:05:38,230 --> 00:05:38,240
+done. So all we need to do is to confirm
+ 
+
+371
+00:05:38,240 --> 00:05:39,990
+done. So all we need to do is to confirm
+that we're happy with what we have. If
+
+372
+00:05:39,990 --> 00:05:40,000
+that we're happy with what we have. If
+ 
+
+373
+00:05:40,000 --> 00:05:41,749
+that we're happy with what we have. If
+we go back into the camera view, if
+
+374
+00:05:41,749 --> 00:05:41,759
+we go back into the camera view, if
+ 
+
+375
+00:05:41,759 --> 00:05:42,950
+we go back into the camera view, if
+there are certain changes I would like
+
+376
+00:05:42,950 --> 00:05:42,960
+there are certain changes I would like
+ 
+
+377
+00:05:42,960 --> 00:05:44,710
+there are certain changes I would like
+to make, we can make them. If you want
+
+378
+00:05:44,710 --> 00:05:44,720
+to make, we can make them. If you want
+ 
+
+379
+00:05:44,720 --> 00:05:46,390
+to make, we can make them. If you want
+to actually, you know, animate certain
+
+380
+00:05:46,390 --> 00:05:46,400
+to actually, you know, animate certain
+ 
+
+381
+00:05:46,400 --> 00:05:48,390
+to actually, you know, animate certain
+things or make various changes, you can
+
+382
+00:05:48,390 --> 00:05:48,400
+things or make various changes, you can
+ 
+
+383
+00:05:48,400 --> 00:05:50,469
+things or make various changes, you can
+actually go in and do all of that. The
+
+384
+00:05:50,469 --> 00:05:50,479
+actually go in and do all of that. The
+ 
+
+385
+00:05:50,479 --> 00:05:52,550
+actually go in and do all of that. The
+next thing we need to do is to render it
+
+386
+00:05:52,550 --> 00:05:52,560
+next thing we need to do is to render it
+ 
+
+387
+00:05:52,560 --> 00:05:54,550
+next thing we need to do is to render it
+out. And to render this out is very
+
+388
+00:05:54,550 --> 00:05:54,560
+out. And to render this out is very
+ 
+
+389
+00:05:54,560 --> 00:05:56,390
+out. And to render this out is very
+simple. Go over to output properties.
+
+390
+00:05:56,390 --> 00:05:56,400
+simple. Go over to output properties.
+ 
+
+391
+00:05:56,400 --> 00:05:57,590
+simple. Go over to output properties.
+Scroll all the way down to where you
+
+392
+00:05:57,590 --> 00:05:57,600
+Scroll all the way down to where you
+ 
+
+393
+00:05:57,600 --> 00:05:59,029
+Scroll all the way down to where you
+have output. Make sure the media is set
+
+394
+00:05:59,029 --> 00:05:59,039
+have output. Make sure the media is set
+ 
+
+395
+00:05:59,039 --> 00:06:02,390
+have output. Make sure the media is set
+to video. The container meg 4 is ideal.
+
+396
+00:06:02,390 --> 00:06:02,400
+to video. The container meg 4 is ideal.
+ 
+
+397
+00:06:02,400 --> 00:06:05,749
+to video. The container meg 4 is ideal.
+set the video codec to H264
+
+398
+00:06:05,749 --> 00:06:05,759
+set the video codec to H264
+ 
+
+399
+00:06:05,759 --> 00:06:08,150
+set the video codec to H264
+and you can also go ahead and set some
+
+400
+00:06:08,150 --> 00:06:08,160
+and you can also go ahead and set some
+ 
+
+401
+00:06:08,160 --> 00:06:10,390
+and you can also go ahead and set some
+other parameters that you want. Now once
+
+402
+00:06:10,390 --> 00:06:10,400
+other parameters that you want. Now once
+ 
+
+403
+00:06:10,400 --> 00:06:11,990
+other parameters that you want. Now once
+you have this ready, it's also worth
+
+404
+00:06:11,990 --> 00:06:12,000
+you have this ready, it's also worth
+ 
+
+405
+00:06:12,000 --> 00:06:13,830
+you have this ready, it's also worth
+mentioning that the resolution is also
+
+406
+00:06:13,830 --> 00:06:13,840
+mentioning that the resolution is also
+ 
+
+407
+00:06:13,840 --> 00:06:15,990
+mentioning that the resolution is also
+dependent on what you want to create. So
+
+408
+00:06:15,990 --> 00:06:16,000
+dependent on what you want to create. So
+ 
+
+409
+00:06:16,000 --> 00:06:17,350
+dependent on what you want to create. So
+in this case, I'm simply going to go
+
+410
+00:06:17,350 --> 00:06:17,360
+in this case, I'm simply going to go
+ 
+
+411
+00:06:17,360 --> 00:06:20,950
+in this case, I'm simply going to go
+ahead and set this to HD TV, which is a
+
+412
+00:06:20,950 --> 00:06:20,960
+ahead and set this to HD TV, which is a
+ 
+
+413
+00:06:20,960 --> 00:06:24,870
+ahead and set this to HD TV, which is a
+typical 1920x 1080. And this is also
+
+414
+00:06:24,870 --> 00:06:24,880
+typical 1920x 1080. And this is also
+ 
+
+415
+00:06:24,880 --> 00:06:27,749
+typical 1920x 1080. And this is also
+going to be a 24 frames pers video. And
+
+416
+00:06:27,749 --> 00:06:27,759
+going to be a 24 frames pers video. And
+ 
+
+417
+00:06:27,759 --> 00:06:29,350
+going to be a 24 frames pers video. And
+I'm going to leave the frame start and
+
+418
+00:06:29,350 --> 00:06:29,360
+I'm going to leave the frame start and
+ 
+
+419
+00:06:29,360 --> 00:06:31,350
+I'm going to leave the frame start and
+the frame stop how it is. Now once we
+
+420
+00:06:31,350 --> 00:06:31,360
+the frame stop how it is. Now once we
+ 
+
+421
+00:06:31,360 --> 00:06:33,029
+the frame stop how it is. Now once we
+have this done, go over to the viewport
+
+422
+00:06:33,029 --> 00:06:33,039
+have this done, go over to the viewport
+ 
+
+423
+00:06:33,039 --> 00:06:34,950
+have this done, go over to the viewport
+view menu, go all the way down and click
+
+424
+00:06:34,950 --> 00:06:34,960
+view menu, go all the way down and click
+ 
+
+425
+00:06:34,960 --> 00:06:36,790
+view menu, go all the way down and click
+on render play blast. And this will
+
+426
+00:06:36,790 --> 00:06:36,800
+on render play blast. And this will
+ 
+
+427
+00:06:36,800 --> 00:06:39,029
+on render play blast. And this will
+begin to render the play blast of our
+
+428
+00:06:39,029 --> 00:06:39,039
+begin to render the play blast of our
+ 
+
+429
+00:06:39,039 --> 00:06:41,189
+begin to render the play blast of our
+scene. And now once this is done, we're
+
+430
+00:06:41,189 --> 00:06:41,199
+scene. And now once this is done, we're
+ 
+
+431
+00:06:41,199 --> 00:06:43,029
+scene. And now once this is done, we're
+simply going to go ahead and open up
+
+432
+00:06:43,029 --> 00:06:43,039
+simply going to go ahead and open up
+ 
+
+433
+00:06:43,039 --> 00:06:44,950
+simply going to go ahead and open up
+claude. And once we open up cloud, we're
+
+434
+00:06:44,950 --> 00:06:44,960
+claude. And once we open up cloud, we're
+ 
+
+435
+00:06:44,960 --> 00:06:47,270
+claude. And once we open up cloud, we're
+simply going to import our viewport play
+
+436
+00:06:47,270 --> 00:06:47,280
+simply going to import our viewport play
+ 
+
+437
+00:06:47,280 --> 00:06:49,110
+simply going to import our viewport play
+and the references of various stuff that
+
+438
+00:06:49,110 --> 00:06:49,120
+and the references of various stuff that
+ 
+
+439
+00:06:49,120 --> 00:06:51,029
+and the references of various stuff that
+we want to use to drive the key objects
+
+440
+00:06:51,029 --> 00:06:51,039
+we want to use to drive the key objects
+ 
+
+441
+00:06:51,039 --> 00:06:53,270
+we want to use to drive the key objects
+in our scene. And once we put that in,
+
+442
+00:06:53,270 --> 00:06:53,280
+in our scene. And once we put that in,
+ 
+
+443
+00:06:53,280 --> 00:06:55,270
+in our scene. And once we put that in,
+we'll tell CLA to write a 30 secondond C
+
+444
+00:06:55,270 --> 00:06:55,280
+we'll tell CLA to write a 30 secondond C
+ 
+
+445
+00:06:55,280 --> 00:06:56,870
+we'll tell CLA to write a 30 secondond C
+dance prompt, which is based on the
+
+446
+00:06:56,870 --> 00:06:56,880
+dance prompt, which is based on the
+ 
+
+447
+00:06:56,880 --> 00:06:58,790
+dance prompt, which is based on the
+video blocking that we have. It should
+
+448
+00:06:58,790 --> 00:06:58,800
+video blocking that we have. It should
+ 
+
+449
+00:06:58,800 --> 00:07:00,870
+video blocking that we have. It should
+read the impute video and write out the
+
+450
+00:07:00,870 --> 00:07:00,880
+read the impute video and write out the
+ 
+
+451
+00:07:00,880 --> 00:07:02,950
+read the impute video and write out the
+prompt second by second to match the
+
+452
+00:07:02,950 --> 00:07:02,960
+prompt second by second to match the
+ 
+
+453
+00:07:02,960 --> 00:07:05,270
+prompt second by second to match the
+camera motion in the clip. And once you
+
+454
+00:07:05,270 --> 00:07:05,280
+camera motion in the clip. And once you
+ 
+
+455
+00:07:05,280 --> 00:07:07,110
+camera motion in the clip. And once you
+have that, press the enter button and
+
+456
+00:07:07,110 --> 00:07:07,120
+have that, press the enter button and
+ 
+
+457
+00:07:07,120 --> 00:07:08,550
+have that, press the enter button and
+cloud is going to go through and read
+
+458
+00:07:08,550 --> 00:07:08,560
+cloud is going to go through and read
+ 
+
+459
+00:07:08,560 --> 00:07:10,629
+cloud is going to go through and read
+the entire clip frame by frame and write
+
+460
+00:07:10,629 --> 00:07:10,639
+the entire clip frame by frame and write
+ 
+
+461
+00:07:10,639 --> 00:07:12,390
+the entire clip frame by frame and write
+the prompt to match what the camera is
+
+462
+00:07:12,390 --> 00:07:12,400
+the prompt to match what the camera is
+ 
+
+463
+00:07:12,400 --> 00:07:15,189
+the prompt to match what the camera is
+actually doing. And once the prompt is
+
+464
+00:07:15,189 --> 00:07:15,199
+actually doing. And once the prompt is
+ 
+
+465
+00:07:15,199 --> 00:07:16,790
+actually doing. And once the prompt is
+done, what we need to do is just simply
+
+466
+00:07:16,790 --> 00:07:16,800
+done, what we need to do is just simply
+ 
+
+467
+00:07:16,800 --> 00:07:18,950
+done, what we need to do is just simply
+go ahead and copy this out. And once we
+
+468
+00:07:18,950 --> 00:07:18,960
+go ahead and copy this out. And once we
+ 
+
+469
+00:07:18,960 --> 00:07:20,790
+go ahead and copy this out. And once we
+have that copied, we can simply go over
+
+470
+00:07:20,790 --> 00:07:20,800
+have that copied, we can simply go over
+ 
+
+471
+00:07:20,800 --> 00:07:22,629
+have that copied, we can simply go over
+to Hickfield, go over to Cinema Studio
+
+472
+00:07:22,629 --> 00:07:22,639
+to Hickfield, go over to Cinema Studio
+ 
+
+473
+00:07:22,639 --> 00:07:25,350
+to Hickfield, go over to Cinema Studio
+4.0, and within Cinema Studio 4.0, we
+
+474
+00:07:25,350 --> 00:07:25,360
+4.0, and within Cinema Studio 4.0, we
+ 
+
+475
+00:07:25,360 --> 00:07:27,189
+4.0, and within Cinema Studio 4.0, we
+can simply go ahead and import all our
+
+476
+00:07:27,189 --> 00:07:27,199
+can simply go ahead and import all our
+ 
+
+477
+00:07:27,199 --> 00:07:29,350
+can simply go ahead and import all our
+assets. We can bring in those asset and
+
+478
+00:07:29,350 --> 00:07:29,360
+assets. We can bring in those asset and
+ 
+
+479
+00:07:29,360 --> 00:07:31,270
+assets. We can bring in those asset and
+then paste our seed dance prompt. Now in
+
+480
+00:07:31,270 --> 00:07:31,280
+then paste our seed dance prompt. Now in
+ 
+
+481
+00:07:31,280 --> 00:07:32,870
+then paste our seed dance prompt. Now in
+certain cases, you might want to
+
+482
+00:07:32,870 --> 00:07:32,880
+certain cases, you might want to
+ 
+
+483
+00:07:32,880 --> 00:07:34,550
+certain cases, you might want to
+reference individual objects. For
+
+484
+00:07:34,550 --> 00:07:34,560
+reference individual objects. For
+ 
+
+485
+00:07:34,560 --> 00:07:35,990
+reference individual objects. For
+example, might want to reference the
+
+486
+00:07:35,990 --> 00:07:36,000
+example, might want to reference the
+ 
+
+487
+00:07:36,000 --> 00:07:37,909
+example, might want to reference the
+police car by typing the add sign and
+
+488
+00:07:37,909 --> 00:07:37,919
+police car by typing the add sign and
+ 
+
+489
+00:07:37,919 --> 00:07:39,510
+police car by typing the add sign and
+selecting the image that has to do with
+
+490
+00:07:39,510 --> 00:07:39,520
+selecting the image that has to do with
+ 
+
+491
+00:07:39,520 --> 00:07:41,189
+selecting the image that has to do with
+it. Interestingly, you can also switch
+
+492
+00:07:41,189 --> 00:07:41,199
+it. Interestingly, you can also switch
+ 
+
+493
+00:07:41,199 --> 00:07:44,390
+it. Interestingly, you can also switch
+from Cinema 4.0 to Cedance 2.5. So, if
+
+494
+00:07:44,390 --> 00:07:44,400
+from Cinema 4.0 to Cedance 2.5. So, if
+ 
+
+495
+00:07:44,400 --> 00:07:45,670
+from Cinema 4.0 to Cedance 2.5. So, if
+you like to drive the animation based
+
+496
+00:07:45,670 --> 00:07:45,680
+you like to drive the animation based
+ 
+
+497
+00:07:45,680 --> 00:07:47,909
+you like to drive the animation based
+off Cance 2.5, you can literally go
+
+498
+00:07:47,909 --> 00:07:47,919
+off Cance 2.5, you can literally go
+ 
+
+499
+00:07:47,919 --> 00:07:49,749
+off Cance 2.5, you can literally go
+ahead and do it. Same thing applies.
+
+500
+00:07:49,749 --> 00:07:49,759
+ahead and do it. Same thing applies.
+ 
+
+501
+00:07:49,759 --> 00:07:51,670
+ahead and do it. Same thing applies.
+Import all the assets that you want and
+
+502
+00:07:51,670 --> 00:07:51,680
+Import all the assets that you want and
+ 
+
+503
+00:07:51,680 --> 00:07:53,749
+Import all the assets that you want and
+then paste in the prompt. And once
+
+504
+00:07:53,749 --> 00:07:53,759
+then paste in the prompt. And once
+ 
+
+505
+00:07:53,759 --> 00:07:55,270
+then paste in the prompt. And once
+you're done with this, simply go ahead
+
+506
+00:07:55,270 --> 00:07:55,280
+you're done with this, simply go ahead
+ 
+
+507
+00:07:55,280 --> 00:07:58,070
+you're done with this, simply go ahead
+and change the duration to 30 seconds.
+
+508
+00:07:58,070 --> 00:07:58,080
+and change the duration to 30 seconds.
+ 
+
+509
+00:07:58,080 --> 00:07:59,510
+and change the duration to 30 seconds.
+And once you have that, you can now
+
+510
+00:07:59,510 --> 00:07:59,520
+And once you have that, you can now
+ 
+
+511
+00:07:59,520 --> 00:08:01,670
+And once you have that, you can now
+simply click on generate and then allow
+
+512
+00:08:01,670 --> 00:08:01,680
+simply click on generate and then allow
+ 
+
+513
+00:08:01,680 --> 00:08:03,830
+simply click on generate and then allow
+this to generate. And here's the result
+
+514
+00:08:03,830 --> 00:08:03,840
+this to generate. And here's the result
+ 
+
+515
+00:08:03,840 --> 00:08:28,930
+this to generate. And here's the result
+of what we've just created.
+
+516
+00:08:28,930 --> 00:08:28,940
+
+ 
+
+517
+00:08:28,940 --> 00:08:32,709
+
+>> [screaming]
+
+518
+00:08:32,709 --> 00:08:32,719
+
+ 
+
+519
+00:08:32,719 --> 00:08:34,149
+
+>> And of course with this you can see that
+
+520
+00:08:34,149 --> 00:08:34,159
+>> And of course with this you can see that
+ 
+
+521
+00:08:34,159 --> 00:08:36,630
+>> And of course with this you can see that
+with Hickfield Cloud alongside Blender
+
+522
+00:08:36,630 --> 00:08:36,640
+with Hickfield Cloud alongside Blender
+ 
+
+523
+00:08:36,640 --> 00:08:38,550
+with Hickfield Cloud alongside Blender
+we can now bring our cinematic ideas to
+
+524
+00:08:38,550 --> 00:08:38,560
+we can now bring our cinematic ideas to
+ 
+
+525
+00:08:38,560 --> 00:08:40,149
+we can now bring our cinematic ideas to
+life. You can start off making simple
+
+526
+00:08:40,149 --> 00:08:40,159
+life. You can start off making simple
+ 
+
+527
+00:08:40,159 --> 00:08:41,829
+life. You can start off making simple
+previews inside of Blender by using the
+
+528
+00:08:41,829 --> 00:08:41,839
+previews inside of Blender by using the
+ 
+
+529
+00:08:41,839 --> 00:08:43,670
+previews inside of Blender by using the
+Higfield plug-in right inside of Blender
+
+530
+00:08:43,670 --> 00:08:43,680
+Higfield plug-in right inside of Blender
+ 
+
+531
+00:08:43,680 --> 00:08:45,430
+Higfield plug-in right inside of Blender
+or you can actually work handinhand with
+
+532
+00:08:45,430 --> 00:08:45,440
+or you can actually work handinhand with
+ 
+
+533
+00:08:45,440 --> 00:08:47,350
+or you can actually work handinhand with
+Cloud and get stuff done with Blender
+
+534
+00:08:47,350 --> 00:08:47,360
+Cloud and get stuff done with Blender
+ 
+
+535
+00:08:47,360 --> 00:08:49,110
+Cloud and get stuff done with Blender
+via Hickfield. And at the end of the
+
+536
+00:08:49,110 --> 00:08:49,120
+via Hickfield. And at the end of the
+ 
+
+537
+00:08:49,120 --> 00:08:50,630
+via Hickfield. And at the end of the
+day, you can bring all of this together
+
+538
+00:08:50,630 --> 00:08:50,640
+day, you can bring all of this together
+ 
+
+539
+00:08:50,640 --> 00:08:52,710
+day, you can bring all of this together
+by simply using seed dance. And of
+
+540
+00:08:52,710 --> 00:08:52,720
+by simply using seed dance. And of
+ 
+
+541
+00:08:52,720 --> 00:08:53,829
+by simply using seed dance. And of
+course, for those who like to explore
+
+542
+00:08:53,829 --> 00:08:53,839
+course, for those who like to explore
+ 
+
+543
+00:08:53,839 --> 00:08:55,430
+course, for those who like to explore
+this, you can simply go over the link in
+
+544
+00:08:55,430 --> 00:08:55,440
+this, you can simply go over the link in
+ 
+
+545
+00:08:55,440 --> 00:08:56,630
+this, you can simply go over the link in
+the description where you'll be able to
+
+546
+00:08:56,630 --> 00:08:56,640
+the description where you'll be able to
+ 
+
+547
+00:08:56,640 --> 00:08:58,070
+the description where you'll be able to
+check this out. Tell me what you guys
+
+548
+00:08:58,070 --> 00:08:58,080
+check this out. Tell me what you guys
+ 
+
+549
+00:08:58,080 --> 00:08:59,430
+check this out. Tell me what you guys
+think about this one in the comment
+
+550
+00:08:59,430 --> 00:08:59,440
+think about this one in the comment
+ 
+
+551
+00:08:59,440 --> 00:09:01,030
+think about this one in the comment
+section. And until I see you guys in the
+
+552
+00:09:01,030 --> 00:09:01,040
+section. And until I see you guys in the
+ 
+
+553
+00:09:01,040 --> 00:09:04,880
+section. And until I see you guys in the
+next one, peace.
+

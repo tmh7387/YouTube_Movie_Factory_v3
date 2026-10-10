@@ -1,0 +1,100 @@
+# FINAL GENERATION PROMPT — SH010
+# project: demo-infinite-loop  ·  spec v1
+# generated from shot.json by make_prompt.py — regenerate, do not hand-edit
+# sections: 13 (the house grammar requires all of them; a missing
+# section fails in a specific, predictable way)
+
+
+SCENE CONTEXT
+15 seconds, 16:9.
+One continuous take that ends on a frame identical to its first, so the clip can replay without a seam.
+ONE SINGLE UNBROKEN SHOT.
+On screen: lead (lead), wardrobe (prop), desk (prop).
+
+ACTIVE REFERENCES
+<<<image_1>>>: THE LEAD.
+  Carries: identity and wardrobe.
+  File: char-lead-v1.png
+<<<image_2>>>: THE LOCATION.
+  Carries: set, materials and light.
+  File: loc-study-v1.png
+<<<video_1>>>: THE CAMERA PATH AND THE FIGURE'S BEHAVIOUR.
+  Carries: motion reference.
+  File: previz_SH010.mp4
+  Controls ONLY: the camera path, framing and timing; the figure's position, travel and orientation.
+  Does NOT carry over: materials; lighting; proxy geometry; facial performance.
+Nothing else from the previz is inherited — not its grey proxy materials; proxy geometry proportions beyond the camera-path intent; previz lighting; the wireframe set-volume boxes and the camera path curve, which exist only for review.
+
+LOCATION MAP
+An old mansion study rendered as a nested miniature: the room we are in is itself a model of the same room, sitting on a table inside a larger copy of itself. The conceit is only legible on the final pull-back, so the inner room must be complete on all six sides.
+room_inner (primary): 7.0 m x 7.0 m x 3.0 m, floor at z=0.00 m, ceiling at z=3.00 m.
+room_outer (reveal): 14.0 m x 14.0 m x 6.8 m, floor at z=-1.20 m, ceiling at z=5.60 m.
+The space contains only: lead. No other people, no crowd, no background extras.
+
+FIRST FRAME AND SPATIAL BLOCKING
+The first visible frame is already the intended framing; no establishing wide.
+Frame map at 0.0s (loop_open): camera 1.8 m from its target, looking north, tilted down. Frame is already tight on the lead at the desk. No establishing wide. Identical to the closing frame.
+Frame map at 3.8s (turn): camera 1.3 m from its target, looking north, tilted down. The lead's head comes up off the desk; attention goes to the wardrobe.
+Frame map at 7.5s (cross): camera 0.9 m from its target, looking north-west, tilted down. The lead crosses the room. Camera is closest here and the framing tightens.
+Frame map at 11.2s (reach): camera 1.7 m from its target, looking south, tilted down. The lead arrives at the wardrobe as the camera begins its pull-back.
+Frame map at 15.0s (loop_close): camera 1.8 m from its target, looking north, tilted down. Pull-back completes: the inner room is revealed as a miniature on a table inside a larger copy. Camera returns to the opening composition.
+TODO — x/y percentage occupancy per beat must be added from a previz review. The spec supplies geometry; only a frame read supplies percentages.
+
+FORMAT MODE
+ONE SINGLE UNBROKEN SHOT for the entire 15 seconds, 16:9. One continuous take with absolutely no cuts, no edits, no transitions, no dissolves, no wipes and no flash frames. Real time throughout; no speed ramps, no slow motion, no freeze frames.
+
+OPTICS
+47° diagonal field of view held for the entire shot.
+standard normal lens, natural proportions, no distortion
+Focus: deep focus — the miniature reveal at the end must read sharp.
+Camera starts 1.8 m from its target, closes to 0.9 m at the nearest point, and finishes 1.8 m away.
+Clean lens, no flares.
+
+CAMERA
+CAMERA = handheld.
+Camera height: 1.55 m.
+Handheld drift amplitude 1.5 cm — living frame, not a locked-off tripod, but no jitter.
+0.0s to 3.8s: the camera pushes in (north-east, 0.78 m travelled). settle into the push
+3.8s to 7.5s: the camera pushes in (north, 1.40 m travelled). mid — closest to the lead, tension peaks
+7.5s to 11.2s: the camera pushes in (north, 2.39 m travelled). pull back begins; inner room starts to read as an object
+11.2s to 15.0s: the camera pulls back (south, 4.31 m travelled). closing frame — LOOP KEY: must MATCH t=0 exactly
+Constraint: camera passes through nothing: no wall, no floor, no ceiling, no prop.
+Constraint: nothing passes through the camera.
+Constraint: constant unhurried speed; the camera never stops, never reverses, never zooms.
+Constraint: camera height stays between 1.20 m and 1.70 m throughout.
+The rig is never visible.
+
+THE PERFORMANCE
+LEAD (lead):
+  rooted at the desk for the whole take: sits, lifts his head, turns to look at the wardrobe, then rises and steps toward it — but the loop returns him to the desk, so the travel is performed by the CAMERA pulling back, not by the performer leaving the frame. Keep him within about one metre of the desk.
+  Rooted — does not travel.
+  TODO — performance detail (body, head, eyes, hands) must be authored per project. The blockout holds position and orientation only.
+
+ACTION TIMING
+0.0s (loop_open): Frame is already tight on the lead at the desk. No establishing wide. Identical to the closing frame. Camera at (0.00, -2.60, 1.55) looking north.
+3.8s (turn): The lead's head comes up off the desk; attention goes to the wardrobe. Camera at (0.35, -1.90, 1.50) looking north.
+7.5s (cross): The lead crosses the room. Camera is closest here and the framing tightens. Camera at (0.85, -0.60, 1.42) looking north-west.
+11.2s (reach): The lead arrives at the wardrobe as the camera begins its pull-back. Camera at (0.20, 1.70, 1.30) looking south.
+15.0s (loop_close): Pull-back completes: the inner room is revealed as a miniature on a table inside a larger copy. Camera returns to the opening composition. Camera at (0.00, -2.60, 1.55) looking north.
+
+PHYSICS
+TODO — describe how fabric, hair, smoke, dust and liquid should move. This section is skipped most often and its absence is a predictable failure: garments and hair go rigid or drift unnaturally.
+
+LIGHTING
+TODO — state where the light is motivated from, its direction, and how it falls on faces. The previz lighting is NOT inherited.
+
+AUDIO
+Audio mode: music. single sustained sub-bass bed; no dialogue; no percussion so the loop seam stays inaudible
+
+POSITIVE CONSTRAINTS
+- The finished shot holds 47° diagonal field of view throughout.
+- The shot runs 15 seconds at 16:9 in real time.
+- Every performer keeps their specified position and orientation.
+- The camera path is exactly as described above.
+- The result is one continuous take with no cuts of any kind.
+- The closing frame matches the opening frame so the clip can loop without a seam.
+- The look of the finished shot comes entirely from the supplied references, never from the blockout.
+------------------------------------------------------------------------------
+# REVIEW: 4 TODO marker(s) remain. Each one is a section the spec
+# does not yet supply detail for. Resolve them from a previz review before spending
+# credits — that is cheaper than discovering the gap in a generated take.

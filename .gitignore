@@ -85,3 +85,9 @@ backend/jobs/higgsfield_last_error.txt
 
 # generated skill upload packages — rebuild with skills/_mirror/build_skill.py
 skills/_mirror/build/
+
+# Local tool installs (Blender etc.)
+tools/
+
+# Audit renders (large images)
+_apt_audit/

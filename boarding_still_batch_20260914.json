@@ -1,0 +1,144 @@
+{
+  "date": "2026-09-14",
+  "model": "gpt_image_2_5",
+  "variant": "sunburst",
+  "quality": "high",
+  "resolution": "4k",
+  "aspect_ratio": "16:9",
+  "count": 4,
+  "displayed_credits": 18,
+  "status": "submitted",
+  "browserTab": "864207817",
+  "jobs": [
+    {
+      "index": 0,
+      "job_id": "6e74cefb-9999-464d-99ab-34bde68ff9f0"
+    },
+    {
+      "index": 1,
+      "job_id": "e91c3030-096f-479b-a014-adb51b0f85ff"
+    },
+    {
+      "index": 2,
+      "job_id": "3f51c0b3-911b-46ab-adc2-a847513f9da9"
+    },
+    {
+      "index": 3,
+      "job_id": "bfe976bb-d8be-4ca9-9781-5238dffb4a16"
+    }
+  ],
+  "elements": [
+    {
+      "id": "edfd2ab1-c99e-4da5-80bd-f50671f48fec",
+      "name": "Amara_Train_Handbag",
+      "category": "prop",
+      "description": "Locked local train wardrobe handbag: black structured leather bag with gold hardware, short handles and chain detail. Source handbag.png in Wardrobe Locked/Train. Preserve bag appearance across boarding, train and coastal reflection shots.",
+      "status": "completed",
+      "medias": [
+        {
+          "id": "165ba7b7-60c3-4f4f-b02c-47a063a355cf",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/165ba7b7-60c3-4f4f-b02c-47a063a355cf.png",
+          "type": "media_input"
+        }
+      ],
+      "video_medias": [],
+      "created_at": 1789065963.760716
+    },
+    {
+      "id": "99f29819-725f-478a-90fd-9ecfede89594",
+      "name": "Amara_Train_Outfit",
+      "category": "prop",
+      "description": null,
+      "status": "completed",
+      "medias": [
+        {
+          "id": "2789fb09-e001-4138-b039-13e31dca72dc",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/2789fb09-e001-4138-b039-13e31dca72dc.png",
+          "type": "media_input"
+        }
+      ],
+      "video_medias": [],
+      "created_at": 1784112625.785006
+    },
+    {
+      "id": "1acc7f87-dfe9-4e2c-a6db-dcc48b5d2651",
+      "name": "Amara_Houston_2",
+      "category": "character",
+      "description": null,
+      "status": "completed",
+      "medias": [
+        {
+          "id": "fdf74a21-7225-422b-802e-0dd92029f48a",
+          "url": "https://d8j0ntlcm91z4.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/hf_20260715_081447_fdf74a21-7225-422b-802e-0dd92029f48a.png",
+          "type": "image_job"
+        }
+      ],
+      "video_medias": [],
+      "created_at": 1784103910.668372
+    },
+    {
+      "id": "12f0524f-6481-47fc-8175-9022c53a1bc6",
+      "name": "Platform_morn",
+      "category": "auto:prop",
+      "description": null,
+      "status": "completed",
+      "medias": [
+        {
+          "id": "51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/51c3af13-3c37-481e-8c1a-5c9c0c3fdbbb.png",
+          "type": "media_input"
+        }
+      ],
+      "video_medias": [],
+      "created_at": 1782655134.717266
+    },
+    {
+      "id": "c63517e1-4dc8-4487-841d-85fed438a08b",
+      "name": "PressOn_Boarding_Composition",
+      "category": "auto:character",
+      "description": "Animatic 30.5-second frame. Camera and blocking reference ONLY: camera inside vestibule looking outward perpendicular to train side. Photographic Elements supply finished appearance; mannequin is only a placement proxy.",
+      "status": "completed",
+      "medias": [
+        {
+          "id": "af41d530-b9fd-4ddd-bd2e-a682ead65ab2",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/af41d530-b9fd-4ddd-bd2e-a682ead65ab2.png",
+          "type": "media_input"
+        }
+      ],
+      "video_medias": [],
+      "created_at": 1789319191.597764
+    },
+    {
+      "id": "1aea136d-c3bc-4e46-ac1b-77338bced7b4",
+      "name": "PressOn_Boarding_Open_Door",
+      "category": "auto:environment",
+      "description": "Original Training_Boarding_Interior-glass-door-open local reference. Open exterior passenger doorway, vestibule materials and lighting.",
+      "status": "completed",
+      "medias": [
+        {
+          "id": "e019eb67-38c8-4866-823e-cb47f08a8ce2",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/e019eb67-38c8-4866-823e-cb47f08a8ce2.jpg",
+          "type": "media_input"
+        }
+      ],
+      "video_medias": [],
+      "created_at": 1789319197.068674
+    },
+    {
+      "id": "e05721e0-4f10-4df2-845e-c9f03a7627b4",
+      "name": "PressOn_Verse1_Platform",
+      "category": "auto:environment",
+      "description": "User-selected Verse1_Platform photograph hf_20260628_044156_4fb1e407-d75f-4d2d-8581-ba7581aa2da7.png. Station design and architecture reference; camera angle for boarding is separately specified.",
+      "status": "completed",
+      "medias": [
+        {
+          "id": "cc722d8a-162a-4797-8076-9438d5288416",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_33kIa1U8ichJnM8mAirpHu0unCe/cc722d8a-162a-4797-8076-9438d5288416.png",
+          "type": "media_input"
+        }
+      ],
+      "video_medias": [],
+      "created_at": 1789319225.482524
+    }
+  ]
+}

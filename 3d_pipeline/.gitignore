@@ -1,0 +1,25 @@
+# Transient build artefacts — regenerate, never commit.
+#
+# The .blend, .glb and .mp4 files ARE committed: they are the Blockout Kit, and a blockout
+# is capital (PATTERNS.md P-02). The PNG frame sequences are not — they are intermediates
+# that the MP4 is encoded from, and a 15-second shot leaves ~240 MB of them behind.
+
+# previz frame sequences
+previz_frames/
+previz_frames_annot/
+
+# Blender autosaves and crash files
+*.blend1
+*.blend2
+*.blend@
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Diagnostic output
+_diag_out/
+_test_out/
+
+# Local tool installs (pinned builds, not source)
+../tools/
